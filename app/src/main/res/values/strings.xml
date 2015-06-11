@@ -1,6 +1,14 @@
 <resources>
     <string name="app_name">Swych</string>
-
+    <string name="facebook_app_id">917674018267420</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="login_desc">Login with Facebook</string>
+    <string name="log_in_text">Log in</string>
+    <string name="sign_in_text">Sign up</string>
+
+    <string name="title_activity_library">library</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="title_activity_email_login">emailLogin</string>
 </resources>
