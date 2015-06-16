@@ -11,4 +11,7 @@
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
     <string name="title_activity_email_login">emailLogin</string>
+    <string name="title_activity_book_store">BookStore</string>
+    <string name="title_activity_search_results">results</string>
+    <string name="search_title">Search by book title</string>
 </resources>

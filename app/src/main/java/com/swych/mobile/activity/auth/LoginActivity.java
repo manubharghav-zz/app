@@ -84,17 +84,6 @@ public class LoginActivity extends Activity implements GoogleApiClient.Connectio
 
         socialNetworkUsed = "facebook";
 
-//        mGoogleApiClient = new GoogleApiClient.Builder(this)
-//                .addApi(Plus.API)
-//                .addScope(Plus.SCOPE_PLUS_LOGIN)
-//                .build();
-//        mGoogleApiClient = new GoogleApiClient.Builder(this)
-//                .addConnectionCallbacks(this)
-//                .addOnConnectionFailedListener(this)
-//                .addApi(Plus.API)
-//                .addScope(Plus.SCOPE_PLUS_LOGIN)
-//                .build();
-
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
@@ -110,23 +99,6 @@ public class LoginActivity extends Activity implements GoogleApiClient.Connectio
 
     }
 
-//    private GoogleApiClient buildGoogleApiClient() {
-//        // When we build the GoogleApiClient we specify where connected and
-//        // connection failed callbacks should be returned, which Google APIs our
-//        // app uses and which OAuth 2.0 scopes our app requests.
-//        GoogleApiClient.Builder builder = new GoogleApiClient.Builder(this)
-//                .addConnectionCallbacks(this)
-//                .addOnConnectionFailedListener(this)
-//                .addApi(Plus.API, Plus.PlusOptions.builder().build())
-//                .addScope(Plus.SCOPE_PLUS_LOGIN);
-//
-//        if (mRequestServerAuthCode) {
-//            checkServerAuthConfiguration();
-//            builder = builder.requestServerAuthCode(WEB_CLIENT_ID, this);
-//        }
-//
-//        return builder.build();
-//    }
 
     protected void onStart() {
         super.onStart();

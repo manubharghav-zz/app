@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="5dp" >
+    <ImageView
+        android:id="@+id/image"
+        android:src="@drawable/book"
+        android:layout_width="100dp"
+        android:layout_height="125dp">
+    </ImageView>
+    <TextView
+        android:id="@+id/grid_text"
+        android:text="@string/hello_world"
+        android:gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:textSize="10sp" >
+    </TextView>
+</LinearLayout>
