@@ -15,6 +15,7 @@ public class Book {
     private Long author_id;
     private String author_name;
     private java.util.Date date;
+    private String imageUrl;
 
     /** Used to resolve relations */
     private transient DaoSession daoSession;
@@ -31,12 +32,13 @@ public class Book {
         this.id = id;
     }
 
-    public Book(long id, String title, Long author_id, String author_name, java.util.Date date) {
+    public Book(long id, String title, Long author_id, String author_name, java.util.Date date, String imageUrl) {
         this.id = id;
         this.title = title;
         this.author_id = author_id;
         this.author_name = author_name;
         this.date = date;
+        this.imageUrl = imageUrl;
     }
 
     /** called by internal mechanisms, do not call yourself. */
@@ -83,6 +85,14 @@ public class Book {
 
     public void setDate(java.util.Date date) {
         this.date = date;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     /** To-many relationship, resolved on first access (and after reset). Changes to to-many relations are not persisted, make changes to the target entity. */

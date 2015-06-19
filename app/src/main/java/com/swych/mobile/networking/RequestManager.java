@@ -2,6 +2,8 @@ package com.swych.mobile.networking;
 
 import android.content.Context;
 
+import com.android.volley.toolbox.ImageLoader;
+
 /**
  * Created by manu on 6/15/15.
  */
@@ -15,6 +17,10 @@ public class RequestManager {
     }
     public RequestProxy doRequest() {
         return mRequestProxy;
+    }
+
+    public ImageLoader getImageLoader(){
+        return mRequestProxy.getImageLoader();
     }
 
     // This method should be called first to do singleton initialization

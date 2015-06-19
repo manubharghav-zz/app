@@ -28,6 +28,7 @@ public class BookDao extends AbstractDao<Book, Long> {
         public final static Property Author_id = new Property(2, Long.class, "author_id", false, "AUTHOR_ID");
         public final static Property Author_name = new Property(3, String.class, "author_name", false, "AUTHOR_NAME");
         public final static Property Date = new Property(4, java.util.Date.class, "date", false, "DATE");
+        public final static Property ImageUrl = new Property(5, String.class, "imageUrl", false, "IMAGE_URL");
     };
 
     private DaoSession daoSession;
@@ -50,7 +51,8 @@ public class BookDao extends AbstractDao<Book, Long> {
                 "'TITLE' TEXT," + // 1: title
                 "'AUTHOR_ID' INTEGER," + // 2: author_id
                 "'AUTHOR_NAME' TEXT," + // 3: author_name
-                "'DATE' INTEGER);"); // 4: date
+                "'DATE' INTEGER," + // 4: date
+                "'IMAGE_URL' TEXT);"); // 5: imageUrl
         // Add Indexes
         db.execSQL("CREATE INDEX " + constraint + "IDX_BOOK_AUTHOR_ID ON BOOK" +
                 " (AUTHOR_ID);");
@@ -91,6 +93,11 @@ public class BookDao extends AbstractDao<Book, Long> {
         if (date != null) {
             stmt.bindLong(5, date.getTime());
         }
+ 
+        String imageUrl = entity.getImageUrl();
+        if (imageUrl != null) {
+            stmt.bindString(6, imageUrl);
+        }
     }
 
     @Override
@@ -113,7 +120,8 @@ public class BookDao extends AbstractDao<Book, Long> {
             cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1), // title
             cursor.isNull(offset + 2) ? null : cursor.getLong(offset + 2), // author_id
             cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3), // author_name
-            cursor.isNull(offset + 4) ? null : new java.util.Date(cursor.getLong(offset + 4)) // date
+            cursor.isNull(offset + 4) ? null : new java.util.Date(cursor.getLong(offset + 4)), // date
+            cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5) // imageUrl
         );
         return entity;
     }
@@ -126,6 +134,7 @@ public class BookDao extends AbstractDao<Book, Long> {
         entity.setAuthor_id(cursor.isNull(offset + 2) ? null : cursor.getLong(offset + 2));
         entity.setAuthor_name(cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3));
         entity.setDate(cursor.isNull(offset + 4) ? null : new java.util.Date(cursor.getLong(offset + 4)));
+        entity.setImageUrl(cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5));
      }
     
     /** @inheritdoc */

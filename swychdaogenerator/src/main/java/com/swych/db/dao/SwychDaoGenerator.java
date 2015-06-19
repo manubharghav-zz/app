@@ -32,7 +32,7 @@ public class SwychDaoGenerator {
         book.addLongProperty("author_id").index();
         book.addStringProperty("author_name").index();
         book.addDateProperty("date").index();
-
+        book.addStringProperty("imageUrl");
         // version table
         Entity version = schema.addEntity(VERSION);
         version.addIdProperty().notNull().autoincrement().primaryKey();
@@ -41,6 +41,7 @@ public class SwychDaoGenerator {
         version.addStringProperty("description").notNull();
         Property bookIdProperty = version.addLongProperty("book_id").notNull().getProperty();
         version.addStringProperty("title").notNull();
+        version.addStringProperty("author").notNull();
 
         version.addToOne(book, bookIdProperty);
         ToMany bookVersions = book.addToMany(version, bookIdProperty);

@@ -10,6 +10,7 @@ import android.widget.GridView;
 import android.widget.SearchView;
 
 import com.swych.mobile.R;
+import com.swych.mobile.networking.RequestManager;
 
 public class BookStoreActivity extends ActionBarActivity {
 
@@ -21,6 +22,7 @@ public class BookStoreActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_book_store);
         GridView gridview = (GridView) findViewById(R.id.gridview);
+        RequestManager.getInstance().doRequest().getBooksForStore(gridview);
 
 
     }

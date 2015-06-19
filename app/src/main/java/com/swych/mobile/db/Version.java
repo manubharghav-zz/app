@@ -20,6 +20,8 @@ public class Version {
     private long book_id;
     /** Not-null value. */
     private String title;
+    /** Not-null value. */
+    private String author;
 
     /** Used to resolve relations */
     private transient DaoSession daoSession;
@@ -40,13 +42,14 @@ public class Version {
         this.id = id;
     }
 
-    public Version(long id, String language, java.util.Date date, String description, long book_id, String title) {
+    public Version(long id, String language, java.util.Date date, String description, long book_id, String title, String author) {
         this.id = id;
         this.language = language;
         this.date = date;
         this.description = description;
         this.book_id = book_id;
         this.title = title;
+        this.author = author;
     }
 
     /** called by internal mechanisms, do not call yourself. */
@@ -109,6 +112,16 @@ public class Version {
     /** Not-null value; ensure this value is available before it is saved to the database. */
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    /** Not-null value. */
+    public String getAuthor() {
+        return author;
+    }
+
+    /** Not-null value; ensure this value is available before it is saved to the database. */
+    public void setAuthor(String author) {
+        this.author = author;
     }
 
     /** To-one relationship, resolved on first access. */

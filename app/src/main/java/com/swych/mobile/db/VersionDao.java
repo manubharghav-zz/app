@@ -34,6 +34,7 @@ public class VersionDao extends AbstractDao<Version, Long> {
         public final static Property Description = new Property(3, String.class, "description", false, "DESCRIPTION");
         public final static Property Book_id = new Property(4, long.class, "book_id", false, "BOOK_ID");
         public final static Property Title = new Property(5, String.class, "title", false, "TITLE");
+        public final static Property Author = new Property(6, String.class, "author", false, "AUTHOR");
     };
 
     private DaoSession daoSession;
@@ -58,7 +59,8 @@ public class VersionDao extends AbstractDao<Version, Long> {
                 "'DATE' INTEGER NOT NULL ," + // 2: date
                 "'DESCRIPTION' TEXT NOT NULL ," + // 3: description
                 "'BOOK_ID' INTEGER NOT NULL ," + // 4: book_id
-                "'TITLE' TEXT NOT NULL );"); // 5: title
+                "'TITLE' TEXT NOT NULL ," + // 5: title
+                "'AUTHOR' TEXT NOT NULL );"); // 6: author
     }
 
     /** Drops the underlying database table. */
@@ -77,6 +79,7 @@ public class VersionDao extends AbstractDao<Version, Long> {
         stmt.bindString(4, entity.getDescription());
         stmt.bindLong(5, entity.getBook_id());
         stmt.bindString(6, entity.getTitle());
+        stmt.bindString(7, entity.getAuthor());
     }
 
     @Override
@@ -100,7 +103,8 @@ public class VersionDao extends AbstractDao<Version, Long> {
             new java.util.Date(cursor.getLong(offset + 2)), // date
             cursor.getString(offset + 3), // description
             cursor.getLong(offset + 4), // book_id
-            cursor.getString(offset + 5) // title
+            cursor.getString(offset + 5), // title
+            cursor.getString(offset + 6) // author
         );
         return entity;
     }
@@ -114,6 +118,7 @@ public class VersionDao extends AbstractDao<Version, Long> {
         entity.setDescription(cursor.getString(offset + 3));
         entity.setBook_id(cursor.getLong(offset + 4));
         entity.setTitle(cursor.getString(offset + 5));
+        entity.setAuthor(cursor.getString(offset + 6));
      }
     
     /** @inheritdoc */

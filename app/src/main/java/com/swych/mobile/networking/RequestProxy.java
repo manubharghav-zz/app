@@ -5,24 +5,39 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.http.AndroidHttpClient;
 import android.os.Build;
+import android.util.Log;
 import android.widget.GridView;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.ExecutorDelivery;
 import com.android.volley.Network;
+import com.android.volley.Request;
 import com.android.volley.RequestQueue;
+import com.android.volley.Response;
 import com.android.volley.ResponseDelivery;
+import com.android.volley.VolleyError;
 import com.android.volley.toolbox.BasicNetwork;
 import com.android.volley.toolbox.DiskBasedCache;
 import com.android.volley.toolbox.HttpClientStack;
 import com.android.volley.toolbox.HttpStack;
 import com.android.volley.toolbox.HurlStack;
-import com.android.volley.toolbox.Volley;
-import com.swych.mobile.db.Book;
+import com.android.volley.toolbox.ImageLoader;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.swych.mobile.adapter.BookStoreAdapter;
+import com.swych.mobile.utils.NetworkingUtils;
+
+import org.apache.http.HttpResponse;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
+
+import static com.google.android.gms.internal.zzhl.runOnUiThread;
 
 /**
  * Created by manu on 6/15/15.
@@ -30,11 +45,24 @@ import java.util.concurrent.Executors;
 public class RequestProxy {
 
     private RequestQueue mRequestQueue;
-
+    private static String username="sandeep";
+    private static String password = "junekiMIXER+123";
+    private ImageLoader.ImageCache imageCache;
+    private Context context;
+    private ImageLoader imageLoader;
     // package access constructor
     RequestProxy(Context context) {
 //        mRequestQueue = Volley.newRequestQueue(context.getApplicationContext());
+        this.context = context;
+        imageCache = new BitmapLruCache();
         mRequestQueue = RequestProxy.newRequestQueue(context.getApplicationContext(), null);
+        imageLoader = new ImageLoader(mRequestQueue, imageCache);
+    }
+
+    public ImageLoader getImageLoader(){
+
+        return imageLoader;
+
     }
 
     public static RequestQueue newRequestQueue(Context context, HttpStack stack) {
@@ -48,12 +76,29 @@ public class RequestProxy {
         }
 
         if (stack == null) {
-            if (Build.VERSION.SDK_INT >= 9) {
-                stack = new HurlStack();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+                stack = new HurlStack() {
+                    @Override
+                    public HttpResponse performRequest(Request<?> request, Map<String, String> headers)
+                            throws IOException, AuthFailureError {
+                        headers.putAll(NetworkingUtils.createBasicAuthHeader(username, password));
+                        return super.performRequest(request, headers);
+                    }
+                };
+
+
+
             } else {
-                // Prior to Gingerbread, HttpUrlConnection was unreliable.
-                // See: http://android-developers.blogspot.com/2011/09/androids-http-clients.html
-                stack = new HttpClientStack(AndroidHttpClient.newInstance(userAgent));
+                stack = new HttpClientStack(AndroidHttpClient.newInstance("volley/0")) {
+                    @Override
+                    public HttpResponse performRequest(Request<?> request, Map<String, String> headers)
+                            throws IOException, AuthFailureError {
+                        headers.putAll(NetworkingUtils.createBasicAuthHeader(username, password));
+                        return super.performRequest(request, headers);
+                    }
+                };
+
+
             }
         }
         Network network = new BasicNetwork(stack);
@@ -73,11 +118,49 @@ public class RequestProxy {
         // login request
     }
 
-    public List<Book> getBooksForStore(GridView gridView){
-        List<Book> list = new ArrayList<Book>();
+    public void getBooksForStore(final GridView gridView) {
+        Response.Listener<JSONObject> listener = new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                // not UI thread, do parsing
+                final List<DisplayBookObject> list=new ArrayList<>();
+                try {
+                    list.addAll(Deserializer.getBooksFromJsonresponse(response));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        gridView.setAdapter(new BookStoreAdapter(context, list));
+                    }
+                });
+            }
+        };
 
+        Response.ErrorListener errorListener = new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                System.out.println(error);
+                if (error.networkResponse != null) {
+                    Log.d("Error Response code: ", String.valueOf(error.networkResponse.statusCode));
+                }
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        //TODO handle error response code. Need to figure out.
+                    }
+                });
+            }
+        };
 
-        return list;
+        JsonObjectRequest request = new JsonObjectRequest(
+                Request.Method.GET,
+                "http://www.swych.co/api/library",
+                listener,
+                errorListener);
+        mRequestQueue.add(request);
 
     }
-}
+    }
+
