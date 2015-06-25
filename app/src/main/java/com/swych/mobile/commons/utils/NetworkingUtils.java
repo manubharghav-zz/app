@@ -1,4 +1,4 @@
-package com.swych.mobile.utils;
+package com.swych.mobile.commons.utils;
 
 import android.util.Base64;
 
@@ -20,5 +20,8 @@ public class NetworkingUtils {
 
         return headerMap;
     }
+
+
+
 
 }

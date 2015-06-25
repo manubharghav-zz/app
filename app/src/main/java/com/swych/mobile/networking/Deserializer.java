@@ -1,6 +1,8 @@
 package com.swych.mobile.networking;
 
 
+import android.util.Log;
+
 import com.swych.mobile.db.Version;
 
 import org.json.JSONArray;
@@ -19,8 +21,8 @@ import java.util.List;
  */
 public class Deserializer {
 
-
-    public static List<DisplayBookObject> getBooksFromJsonresponse(JSONObject response) throws JSONException {
+    public static String TAG = "Deserializer";
+    public static List<DisplayBookObject> getBooksFromJsonResponse(JSONObject response) throws JSONException {
         List<DisplayBookObject> books = new ArrayList<DisplayBookObject>();
         Iterator<String> bookIterator = response.keys();
         while(bookIterator.hasNext()){
@@ -32,36 +34,16 @@ public class Deserializer {
             book.setImageUrl(imageUrl);
             book.setTitle(bookName);
             JSONArray versions = new JSONArray(bookJson.get("books").toString());
-            JSONObject nativeVersionInJson = versions.getJSONObject(0);
-            Version nativeVersion = new Version();
-            nativeVersion.setTitle(nativeVersionInJson.getString("title"));
-            nativeVersion.setDescription(nativeVersionInJson.getString("description"));
-            nativeVersion.setLanguage(nativeVersionInJson.getString("language"));
-            nativeVersion.setAuthor(nativeVersionInJson.getString("author"));
-
-            book.addNativeVersion(nativeVersion);
-            JSONObject foreignVersionInJson = versions.getJSONObject(1);
-            Version foreignVersion = new Version();
-            foreignVersion.setTitle(foreignVersionInJson.getString("title"));
-            foreignVersion.setDescription(foreignVersionInJson.getString("description"));
-            foreignVersion.setLanguage(foreignVersionInJson.getString("language"));
-            foreignVersion.setAuthor(foreignVersionInJson.getString("author"));
-
-            book.addForeignVersion(foreignVersion);
-
-
+            for(int i=0;i<2;i++){
+                JSONObject version = versions.getJSONObject(i);
+                boolean versionAdded = book.addVersion().setLanguage(version.getString("language")).setTitle(version.getString("title")).setDescription(version.getString("description")).setAuthor(version.getString("author")).addToBook();
+                if(!versionAdded){
+                    Log.d(TAG, "Error displaying book. ");
+                }
+            }
             books.add(book);
         }
 
         return books;
-    }
-
-
-    public static void main(String[] args) throws IOException, JSONException {
-        BufferedReader reader = new BufferedReader(new FileReader("/home/manu/Downloads/swych.json"));
-        String jsonString = reader.readLine();
-        System.out.println(jsonString);
-        JSONObject object = new JSONObject(jsonString);
-        getBooksFromJsonresponse(object);
     }
 }

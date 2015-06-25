@@ -9,18 +9,42 @@
     <com.android.volley.toolbox.NetworkImageView
         android:id="@+id/image"
         android:src="@drawable/book"
-        android:layout_width="100dp"
-        android:layout_height="125dp"
+        android:layout_width="146dp"
+        android:layout_height="200dp"
         android:scaleType="centerCrop">
     </com.android.volley.toolbox.NetworkImageView>
     <TextView
         android:id="@+id/grid_text"
         android:text="@string/hello_world"
-        android:gravity="center"
-        android:layout_width="wrap_content"
+        android:gravity="left"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:textColor="@android:color/black"
+        android:ellipsize="end"
+        android:singleLine="true"
+
         android:textSize="15sp" >
     </TextView>
+
+    <!--<TextView-->
+        <!--android:id="@+id/author"-->
+        <!--android:text="@string/hello_world"-->
+        <!--android:gravity="left"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_marginTop="2dp"-->
+        <!--android:textColor="@android:color/black"-->
+        <!--android:ellipsize="end"-->
+        <!--android:singleLine="true"-->
+        <!--android:textSize="9sp" >-->
+    <!--</TextView>-->
+
+    <!--<HorizontalScrollView-->
+        <!--android:id="@+id/languages"-->
+        <!--android:layout_marginTop="3dp"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="5dp">-->
+    <!--</HorizontalScrollView>-->
+
 </LinearLayout>

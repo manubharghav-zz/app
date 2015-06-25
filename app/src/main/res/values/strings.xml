@@ -14,4 +14,6 @@
     <string name="title_activity_book_store">BookStore</string>
     <string name="title_activity_search_results">results</string>
     <string name="search_title">Search by book title</string>
+    <string name="title_activity_book_detail">BookDetail</string>
+    <string name="download">Download</string>
 </resources>

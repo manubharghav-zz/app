@@ -1,4 +1,4 @@
-package com.swych.mobile.utils;
+package com.swych.mobile.commons.utils;
 
 /**
  * Created by manu on 6/10/15.

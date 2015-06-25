@@ -24,7 +24,7 @@ import com.android.volley.toolbox.HurlStack;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.swych.mobile.adapter.BookStoreAdapter;
-import com.swych.mobile.utils.NetworkingUtils;
+import com.swych.mobile.commons.utils.NetworkingUtils;
 
 import org.apache.http.HttpResponse;
 import org.json.JSONException;
@@ -45,8 +45,8 @@ import static com.google.android.gms.internal.zzhl.runOnUiThread;
 public class RequestProxy {
 
     private RequestQueue mRequestQueue;
-    private static String username="sandeep";
-    private static String password = "junekiMIXER+123";
+    private static String username=Details.username;
+    private static String password = Details.password;
     private ImageLoader.ImageCache imageCache;
     private Context context;
     private ImageLoader imageLoader;
@@ -125,7 +125,7 @@ public class RequestProxy {
                 // not UI thread, do parsing
                 final List<DisplayBookObject> list=new ArrayList<>();
                 try {
-                    list.addAll(Deserializer.getBooksFromJsonresponse(response));
+                    list.addAll(Deserializer.getBooksFromJsonResponse(response));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -162,5 +162,5 @@ public class RequestProxy {
         mRequestQueue.add(request);
 
     }
-    }
+}
 
