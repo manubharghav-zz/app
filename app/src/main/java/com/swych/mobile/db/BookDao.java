@@ -23,7 +23,7 @@ public class BookDao extends AbstractDao<Book, Long> {
      * Can be used for QueryBuilder and for referencing column names.
     */
     public static class Properties {
-        public final static Property Id = new Property(0, long.class, "id", true, "ID");
+        public final static Property Id = new Property(0, Long.class, "id", true, "ID");
         public final static Property Title = new Property(1, String.class, "title", false, "TITLE");
         public final static Property Author_id = new Property(2, Long.class, "author_id", false, "AUTHOR_ID");
         public final static Property Author_name = new Property(3, String.class, "author_name", false, "AUTHOR_NAME");
@@ -47,7 +47,7 @@ public class BookDao extends AbstractDao<Book, Long> {
     public static void createTable(SQLiteDatabase db, boolean ifNotExists) {
         String constraint = ifNotExists? "IF NOT EXISTS ": "";
         db.execSQL("CREATE TABLE " + constraint + "'BOOK' (" + //
-                "'ID' INTEGER PRIMARY KEY NOT NULL ," + // 0: id
+                "'ID' INTEGER PRIMARY KEY AUTOINCREMENT ," + // 0: id
                 "'TITLE' TEXT," + // 1: title
                 "'AUTHOR_ID' INTEGER," + // 2: author_id
                 "'AUTHOR_NAME' TEXT," + // 3: author_name
@@ -72,7 +72,11 @@ public class BookDao extends AbstractDao<Book, Long> {
     @Override
     protected void bindValues(SQLiteStatement stmt, Book entity) {
         stmt.clearBindings();
-        stmt.bindLong(1, entity.getId());
+ 
+        Long id = entity.getId();
+        if (id != null) {
+            stmt.bindLong(1, id);
+        }
  
         String title = entity.getTitle();
         if (title != null) {
@@ -109,14 +113,14 @@ public class BookDao extends AbstractDao<Book, Long> {
     /** @inheritdoc */
     @Override
     public Long readKey(Cursor cursor, int offset) {
-        return cursor.getLong(offset + 0);
+        return cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0);
     }    
 
     /** @inheritdoc */
     @Override
     public Book readEntity(Cursor cursor, int offset) {
         Book entity = new Book( //
-            cursor.getLong(offset + 0), // id
+            cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
             cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1), // title
             cursor.isNull(offset + 2) ? null : cursor.getLong(offset + 2), // author_id
             cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3), // author_name
@@ -129,7 +133,7 @@ public class BookDao extends AbstractDao<Book, Long> {
     /** @inheritdoc */
     @Override
     public void readEntity(Cursor cursor, Book entity, int offset) {
-        entity.setId(cursor.getLong(offset + 0));
+        entity.setId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
         entity.setTitle(cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1));
         entity.setAuthor_id(cursor.isNull(offset + 2) ? null : cursor.getLong(offset + 2));
         entity.setAuthor_name(cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3));

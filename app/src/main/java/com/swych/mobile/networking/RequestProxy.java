@@ -55,7 +55,7 @@ public class RequestProxy {
 //        mRequestQueue = Volley.newRequestQueue(context.getApplicationContext());
         this.context = context;
         imageCache = new BitmapLruCache();
-        mRequestQueue = RequestProxy.newRequestQueue(context.getApplicationContext(), null);
+        mRequestQueue = RequestProxy.newRequestQueue(context, null);
         imageLoader = new ImageLoader(mRequestQueue, imageCache);
     }
 

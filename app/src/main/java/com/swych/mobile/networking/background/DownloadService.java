@@ -7,7 +7,12 @@ import android.os.ResultReceiver;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.swych.mobile.MyApplication;
+import com.swych.mobile.db.Book;
+import com.swych.mobile.db.BookDao;
+import com.swych.mobile.db.DaoSession;
 import com.swych.mobile.networking.Details;
+import com.swych.mobile.networking.DisplayBookObject;
 import com.swych.mobile.networking.URLs;
 
 import org.json.JSONException;
@@ -20,6 +25,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import de.greenrobot.dao.AbstractDaoMaster;
+import de.greenrobot.dao.AbstractDaoSession;
 
 /**
  * Created by manu on 6/21/15.
@@ -92,19 +99,29 @@ public class DownloadService extends IntentService {
     private void downloadBook(Intent intent){
         final ResultReceiver receiver = intent.getParcelableExtra("receiver");
 
-        String bookName = intent.getStringExtra("bookName");
+        DisplayBookObject displayBook = (DisplayBookObject) intent.getSerializableExtra("book");
+        String bookName = displayBook.getTitle();
         String nativeLanguage = intent.getStringExtra("nativeLanguage");
         String foreignLanguage = intent.getStringExtra("foreignLanguage");
+
+
 
         Bundle bundle = new Bundle();
         receiver.send(STATUS_RUNNING, Bundle.EMPTY);
 
         try{
-            JSONObject nativeLanguageVersion = downloadData(URLs.VERSION+bookName+"/"+nativeLanguage);
-            JSONObject forienLanguageVersion = downloadData(URLs.VERSION + bookName + "/" + foreignLanguage);
-
+            JSONObject srcLangBook = downloadData(URLs.VERSION+bookName+"/"+nativeLanguage);
+            JSONObject tarLangBook = downloadData(URLs.VERSION + bookName + "/" + foreignLanguage);
+            JSONObject mappings = downloadData(URLs.VERSION+bookName+"/" + nativeLanguage + "/" + foreignLanguage);
             //persist these objects to database;
-            if(nativeLanguageVersion.length()>0) {
+            if(srcLangBook.length()>0) {
+                persistToDb(displayBook, srcLangBook, tarLangBook, mappings);
+
+//                BookDao bookDao = daoSession.getBookDao();
+//                Book book = new Book();
+
+
+
                 receiver.send(STATUS_FINISHED, bundle);
             }
         }
@@ -112,5 +129,22 @@ public class DownloadService extends IntentService {
             Log.d(TAG, "Error downloading the book");
             Log.d(TAG, e.toString());
         }
+    }
+
+
+    private boolean persistToDb(DisplayBookObject displayBook, JSONObject srcLanguageBook, JSONObject trgtLanguageBook, JSONObject mappings){
+
+//        Initialize DAO' here
+        DaoSession session = MyApplication.getNewSession();
+        BookDao bookDao = session.getBookDao();
+
+        Book book = new Book();
+        book.setImageUrl(displayBook.getImageUrl());
+        book.setTitle(displayBook.getTitle());
+        book.setAuthor_id((long) 1);
+        book.setAuthor_name(displayBook.getNativeVersion().getAuthor());
+        long id = session.insert(book);
+
+        return false;
     }
 }

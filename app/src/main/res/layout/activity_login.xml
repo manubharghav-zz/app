@@ -1,4 +1,5 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:fancy="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent" android:gravity="center_vertical"
     android:orientation="vertical" android:paddingBottom="@dimen/activity_vertical_margin"
@@ -6,68 +7,161 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:background="#FFFFFF"
+    android:id="@+id/login_form"
     tools:context="com.swych.mobile.activity.auth.LoginActivity">
 
     <!-- Login progress -->
-    <ProgressBar android:id="@+id/login_progress" style="?android:attr/progressBarStyleLarge"
-        android:layout_width="wrap_content" android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp" android:visibility="gone" />
-
-
-
+    <ProgressBar
+        android:id="@+id/login_progress"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone" />
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dip"
+        android:layout_weight=".30"
         android:orientation="vertical"
-        android:id="@+id/topSocialLoginLayout"
-        android:layout_centerInParent="true"
+        android:gravity="center"
+        >
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:gravity="center"
+        android:layout_gravity="center"
+        android:text="SWYCH"
+        android:textSize="60dp"
+        android:textStyle="normal"
+        android:textColor="#3b414f"
+        />
 
-        android:paddingTop="40dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="5dp">
+    </LinearLayout>
 
-        <Button
-            android:id="@+id/btnGoogleD"
+
+    <LinearLayout
+
+        android:layout_width="match_parent"
+        android:orientation="vertical"
+        android:layout_weight=".50"
+        android:layout_height="0dip">
+
+        <AutoCompleteTextView
+            android:id="@+id/email"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="10dp"
-            android:paddingBottom="10dp"
-            android:paddingRight="10dp"
-            android:paddingLeft="30dp"
-            android:layout_margin="4dp"
-            android:background="@drawable/layers_gplus_button_bg"
-            android:text="Sign in with Google+"
-            android:onClick="googleLogin"
-            />
-        <Button
+            android:hint="@string/prompt_email"
+            android:inputType="textEmailAddress"
+            android:maxLines="1"
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="30dp"
+            android:singleLine="true" />
+
+        <EditText
+            android:id="@+id/password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/prompt_password"
+            android:imeActionId="@+id/login"
+            android:imeActionLabel="@string/action_sign_in_short"
+            android:imeOptions="actionUnspecified"
+            android:inputType="textPassword"
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="30dp"
+            android:maxLines="1"
+            android:singleLine="true" />
+        
+        
+        <android.widget.Space
+            android:layout_width="match_parent"
+            android:layout_height="20dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="40dp"
+            android:layout_marginRight="40dp"
+            android:layout_gravity="center"
+            android:orientation="vertical"
+            >
+
+            <Button
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/email_sign_in_button"
+                android:text="@string/log_in_text"
+                android:textSize="20sp"
+                android:background="#9bd823"
+                android:textColor="#FFFFFF"
+                android:layout_marginBottom="10dp"
+                />
+
+            <Button
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/sign_in"
+                android:background="#9bd823"
+                android:textSize="20sp"
+                android:textColor="#FFFFFF"
+                android:text="@string/sign_in_text"
+                />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:layout_weight=".15"
+        android:gravity="center"
+        android:layout_height="0dip">
+
+
+        <mehdi.sakout.fancybuttons.FancyButton
             android:id="@+id/btnFacebookD"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingTop="10dp"
-            android:paddingBottom="10dp"
-            android:paddingRight="10dp"
-            android:paddingLeft="30dp"
-            android:layout_margin="4dp"
-            android:background="@drawable/layers_fb_button_bg"
-            android:text="Sign in with Facebook"
-            android:onClick="facebookLogin"
-            />
-        <Button
+            android:layout_marginRight="5dp"
+            android:padding="5dp"
+            fancy:fb_iconPaddingLeft="0dp"
+            fancy:fb_iconPaddingRight="0dp"
+            fancy:fb_defaultColor="#3b5998"
+            fancy:fb_focusColor="#5577bd"
+            fancy:fb_iconResource="@drawable/facebook"
+            fancy:fb_radius="40dp">
+        </mehdi.sakout.fancybuttons.FancyButton>
+
+
+        <mehdi.sakout.fancybuttons.FancyButton
+            android:id="@+id/btnGoogleD"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="5dp"
+            android:padding="5dp"
+            fancy:fb_defaultColor="#dd4b39"
+            fancy:fb_iconPaddingLeft="0dp"
+            fancy:fb_iconPaddingRight="0dp"
+            fancy:fb_focusColor="#313131"
+            fancy:fb_iconResource="@drawable/gplus"
+
+            fancy:fb_radius="40dp">
+        </mehdi.sakout.fancybuttons.FancyButton>
+
+
+        <mehdi.sakout.fancybuttons.FancyButton
             android:id="@+id/btnTwitterD"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingTop="10dp"
-            android:paddingBottom="10dp"
-            android:paddingRight="10dp"
-            android:paddingLeft="30dp"
-            android:layout_margin="4dp"
-            android:background="@drawable/layers_twitter_button_bg"
-            android:text="Sign in with Twitter"
-            android:onClick="twitterLogin"
-            />
-
-
+            android:layout_marginRight="5dp"
+            android:padding="5dp"
+            fancy:fb_defaultColor="#55acee"
+            fancy:fb_focusColor="#313131"
+            fancy:fb_iconResource="@drawable/twitter"
+            fancy:fb_iconPaddingLeft="0dp"
+            fancy:fb_iconPaddingRight="0dp"
+            fancy:fb_radius="40dp"
+            fancy:fb_textColor="#FFFFFF" />
 
 
         <com.facebook.login.widget.LoginButton
@@ -109,43 +203,12 @@
     </LinearLayout>
 
     <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center|bottom"
-        android:paddingBottom="40dp"
-        android:layout_weight="1">
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_weight="1" />
-    <Button
-        android:id="@+id/log_in"
-        android:text="@string/log_in_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="0.75"
-        android:onClick="startEmailLoginActivity"
-        />
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_weight="1" />
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/sign_in"
-        android:text="@string/sign_in_text"
-        android:onClick="startUserSignUpActivity"
-        android:layout_weight="0.75"/>
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_weight="1" />
+        android:layout_width="match_parent"
+        android:orientation="vertical"
+        android:layout_weight=".05"
+        android:layout_height="0dip">
+
 
     </LinearLayout>
-
-
-
 </LinearLayout>
 

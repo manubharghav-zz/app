@@ -37,6 +37,8 @@ public class BookStoreActivity extends ActionBarActivity {
         adapter = (BookStoreAdapter) gridView.getAdapter();
 
 
+
+
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override

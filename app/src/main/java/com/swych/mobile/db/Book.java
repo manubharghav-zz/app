@@ -10,7 +10,7 @@ import de.greenrobot.dao.DaoException;
  */
 public class Book {
 
-    private long id;
+    private Long id;
     private String title;
     private Long author_id;
     private String author_name;
@@ -28,11 +28,11 @@ public class Book {
     public Book() {
     }
 
-    public Book(long id) {
+    public Book(Long id) {
         this.id = id;
     }
 
-    public Book(long id, String title, Long author_id, String author_name, java.util.Date date, String imageUrl) {
+    public Book(Long id, String title, Long author_id, String author_name, java.util.Date date, String imageUrl) {
         this.id = id;
         this.title = title;
         this.author_id = author_id;
@@ -47,11 +47,11 @@ public class Book {
         myDao = daoSession != null ? daoSession.getBookDao() : null;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

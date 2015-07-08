@@ -73,13 +73,17 @@ public class DisplayBookObject implements Serializable{
 
         public boolean addToBook(){
             if(language!=null){
-                versions.add(this);
+                if(language==sourceLanguage){
+                    versions.add(versions.get(0));
+                    versions.add(0, this);
+                }
+                else {
+                    versions.add(this);
+                }
                 return true;
             }
             return false;
         }
-
-
 
     }
 
@@ -88,7 +92,7 @@ public class DisplayBookObject implements Serializable{
     private String title;
     private List<Version> versions;
     private Set<Language> languages;
-
+    private Language sourceLanguage;
     public Language[] getAvailableLanguages() {
         return languages.toArray(new Language[0]);
     }

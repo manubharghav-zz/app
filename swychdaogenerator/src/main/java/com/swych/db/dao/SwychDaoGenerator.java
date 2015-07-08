@@ -27,7 +27,8 @@ public class SwychDaoGenerator {
         // Book table
 
         Entity book = schema.addEntity(BOOK);
-        Property bookId = book.addLongProperty("id").notNull().primaryKey().getProperty();
+        Property bookId = book.addLongProperty("id").primaryKey().autoincrement().getProperty();
+
         book.addStringProperty("title");
         book.addLongProperty("author_id").index();
         book.addStringProperty("author_name").index();

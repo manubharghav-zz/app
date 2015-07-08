@@ -91,8 +91,8 @@ public class BookDetail extends ActionBarActivity implements DownloadResultRecei
         mReceiver.setReceiver(this);
         Intent intent = new Intent(Intent.ACTION_SYNC, null, this, DownloadService.class);
 
-
-        intent.putExtra("bookName", book.getTitle());
+        intent.putExtra("book", book);
+//        intent.putExtra("bookName", book.getTitle());
         intent.putExtra("nativeLanguage",nativeLanguage.getShortVersion());
         intent.putExtra("foreignLanguage", foreignLanguage.getShortVersion());
         intent.putExtra("receiver", mReceiver);
