@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public enum Language {
-    English("en"), Hindi("hi"), Spanish("es"), German("de"), Italian("it"), Portuguese("pt") ;
+    English("en"), Hindi("hi"), Spanish("es"), German("de"), Italian("it"), Portuguese("pt"), Mandarin("zh"), French("fr")   ;
     private String value;
 
     private static final Map<String, Language> lookup = new HashMap<String, Language>();

@@ -28,7 +28,7 @@ public class VersionDao extends AbstractDao<Version, Long> {
      * Can be used for QueryBuilder and for referencing column names.
     */
     public static class Properties {
-        public final static Property Id = new Property(0, long.class, "id", true, "_id");
+        public final static Property Id = new Property(0, Long.class, "id", true, "_id");
         public final static Property Language = new Property(1, String.class, "language", false, "LANGUAGE");
         public final static Property Date = new Property(2, java.util.Date.class, "date", false, "DATE");
         public final static Property Description = new Property(3, String.class, "description", false, "DESCRIPTION");
@@ -54,7 +54,7 @@ public class VersionDao extends AbstractDao<Version, Long> {
     public static void createTable(SQLiteDatabase db, boolean ifNotExists) {
         String constraint = ifNotExists? "IF NOT EXISTS ": "";
         db.execSQL("CREATE TABLE " + constraint + "'VERSION' (" + //
-                "'_id' INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL ," + // 0: id
+                "'_id' INTEGER PRIMARY KEY ," + // 0: id
                 "'LANGUAGE' TEXT NOT NULL ," + // 1: language
                 "'DATE' INTEGER NOT NULL ," + // 2: date
                 "'DESCRIPTION' TEXT NOT NULL ," + // 3: description
@@ -73,7 +73,11 @@ public class VersionDao extends AbstractDao<Version, Long> {
     @Override
     protected void bindValues(SQLiteStatement stmt, Version entity) {
         stmt.clearBindings();
-        stmt.bindLong(1, entity.getId());
+ 
+        Long id = entity.getId();
+        if (id != null) {
+            stmt.bindLong(1, id);
+        }
         stmt.bindString(2, entity.getLanguage());
         stmt.bindLong(3, entity.getDate().getTime());
         stmt.bindString(4, entity.getDescription());
@@ -91,14 +95,14 @@ public class VersionDao extends AbstractDao<Version, Long> {
     /** @inheritdoc */
     @Override
     public Long readKey(Cursor cursor, int offset) {
-        return cursor.getLong(offset + 0);
+        return cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0);
     }    
 
     /** @inheritdoc */
     @Override
     public Version readEntity(Cursor cursor, int offset) {
         Version entity = new Version( //
-            cursor.getLong(offset + 0), // id
+            cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
             cursor.getString(offset + 1), // language
             new java.util.Date(cursor.getLong(offset + 2)), // date
             cursor.getString(offset + 3), // description
@@ -112,7 +116,7 @@ public class VersionDao extends AbstractDao<Version, Long> {
     /** @inheritdoc */
     @Override
     public void readEntity(Cursor cursor, Version entity, int offset) {
-        entity.setId(cursor.getLong(offset + 0));
+        entity.setId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
         entity.setLanguage(cursor.getString(offset + 1));
         entity.setDate(new java.util.Date(cursor.getLong(offset + 2)));
         entity.setDescription(cursor.getString(offset + 3));
@@ -167,7 +171,7 @@ public class VersionDao extends AbstractDao<Version, Long> {
             builder.append(',');
             SqlUtils.appendColumns(builder, "T0", daoSession.getBookDao().getAllColumns());
             builder.append(" FROM VERSION T");
-            builder.append(" LEFT JOIN BOOK T0 ON T.'BOOK_ID'=T0.'ID'");
+            builder.append(" LEFT JOIN BOOK T0 ON T.'BOOK_ID'=T0.'_id'");
             builder.append(' ');
             selectDeep = builder.toString();
         }

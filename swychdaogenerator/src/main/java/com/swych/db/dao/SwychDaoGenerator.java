@@ -1,9 +1,5 @@
 package com.swych.db.dao;
 
-import java.io.IOException;
-
-import javax.xml.stream.events.EntityReference;
-
 import de.greenrobot.daogenerator.DaoGenerator;
 import de.greenrobot.daogenerator.Entity;
 import de.greenrobot.daogenerator.Index;
@@ -26,17 +22,23 @@ public class SwychDaoGenerator {
     public void buildSchemas(Schema schema) {
         // Book table
 
-        Entity book = schema.addEntity(BOOK);
-        Property bookId = book.addLongProperty("id").primaryKey().autoincrement().getProperty();
+        schema.enableKeepSectionsByDefault();
 
-        book.addStringProperty("title");
+        Entity book = schema.addEntity(BOOK);
+        book.addIdProperty();
+        Property bookTitle = book.addStringProperty("title").notNull().getProperty();
+
+        Index titleIndex = new Index();
+        titleIndex.addProperty(bookTitle);
+        titleIndex.makeUnique();
+        book.addIndex(titleIndex);
         book.addLongProperty("author_id").index();
         book.addStringProperty("author_name").index();
         book.addDateProperty("date").index();
         book.addStringProperty("imageUrl");
         // version table
         Entity version = schema.addEntity(VERSION);
-        version.addIdProperty().notNull().autoincrement().primaryKey();
+        version.addIdProperty();
         version.addStringProperty("language").notNull();
         version.addDateProperty("date").notNull();
         version.addStringProperty("description").notNull();
@@ -80,7 +82,7 @@ public class SwychDaoGenerator {
 
         //structure table
         Entity bookStructure = schema.addEntity(STRUCTURE);
-        bookStructure.addIdProperty().primaryKey().autoincrement().notNull();
+        bookStructure.addIdProperty().primaryKey().autoincrement();
         Property positionInBookStructure = bookStructure.addLongProperty("position").getProperty();
         bookStructure.addStringProperty("content");
         Property versionIdBookStructure = bookStructure.addLongProperty("version_id").getProperty();

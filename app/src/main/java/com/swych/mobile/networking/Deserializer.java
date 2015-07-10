@@ -34,11 +34,11 @@ public class Deserializer {
             book.setImageUrl(imageUrl);
             book.setTitle(bookName);
             JSONArray versions = new JSONArray(bookJson.get("books").toString());
-            for(int i=0;i<2;i++){
+            for(int i=0;i<versions.length();i++){
                 JSONObject version = versions.getJSONObject(i);
                 boolean versionAdded = book.addVersion().setLanguage(version.getString("language")).setTitle(version.getString("title")).setDescription(version.getString("description")).setAuthor(version.getString("author")).addToBook();
                 if(!versionAdded){
-                    Log.d(TAG, "Error displaying book. ");
+                    Log.d(TAG, "Error adding version " + version.getString("language"));
                 }
             }
             books.add(book);

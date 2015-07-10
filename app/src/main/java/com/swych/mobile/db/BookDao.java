@@ -23,7 +23,7 @@ public class BookDao extends AbstractDao<Book, Long> {
      * Can be used for QueryBuilder and for referencing column names.
     */
     public static class Properties {
-        public final static Property Id = new Property(0, Long.class, "id", true, "ID");
+        public final static Property Id = new Property(0, Long.class, "id", true, "_id");
         public final static Property Title = new Property(1, String.class, "title", false, "TITLE");
         public final static Property Author_id = new Property(2, Long.class, "author_id", false, "AUTHOR_ID");
         public final static Property Author_name = new Property(3, String.class, "author_name", false, "AUTHOR_NAME");
@@ -47,13 +47,15 @@ public class BookDao extends AbstractDao<Book, Long> {
     public static void createTable(SQLiteDatabase db, boolean ifNotExists) {
         String constraint = ifNotExists? "IF NOT EXISTS ": "";
         db.execSQL("CREATE TABLE " + constraint + "'BOOK' (" + //
-                "'ID' INTEGER PRIMARY KEY AUTOINCREMENT ," + // 0: id
-                "'TITLE' TEXT," + // 1: title
+                "'_id' INTEGER PRIMARY KEY ," + // 0: id
+                "'TITLE' TEXT NOT NULL ," + // 1: title
                 "'AUTHOR_ID' INTEGER," + // 2: author_id
                 "'AUTHOR_NAME' TEXT," + // 3: author_name
                 "'DATE' INTEGER," + // 4: date
                 "'IMAGE_URL' TEXT);"); // 5: imageUrl
         // Add Indexes
+        db.execSQL("CREATE UNIQUE INDEX " + constraint + "IDX_BOOK_TITLE ON BOOK" +
+                " (TITLE);");
         db.execSQL("CREATE INDEX " + constraint + "IDX_BOOK_AUTHOR_ID ON BOOK" +
                 " (AUTHOR_ID);");
         db.execSQL("CREATE INDEX " + constraint + "IDX_BOOK_AUTHOR_NAME ON BOOK" +
@@ -77,11 +79,7 @@ public class BookDao extends AbstractDao<Book, Long> {
         if (id != null) {
             stmt.bindLong(1, id);
         }
- 
-        String title = entity.getTitle();
-        if (title != null) {
-            stmt.bindString(2, title);
-        }
+        stmt.bindString(2, entity.getTitle());
  
         Long author_id = entity.getAuthor_id();
         if (author_id != null) {
@@ -121,7 +119,7 @@ public class BookDao extends AbstractDao<Book, Long> {
     public Book readEntity(Cursor cursor, int offset) {
         Book entity = new Book( //
             cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
-            cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1), // title
+            cursor.getString(offset + 1), // title
             cursor.isNull(offset + 2) ? null : cursor.getLong(offset + 2), // author_id
             cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3), // author_name
             cursor.isNull(offset + 4) ? null : new java.util.Date(cursor.getLong(offset + 4)), // date
@@ -134,7 +132,7 @@ public class BookDao extends AbstractDao<Book, Long> {
     @Override
     public void readEntity(Cursor cursor, Book entity, int offset) {
         entity.setId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
-        entity.setTitle(cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1));
+        entity.setTitle(cursor.getString(offset + 1));
         entity.setAuthor_id(cursor.isNull(offset + 2) ? null : cursor.getLong(offset + 2));
         entity.setAuthor_name(cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3));
         entity.setDate(cursor.isNull(offset + 4) ? null : new java.util.Date(cursor.getLong(offset + 4)));

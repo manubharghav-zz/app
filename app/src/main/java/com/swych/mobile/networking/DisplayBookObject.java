@@ -126,7 +126,15 @@ public class DisplayBookObject implements Serializable{
         this.title = title;
     }
 
+    public Version getVersion(Language language){
+        for(Version version:versions){
+            if(version.language==language){
+                return version;
+            }
+        }
 
+        return null;
+    }
     public Version getNativeVersion(){
         return this.versions.get(0);
     }
