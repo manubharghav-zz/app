@@ -35,7 +35,6 @@
         <activity
             android:name=".activity.auth.LoginActivity"
             android:label="@string/app_name" >
-
         </activity>
         <activity
             android:name="com.facebook.FacebookActivity"
@@ -56,14 +55,15 @@
         <activity
             android:name=".activity.BookStoreActivity"
             android:label="@string/title_activity_book_store" >
+            <meta-data
+                android:name="android.app.default_searchable"
+                android:value=".activity.SearchResultsActivity" />
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <meta-data
-                android:name="android.app.default_searchable"
-                android:value=".activity.SearchResultsActivity" />
         </activity>
         <activity
             android:name=".activity.SearchResultsActivity"
@@ -77,6 +77,10 @@
         <activity
             android:name=".activity.BookDetail"
             android:label="@string/title_activity_book_detail" >
+        </activity>
+        <activity
+            android:name=".activity.BaseActivity"
+            android:label="@string/title_activity_base" >
         </activity>
     </application>
 

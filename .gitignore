@@ -31,4 +31,5 @@ proguard_logs/
 *.iml
 *.ipr
 *.iws
+./idea/*
 .idea/

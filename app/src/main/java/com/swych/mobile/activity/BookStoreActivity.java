@@ -23,7 +23,7 @@ import com.swych.mobile.networking.background.DownloadResultReceiver;
 import com.swych.mobile.networking.background.DownloadService;
 import com.swych.mobile.networking.background.DownloadType;
 
-public class BookStoreActivity extends ActionBarActivity {
+public class BookStoreActivity extends BaseActivity {
 
     private static String TAG="BookStoreActivity";
     private GridView gridView;
@@ -31,7 +31,9 @@ public class BookStoreActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_book_store);
+//        setContentView(R.layout.activity_book_store);
+
+        getLayoutInflater().inflate(R.layout.activity_book_store, frameLayout);
         gridView = (GridView) findViewById(R.id.gridview);
         RequestManager.getInstance().doRequest().getBooksForStore(gridView);
         adapter = (BookStoreAdapter) gridView.getAdapter();
