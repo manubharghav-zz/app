@@ -112,13 +112,14 @@ public class SwychDaoGenerator {
 
         // book_mapping table.
         Entity sentenceMappings = schema.addEntity(MAPPINGS);
-        sentenceMappings.addIdProperty().notNull().primaryKey();
+        sentenceMappings.addIdProperty();
         sentenceMappings.addStringProperty("strMapping");
-
+        sentenceMappings.addLongProperty("revisionNumber").notNull();
         nativeLanguageVersionId = sentenceMappings.addLongProperty("version1_id").getProperty();
         foreignLanguageVersionId = sentenceMappings.addLongProperty("version2_id").getProperty();
         sentenceMappings.addToOne(version, nativeLanguageVersionId, "nativeVersion");
         sentenceMappings.addToOne(version, foreignLanguageVersionId, "foreignVersion");
+
 //*/
 
     }

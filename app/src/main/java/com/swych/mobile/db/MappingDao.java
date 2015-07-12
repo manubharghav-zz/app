@@ -26,10 +26,11 @@ public class MappingDao extends AbstractDao<Mapping, Long> {
      * Can be used for QueryBuilder and for referencing column names.
     */
     public static class Properties {
-        public final static Property Id = new Property(0, long.class, "id", true, "_id");
+        public final static Property Id = new Property(0, Long.class, "id", true, "_id");
         public final static Property StrMapping = new Property(1, String.class, "strMapping", false, "STR_MAPPING");
-        public final static Property Version1_id = new Property(2, Long.class, "version1_id", false, "VERSION1_ID");
-        public final static Property Version2_id = new Property(3, Long.class, "version2_id", false, "VERSION2_ID");
+        public final static Property RevisionNumber = new Property(2, long.class, "revisionNumber", false, "REVISION_NUMBER");
+        public final static Property Version1_id = new Property(3, Long.class, "version1_id", false, "VERSION1_ID");
+        public final static Property Version2_id = new Property(4, Long.class, "version2_id", false, "VERSION2_ID");
     };
 
     private DaoSession daoSession;
@@ -48,10 +49,11 @@ public class MappingDao extends AbstractDao<Mapping, Long> {
     public static void createTable(SQLiteDatabase db, boolean ifNotExists) {
         String constraint = ifNotExists? "IF NOT EXISTS ": "";
         db.execSQL("CREATE TABLE " + constraint + "'MAPPING' (" + //
-                "'_id' INTEGER PRIMARY KEY NOT NULL ," + // 0: id
+                "'_id' INTEGER PRIMARY KEY ," + // 0: id
                 "'STR_MAPPING' TEXT," + // 1: strMapping
-                "'VERSION1_ID' INTEGER," + // 2: version1_id
-                "'VERSION2_ID' INTEGER);"); // 3: version2_id
+                "'REVISION_NUMBER' INTEGER NOT NULL ," + // 2: revisionNumber
+                "'VERSION1_ID' INTEGER," + // 3: version1_id
+                "'VERSION2_ID' INTEGER);"); // 4: version2_id
     }
 
     /** Drops the underlying database table. */
@@ -64,21 +66,26 @@ public class MappingDao extends AbstractDao<Mapping, Long> {
     @Override
     protected void bindValues(SQLiteStatement stmt, Mapping entity) {
         stmt.clearBindings();
-        stmt.bindLong(1, entity.getId());
+ 
+        Long id = entity.getId();
+        if (id != null) {
+            stmt.bindLong(1, id);
+        }
  
         String strMapping = entity.getStrMapping();
         if (strMapping != null) {
             stmt.bindString(2, strMapping);
         }
+        stmt.bindLong(3, entity.getRevisionNumber());
  
         Long version1_id = entity.getVersion1_id();
         if (version1_id != null) {
-            stmt.bindLong(3, version1_id);
+            stmt.bindLong(4, version1_id);
         }
  
         Long version2_id = entity.getVersion2_id();
         if (version2_id != null) {
-            stmt.bindLong(4, version2_id);
+            stmt.bindLong(5, version2_id);
         }
     }
 
@@ -91,17 +98,18 @@ public class MappingDao extends AbstractDao<Mapping, Long> {
     /** @inheritdoc */
     @Override
     public Long readKey(Cursor cursor, int offset) {
-        return cursor.getLong(offset + 0);
+        return cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0);
     }    
 
     /** @inheritdoc */
     @Override
     public Mapping readEntity(Cursor cursor, int offset) {
         Mapping entity = new Mapping( //
-            cursor.getLong(offset + 0), // id
+            cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
             cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1), // strMapping
-            cursor.isNull(offset + 2) ? null : cursor.getLong(offset + 2), // version1_id
-            cursor.isNull(offset + 3) ? null : cursor.getLong(offset + 3) // version2_id
+            cursor.getLong(offset + 2), // revisionNumber
+            cursor.isNull(offset + 3) ? null : cursor.getLong(offset + 3), // version1_id
+            cursor.isNull(offset + 4) ? null : cursor.getLong(offset + 4) // version2_id
         );
         return entity;
     }
@@ -109,10 +117,11 @@ public class MappingDao extends AbstractDao<Mapping, Long> {
     /** @inheritdoc */
     @Override
     public void readEntity(Cursor cursor, Mapping entity, int offset) {
-        entity.setId(cursor.getLong(offset + 0));
+        entity.setId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
         entity.setStrMapping(cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1));
-        entity.setVersion1_id(cursor.isNull(offset + 2) ? null : cursor.getLong(offset + 2));
-        entity.setVersion2_id(cursor.isNull(offset + 3) ? null : cursor.getLong(offset + 3));
+        entity.setRevisionNumber(cursor.getLong(offset + 2));
+        entity.setVersion1_id(cursor.isNull(offset + 3) ? null : cursor.getLong(offset + 3));
+        entity.setVersion2_id(cursor.isNull(offset + 4) ? null : cursor.getLong(offset + 4));
      }
     
     /** @inheritdoc */

@@ -12,8 +12,9 @@ import de.greenrobot.dao.DaoException;
  */
 public class Mapping {
 
-    private long id;
+    private Long id;
     private String strMapping;
+    private long revisionNumber;
     private Long version1_id;
     private Long version2_id;
 
@@ -36,13 +37,14 @@ public class Mapping {
     public Mapping() {
     }
 
-    public Mapping(long id) {
+    public Mapping(Long id) {
         this.id = id;
     }
 
-    public Mapping(long id, String strMapping, Long version1_id, Long version2_id) {
+    public Mapping(Long id, String strMapping, long revisionNumber, Long version1_id, Long version2_id) {
         this.id = id;
         this.strMapping = strMapping;
+        this.revisionNumber = revisionNumber;
         this.version1_id = version1_id;
         this.version2_id = version2_id;
     }
@@ -53,11 +55,11 @@ public class Mapping {
         myDao = daoSession != null ? daoSession.getMappingDao() : null;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -67,6 +69,14 @@ public class Mapping {
 
     public void setStrMapping(String strMapping) {
         this.strMapping = strMapping;
+    }
+
+    public long getRevisionNumber() {
+        return revisionNumber;
+    }
+
+    public void setRevisionNumber(long revisionNumber) {
+        this.revisionNumber = revisionNumber;
     }
 
     public Long getVersion1_id() {

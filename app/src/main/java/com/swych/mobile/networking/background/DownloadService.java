@@ -13,6 +13,8 @@ import com.swych.mobile.commons.utils.Language;
 import com.swych.mobile.db.Book;
 import com.swych.mobile.db.BookDao;
 import com.swych.mobile.db.DaoSession;
+import com.swych.mobile.db.Mapping;
+import com.swych.mobile.db.MappingDao;
 import com.swych.mobile.db.Sentence;
 import com.swych.mobile.db.SentenceDao;
 import com.swych.mobile.db.Structure;
@@ -52,6 +54,7 @@ public class DownloadService extends IntentService {
 
 
     private static final String TAG = "DownloadService";
+
     public DownloadService() {
         super(DownloadService.class.getName());
     }
@@ -60,9 +63,9 @@ public class DownloadService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         Log.d(TAG, "Download started");
-        downloadType = (DownloadType)intent.getSerializableExtra("DownloadType");
+        downloadType = (DownloadType) intent.getSerializableExtra("DownloadType");
 
-        switch(downloadType){
+        switch (downloadType) {
             case BOOK:
                 downloadBook(intent);
                 break;
@@ -72,7 +75,7 @@ public class DownloadService extends IntentService {
     }
 
     private JSONObject downloadData(String requestUrl) throws IOException, JSONException {
-        Log.d(TAG, "Downloading from "+ requestUrl);
+        Log.d(TAG, "Downloading from " + requestUrl);
         InputStream inputStream = null;
         HttpURLConnection urlConnection = null;
 
@@ -81,7 +84,7 @@ public class DownloadService extends IntentService {
         urlConnection = (HttpURLConnection) url.openConnection();
 
         /* optional request header */
-        urlConnection.setRequestProperty ("Authorization", Details.getBasicAuth());
+        urlConnection.setRequestProperty("Authorization", Details.getBasicAuth());
 
 
         urlConnection.setRequestMethod("GET");
@@ -102,12 +105,12 @@ public class DownloadService extends IntentService {
 
 
         } else {
-            Log.d(TAG, "download failed with response "+ statusCode);
+            Log.d(TAG, "download failed with response " + statusCode);
         }
         return null;
     }
 
-    private void downloadBook(Intent intent){
+    private void downloadBook(Intent intent) {
         final ResultReceiver receiver = intent.getParcelableExtra("receiver");
 
         DisplayBookObject displayBook = (DisplayBookObject) intent.getSerializableExtra("book");
@@ -116,34 +119,31 @@ public class DownloadService extends IntentService {
         String swychLanguage = intent.getStringExtra("foreignLanguage");
 
 
-
         Bundle bundle = new Bundle();
         receiver.send(STATUS_RUNNING, Bundle.EMPTY);
 
-        try{
-            JSONObject srcLangBook = downloadData(URLs.VERSION+bookName+"/"+srcLanguage);
+        try {
+            JSONObject srcLangBook = downloadData(URLs.VERSION + bookName + "/" + srcLanguage);
             JSONObject tarLangBook = downloadData(URLs.VERSION + bookName + "/" + swychLanguage);
-            JSONObject mappings = downloadData(URLs.MAPPING+bookName+"/" + srcLanguage + "/" + swychLanguage);
+            JSONObject mappings = downloadData(URLs.MAPPING + bookName + "/" + srcLanguage + "/" + swychLanguage);
             //persist these objects to database;
-            if(srcLangBook.length()>0) {
-                persistToDb(displayBook,srcLanguage, srcLangBook,swychLanguage, tarLangBook, mappings);
+            if (srcLangBook.length() > 0) {
+                persistToDb(displayBook, srcLanguage, srcLangBook, swychLanguage, tarLangBook, mappings);
 
 //                BookDao bookDao = daoSession.getBookDao();
 //                Book book = new Book();
 
 
-
                 receiver.send(STATUS_FINISHED, bundle);
             }
-        }
-        catch (JSONException|IOException e){
+        } catch (JSONException | IOException e) {
             Log.d(TAG, "Error downloading the book");
             Log.d(TAG, e.toString());
         }
     }
 
 
-    private boolean persistToDb(DisplayBookObject displayBook, String srcLanguage, JSONObject srcLanguageBook, String swychLanguage, JSONObject trgtLanguageBook, JSONObject mappings) throws JSONException{
+    private boolean persistToDb(DisplayBookObject displayBook, String srcLanguage, JSONObject srcLanguageBook, String swychLanguage, JSONObject trgtLanguageBook, JSONObject mappings) throws JSONException {
 
 //        Initialize DAO' here
         DaoSession session = MyApplication.getNewSession();
@@ -157,23 +157,21 @@ public class DownloadService extends IntentService {
         Long bookId;
         try {
             bookId = session.insert(book);
-            Log.d(TAG, "Book persisted with bookId= "+bookId);
-        }
-        catch(Exception e){
+            Log.d(TAG, "Book persisted with bookId= " + bookId);
+        } catch (Exception e) {
             //TODO change this
             Log.e(TAG, "Error inserting the book.");
-        }
-        finally {
+        } finally {
             bookId = bookDao.queryBuilder().where(BookDao.Properties.Title.eq(displayBook.getTitle())).list().get(0).getId();
             Log.d(TAG, "Book already saved. Id is " + bookId);
         }
 
         // create source version
         DisplayBookObject.Version version = displayBook.getVersion(Language.getLongVersion(srcLanguage));
-        Version srcVersion = new Version(null,srcLanguage,new Date(),version.getDescription(),bookId,version.getTitle(),version.getAuthor());
+        Version srcVersion = new Version(null, srcLanguage, new Date(), version.getDescription(), bookId, version.getTitle(), version.getAuthor());
         long srcVersionId = session.insert(srcVersion);
 
-        StructureDao structureDao =  session.getStructureDao();
+        StructureDao structureDao = session.getStructureDao();
         SentenceDao sentenceDao = session.getSentenceDao();
 
         long startTime = System.currentTimeMillis();
@@ -181,36 +179,36 @@ public class DownloadService extends IntentService {
         addStructureToDB(session, structureDao, srcVersionId, structureList);
 
         JSONObject sentences = srcLanguageBook.getJSONObject("sentences");
-        addSentenceToDB(session,sentenceDao,sentences, srcVersionId);
+        addSentenceToDB(session, sentenceDao, sentences, srcVersionId);
 
         version = displayBook.getVersion(Language.getLongVersion(swychLanguage));
-        Version swychVersion = new Version(null,swychLanguage,new Date(),version.getDescription(),bookId,version.getTitle(),version.getAuthor());
+        Version swychVersion = new Version(null, swychLanguage, new Date(), version.getDescription(), bookId, version.getTitle(), version.getAuthor());
         long swychVersionId = session.insert(swychVersion);
 
         structureList = trgtLanguageBook.getJSONArray("structure");
         addStructureToDB(session, structureDao, swychVersionId, structureList);
 
         sentences = trgtLanguageBook.getJSONObject("sentences");
-        addSentenceToDB(session,sentenceDao,sentences, swychVersionId);
+        addSentenceToDB(session, sentenceDao, sentences, swychVersionId);
+
+        // handle mappings.
+        MappingDao mappingDao = session.getMappingDao();
+        assert srcLanguage == mappings.getString("first_lang");
+        Mapping mapping = new Mapping(null, mappings.getString("mapping"), srcVersionId, swychVersionId, (long) mappings.getInt("revision_number"));
+        session.insert(mapping);
 
 
-        Log.i(TAG, "took " + ((System.currentTimeMillis()-startTime)/1000) + " seconds fro sentence insert");
-
-
-
-
-
-
+        Log.i(TAG, "took " + ((System.currentTimeMillis() - startTime) / 1000) + " seconds for book insert");
 
 
         return true;
     }
 
-    private void addSentenceToDB(final DaoSession session,final SentenceDao sentenceDao,final JSONObject sentences,final long srcVersionId) {
+    private void addSentenceToDB(final DaoSession session, final SentenceDao sentenceDao, final JSONObject sentences, final long srcVersionId) {
         session.runInTx(new Runnable() {
             @Override
             public void run() {
-                Iterator<String> iterator =  sentences.keys();
+                Iterator<String> iterator = sentences.keys();
                 String key;
                 try {
                     while (iterator.hasNext()) {
@@ -218,8 +216,7 @@ public class DownloadService extends IntentService {
                         Sentence sentence = new Sentence(null, Integer.parseInt(key), sentences.getString(key), srcVersionId);
                         sentenceDao.insert(sentence);
                     }
-                }
-                catch(JSONException e){
+                } catch (JSONException e) {
                     Log.e(TAG, "Error parsing json in the addsentencestoDb method");
                 }
             }
@@ -227,8 +224,8 @@ public class DownloadService extends IntentService {
 
     }
 
-    private void addStructureToDB(final DaoSession session,final StructureDao structureDao,final long srcVersionId, final JSONArray structureList) {
-        session.runInTx(new Runnable()  {
+    private void addStructureToDB(final DaoSession session, final StructureDao structureDao, final long srcVersionId, final JSONArray structureList) {
+        session.runInTx(new Runnable() {
             public void run() {
                 // Everything in run will be executed in a single transaction.
                 try {
@@ -237,9 +234,8 @@ public class DownloadService extends IntentService {
                         Structure structure = new Structure(null, (long) i, structureList.getString(i), srcVersionId);
                         structureDao.insert(structure);
                     }
-                }
-                catch (JSONException e){
-                    Log.e(TAG,"Exception json in structure read");
+                } catch (JSONException e) {
+                    Log.e(TAG, "Exception json in structure read");
                 }
             }
         });
