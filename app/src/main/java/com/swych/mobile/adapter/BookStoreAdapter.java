@@ -79,7 +79,7 @@ public class BookStoreAdapter extends BaseAdapter {
         bookName.setText(books.get(position).getNativeVersion().getTitle());
 //            authorTextView.setText(books.get(position).getNativeVersion().getAuthor());
         imageView.setImageUrl(URLs.BASE + books.get(position).getImageUrl(), RequestManager.getInstance().getImageLoader());
-        imageView.setDefaultImageResId(R.drawable.book);
+        imageView.setDefaultImageResId(R.drawable.);
         Log.d(TAG,"position: " + position + " Book: " +books.get(position).getTitle());
 
 
