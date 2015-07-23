@@ -48,9 +48,11 @@
 
         <activity
             android:name=".activity.LibraryActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize"
-            android:label="@string/title_activity_library"
-            android:theme="@style/FullscreenTheme" >
+            android:label="@string/title_activity_library" >
+
+            <!-- android:configChanges="orientation|keyboardHidden|screenSize" -->
+            <!-- android:theme="@style/FullscreenTheme" > -->
+
         </activity>
         <activity
             android:name=".activity.BookStoreActivity"
@@ -59,10 +61,6 @@
                 android:name="android.app.default_searchable"
                 android:value=".activity.SearchResultsActivity" />
 
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
 
         </activity>
         <activity
@@ -79,8 +77,15 @@
             android:label="@string/title_activity_book_detail" >
         </activity>
         <activity
-            android:name=".activity.BaseActivity"
-            android:label="@string/title_activity_base" >
+            android:name=".activity.ReaderActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_reader"
+            android:theme="@style/FullscreenTheme" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
     </application>
 

@@ -28,7 +28,7 @@ import com.swych.mobile.R;
  * We are going to extend all our other activites from this BaseActivity so that every activity will have Navigation Drawer in it.
  * This activity layout contain one frame layout in which we will add our child activity layout.  
  */
-public class BaseActivity extends AppCompatActivity {
+public abstract class BaseActivity extends AppCompatActivity {
 
     /**
      *  Frame layout: Which is going to be used as parent layout for child activity layout.
@@ -68,6 +68,7 @@ public class BaseActivity extends AppCompatActivity {
      */
     private ActionBarDrawerToggle actionBarDrawerToggle;
 
+    public abstract String getActivityName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,6 +125,7 @@ public class BaseActivity extends AppCompatActivity {
         // enable ActionBar app icon to behave as action to toggle nav drawer
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
+        getSupportActionBar().setTitle(getActivityName());
 
         /**
          * As we are calling BaseActivity from manifest file and this base activity is intended just to add navigation drawer in our app.
@@ -158,15 +160,17 @@ public class BaseActivity extends AppCompatActivity {
 //		setTitle(listArray[position]);
 //        mDrawerLayout.closeDrawer(mDrawerList);
         BaseActivity.position = position; //Setting currently selected position in this field so that it will be available in our child activities.
-
+        Intent intent;
         switch (position) {
             case 0:
                 //BookStore
-
+                intent = new Intent(getApplicationContext(), BookStoreActivity.class);
+                startActivity(intent);
                 break;
             case 1:
                 //Library
-                Toast.makeText(getApplicationContext(),"Selected Item Position::"+position, Toast.LENGTH_SHORT).show();
+                intent = new Intent(getApplicationContext(),LibraryActivity.class);
+                startActivity(intent);
                 break;
             case 2:
                 //Favourites

@@ -37,6 +37,8 @@ public class Version {
 
     private List<Sentence> sentences;
     private List<Structure> structure;
+    private List<Library> swychMappings;
+    private List<Library> libraryList;
 
     // KEEP FIELDS - put your custom fields here
     // KEEP FIELDS END
@@ -200,6 +202,50 @@ public class Version {
     /** Resets a to-many relationship, making the next get call to query for a fresh result. */
     public synchronized void resetStructure() {
         structure = null;
+    }
+
+    /** To-many relationship, resolved on first access (and after reset). Changes to to-many relations are not persisted, make changes to the target entity. */
+    public List<Library> getSwychMappings() {
+        if (swychMappings == null) {
+            if (daoSession == null) {
+                throw new DaoException("Entity is detached from DAO context");
+            }
+            LibraryDao targetDao = daoSession.getLibraryDao();
+            List<Library> swychMappingsNew = targetDao._queryVersion_SwychMappings(id);
+            synchronized (this) {
+                if(swychMappings == null) {
+                    swychMappings = swychMappingsNew;
+                }
+            }
+        }
+        return swychMappings;
+    }
+
+    /** Resets a to-many relationship, making the next get call to query for a fresh result. */
+    public synchronized void resetSwychMappings() {
+        swychMappings = null;
+    }
+
+    /** To-many relationship, resolved on first access (and after reset). Changes to to-many relations are not persisted, make changes to the target entity. */
+    public List<Library> getLibraryList() {
+        if (libraryList == null) {
+            if (daoSession == null) {
+                throw new DaoException("Entity is detached from DAO context");
+            }
+            LibraryDao targetDao = daoSession.getLibraryDao();
+            List<Library> libraryListNew = targetDao._queryVersion_LibraryList(id);
+            synchronized (this) {
+                if(libraryList == null) {
+                    libraryList = libraryListNew;
+                }
+            }
+        }
+        return libraryList;
+    }
+
+    /** Resets a to-many relationship, making the next get call to query for a fresh result. */
+    public synchronized void resetLibraryList() {
+        libraryList = null;
     }
 
     /** Convenient call for {@link AbstractDao#delete(Object)}. Entity must attached to an entity context. */

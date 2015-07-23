@@ -28,6 +28,12 @@ public class BookStoreActivity extends BaseActivity {
     private static String TAG="BookStoreActivity";
     private GridView gridView;
     private BookStoreAdapter adapter;
+
+    @Override
+    public String getActivityName() {
+        return getResources().getString(R.string.title_activity_book_store);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

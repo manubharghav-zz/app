@@ -67,11 +67,8 @@ public class BookStoreAdapter extends BaseAdapter {
             LayoutInflater inflater = (LayoutInflater) mContext
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             grid = inflater.inflate(R.layout.bookstore_book, null);
-
-
         } else {
             grid = (View) convertView;
-
         }
         bookName = (TextView) grid.findViewById(R.id.grid_text);
         imageView = (NetworkImageView)grid.findViewById(R.id.image);
@@ -79,10 +76,8 @@ public class BookStoreAdapter extends BaseAdapter {
         bookName.setText(books.get(position).getNativeVersion().getTitle());
 //            authorTextView.setText(books.get(position).getNativeVersion().getAuthor());
         imageView.setImageUrl(URLs.BASE + books.get(position).getImageUrl(), RequestManager.getInstance().getImageLoader());
-        imageView.setDefaultImageResId(R.drawable.);
+        imageView.setDefaultImageResId(R.drawable.book);
         Log.d(TAG,"position: " + position + " Book: " +books.get(position).getTitle());
-
-
         return grid;
     }
 }

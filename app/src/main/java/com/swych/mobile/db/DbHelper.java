@@ -26,7 +26,13 @@ public class DbHelper {
         return new DaoMaster(db);
     }
 
+    public SQLiteDatabase getDatabase(){
+        if (db==null){
+            return getDatabase(DB_NAME);
+        }
 
+        return db;
+    }
     public DbHelper(Context context){
         this.context = context;
     }

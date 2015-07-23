@@ -13,6 +13,8 @@ import com.swych.mobile.commons.utils.Language;
 import com.swych.mobile.db.Book;
 import com.swych.mobile.db.BookDao;
 import com.swych.mobile.db.DaoSession;
+import com.swych.mobile.db.Library;
+import com.swych.mobile.db.LibraryDao;
 import com.swych.mobile.db.Mapping;
 import com.swych.mobile.db.MappingDao;
 import com.swych.mobile.db.Sentence;
@@ -167,7 +169,9 @@ public class DownloadService extends IntentService {
         }
 
         // create source version
+
         DisplayBookObject.Version version = displayBook.getVersion(Language.getLongVersion(srcLanguage));
+        String title = version.getTitle();
         Version srcVersion = new Version(null, srcLanguage, new Date(), version.getDescription(), bookId, version.getTitle(), version.getAuthor());
         long srcVersionId = session.insert(srcVersion);
 
@@ -192,11 +196,14 @@ public class DownloadService extends IntentService {
         addSentenceToDB(session, sentenceDao, sentences, swychVersionId);
 
         // handle mappings.
-        MappingDao mappingDao = session.getMappingDao();
+//        MappingDao mappingDao = session.getMappingDao();
         assert srcLanguage == mappings.getString("first_lang");
         Mapping mapping = new Mapping(null, mappings.getString("mapping"), srcVersionId, swychVersionId, (long) mappings.getInt("revision_number"));
         session.insert(mapping);
 
+//        LibraryDao libraryDao = session.getLibraryDao();
+        Library item = new Library(null,srcVersionId,swychVersionId,srcLanguage,swychLanguage,title);
+        session.insert(item);
 
         Log.i(TAG, "took " + ((System.currentTimeMillis() - startTime) / 1000) + " seconds for book insert");
 

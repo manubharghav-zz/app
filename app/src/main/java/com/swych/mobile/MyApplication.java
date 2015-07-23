@@ -2,6 +2,7 @@ package com.swych.mobile;
 
 import android.app.Application;
 import android.content.res.Resources;
+import android.database.sqlite.SQLiteDatabase;
 
 import com.swych.mobile.commons.utils.Language;
 import com.swych.mobile.db.DaoSession;
@@ -35,6 +36,8 @@ public class MyApplication extends Application {
         return localLanguage;
     }
 
+
+    public static SQLiteDatabase getDataBase() {return dbHelper.getDatabase();}
     public static DaoSession getSession(){
         return dbHelper.getSession(false);
     }

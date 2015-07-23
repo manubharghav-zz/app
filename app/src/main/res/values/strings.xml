@@ -7,7 +7,7 @@
     <string name="log_in_text">Log in</string>
     <string name="sign_in_text">Sign up</string>
 
-    <string name="title_activity_library">library</string>
+    <string name="title_activity_library">Library</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
     <string name="title_activity_email_login">emailLogin</string>
@@ -37,4 +37,6 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <string name="action_example">Example action</string>
+
+    <string name="title_activity_reader">ReaderActivity</string>
 </resources>

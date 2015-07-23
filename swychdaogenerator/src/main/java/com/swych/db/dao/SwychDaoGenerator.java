@@ -17,7 +17,7 @@ public class SwychDaoGenerator {
     private static String PHRASEREPLACEMENT = "PhraseReplacement";
     private static String BOOK = "Book";
     private static String VERSION = "Version";
-
+    private static String LIBRARY = "Library";
 
     public void buildSchemas(Schema schema) {
         // Book table
@@ -121,6 +121,22 @@ public class SwychDaoGenerator {
         sentenceMappings.addToOne(version, foreignLanguageVersionId, "foreignVersion");
 
 //*/
+        Entity library = schema.addEntity(LIBRARY);
+        library.addIdProperty();
+        Property srcVersionProperty = library.addLongProperty("srcVersionId").getProperty();
+        Property swychVersionProperty = library.addLongProperty("swychVersionId").getProperty();
+        library.addToOne(version,srcVersionProperty,"srcVersion");
+        ToMany toMappings = version.addToMany(library, srcVersionProperty);
+        toMappings.setName("srcMappings");
+
+        library.addToOne(version, swychVersionProperty,"swychVersion");
+        ToMany swychMappings = version.addToMany(library, swychVersionProperty);
+        toMappings.setName("swychMappings");
+
+        library.addStringProperty("srcLanguage");
+        library.addStringProperty("swychLanguage");
+        library.addStringProperty("title");
+
 
     }
 
