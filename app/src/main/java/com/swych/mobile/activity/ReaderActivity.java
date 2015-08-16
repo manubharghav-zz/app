@@ -5,7 +5,6 @@ import com.swych.mobile.activity.util.SystemUiHider;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
@@ -41,6 +40,8 @@ import java.util.Map;
  */
 public class ReaderActivity extends Activity {
 
+    public static final String CHAPTER = "CHAPTER";
+    public static final String PARAGRAPH_TAG = "<P>";
     private static String TAG="READER";
     /**
      * Whether or not the system UI should be auto-hidden after {@link #AUTO_HIDE_DELAY_MILLIS}
@@ -76,6 +77,11 @@ public class ReaderActivity extends Activity {
     private Map<Long, Sentence> srcVersionSentences;
     private GestureDetectorCompat gDetect;
     private ListIterator<Structure> srcIterator;
+
+
+
+    private static String CLICK_EVENT="onClick";
+    private static String RENDER_EVENT="render";
 
 
 //    String templateFirstPart =
@@ -120,11 +126,36 @@ public class ReaderActivity extends Activity {
             "<body>"+
             "<div id='page_content' style='visibility:hidden'>"+
             "<script>" +
-            "$( document ).ready(function() {\n" +
-            "  alert('cont_height:'+document.getElementById('page_content').offsetHeight);\n" +
+            "$( document ).ready(function() {" +
+            "cutoff=' ';\n" +
+            "    rem_sentece_id='';\n" +
+            "    var lastSpan;\n" +
+            "    var removeSentences = true;\n" +
+            "    while(document.getElementById('page_content').offsetHeight > 562){\n" +
+            "        lastSpan =  $('#page_content span:last');\n" +
+            "        if(removeSentences){\n" +
+            "        lastSpan.remove();\n" +
+            "        if(document.getElementById('page_content').offsetHeight > 562){\n" +
+            "            rem_sentece_id = rem_sentece_id + ' '+ lastSpan.attr(\"data-sentence_id\");\n" +
+            "            continue;\n" +
+            "        }\n" +
+            "        removeSentences=false;\n" +
+            "        $('#page_content').append(\"<span class='sentence_block' data-sentence_id=\" + lastSpan.attr('data-sentence_id') +\">\" + lastSpan.text()+\"</span>\");\n" +
+            "        }\n" +
+            "        //remove maximum number of sentences;\n" +
+            "\n" +
+            "        \n" +
+            "        var s = $('#page_content span:last').text();\n" +
+            "        var pos = s.lastIndexOf(' ');\n" +
+            "         cutoff = s.substr(pos+1, s.length) + ' ' +cutoff;\n" +
+            "        s = s.substr(0,pos);\n" +
+            "         $('#page_content span:last').html(s);\n" +
+            "    }\n" +
+            "\n" +
+            "    alert('"+RENDER_EVENT+"' +'###' + cutoff +\"###\" + 'rem_sentece_id' + \"###\" + rem_sentece_id);" +
             "});\n" +
             "$(document).on('click', '.sentence_block', function() {\n" +
-            "  alert('sentence_clicked_id:'+$(this).attr('data-sentence_id'));\n" +
+            "  alert('"+CLICK_EVENT+":'+$(this).attr('data-sentence_id'));\n" +
             "});" +
             "</script>"+
             "<p span class='paragraph_block' align=\"justify\">";
@@ -146,7 +177,7 @@ public class ReaderActivity extends Activity {
     private int current_word_id = 0;
     private int current_sentence_id = -1;
 
-    private long pageLoadStart;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -178,32 +209,17 @@ public class ReaderActivity extends Activity {
         final class MyWebChromeClient extends WebChromeClient {
             @Override
             public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
-//                System.out.println("ALERRTTTT " + message);
-                if (message.startsWith("cont_height:")) {
-                    String[] content = message.split(":");
-                    int pageContentOffsetHeight = Integer.parseInt(content[1]);
-                    if (pageContentOffsetHeight <= 562)
-                    {
-                        bufferLineForward = null;
-                        populateWebView();
-                    }
-                    else
-                    {
-                        System.out.println("got till here");
-                        long timeStart = System.currentTimeMillis();
-                        webView.loadUrl("javascript:cutoff=' ';while(document.getElementById('page_content').offsetHeight > 562){ var s = $('#page_content span:last').text();var pos = s.lastIndexOf(' ');cutoff = s.substr(pos+1, s.length) + ' ' +cutoff; s = s.substr(0,pos); $('#page_content span:last').html(s); }alert('cutoff_string' +'###' + cutoff)");
-                        long timetaken = (System.currentTimeMillis() -timeStart);
-                        Log.i(TAG,"spent "+timetaken +" ms on the last sentence");
 
+                if( message.startsWith(RENDER_EVENT)){
+                    String splits[] = message.split("###");
+                    if(splits.length>3) {
+                        int rewindNumber=splits[3].split(" ").length;
+                        rewindIterator(rewindNumber);
                     }
-                }
-
-                else if( message.startsWith("cutoff_string")){
                     bufferLineForward = message.split("###")[1];
                     webView.loadUrl("javascript:$('#page_content').css('visibility', 'visible')");
-                    Log.i(TAG,"took " +(System.currentTimeMillis()- pageLoadStart) + " ms for loading the entire page");
                 }
-                else if(message.contains("sentence_clicked")){
+                else if(message.startsWith(CLICK_EVENT)){
                     int senID = Integer.parseInt(message.split(":")[1]);
 
 //                    new AlertDialog.Builder(context)
@@ -218,7 +234,6 @@ public class ReaderActivity extends Activity {
         webView.setWebChromeClient(new MyWebChromeClient());
         webView.getSettings().setJavaScriptEnabled(true);
         final View controlsView = findViewById(R.id.fullscreen_content_controls);
-        pageLoadStart = System.currentTimeMillis();
         populateWebView();
 
         // Set up an instance of SystemUiHider to control the system UI for
@@ -278,22 +293,24 @@ public class ReaderActivity extends Activity {
         // Upon interacting with UI controls, delay any scheduled hide()
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
-        findViewById(R.id.dummy_button).setOnTouchListener(mDelayHideTouchListener);
+//        findViewById(R.id.dummy_button).setOnTouchListener(mDelayHideTouchListener);
 
         gDetect = new GestureDetectorCompat(this, new GestureListener());
     }
 
+
+    
+
     private void populateWebView() {
-        long start = System.currentTimeMillis();
-        String nextLine = getLine();
+        String nextLine = getLines(15);
         webViewBuffer.append(nextLine);
         String htmlContent = templateFirstPart + webViewBuffer.toString()+ templateSecondPart;
 
         webView.loadDataWithBaseURL("file:///android_asset/", htmlContent, "text/html", "utf-8", null);
-        long end = System.currentTimeMillis() - start;
-
-        Log.i(TAG,"took " + end + " ms in populating webview");
     }
+
+
+
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
@@ -338,20 +355,21 @@ public class ReaderActivity extends Activity {
     }
 
 
-    private String getLine(){
+    private String getLines(int numLines){
         boolean read = true;
-
+        StringBuffer buffer=new StringBuffer();
         if(readForward && bufferLineForward!=null){
-            return "<span class='sentence_block' data-sentence_id='" + bufferLineForwardSentenceId + "'>" + bufferLineForward + "</span>";
+            buffer.append("<span class='sentence_block' data-sentence_id='" + bufferLineForwardSentenceId + "'>" + bufferLineForward + "</span>");
         }
         else if(!readForward && bufferLineBackward!=null){
-            return "<span class='sentence_block' data-sentence_id='" + bufferLinePreviousSentenceId + "'>" + bufferLineBackward+ "</span>";
+            buffer.append("<span class='sentence_block' data-sentence_id='" + bufferLinePreviousSentenceId + "'>" + bufferLineBackward+ "</span>");
         }
 
-        StringBuffer buffer=new StringBuffer();
+
         Structure struct;
-        while(read){
-            struct = moveStructureIterator();
+
+        while(numLines>0){
+            struct = moveStructureIterator(readForward);
             long sentenceId;
             if((sentenceId = isSentence(struct.getContent()))>0){
                 buffer.append("<span class='sentence_block' data-sentence_id='");
@@ -359,7 +377,7 @@ public class ReaderActivity extends Activity {
                 buffer.append("'>");
                 buffer.append(srcVersionSentences.get(sentenceId).getContent());
                 buffer.append("</span>");
-                read = false;
+                numLines--;
             }
             else if(isParagraph(struct.getContent())){
                 buffer.append("</p><p align=\"justify\">").append("\n");
@@ -373,17 +391,24 @@ public class ReaderActivity extends Activity {
         return buffer.toString();
     }
 
-    private Structure moveStructureIterator(){
+
+    private void rewindIterator(int numPages){
+        while(numPages > 0){
+            Structure structure = moveStructureIterator(!readForward);
+            if(isSentence(structure.getContent())>0){
+                numPages--;
+            }
+        }
+    }
+    private Structure moveStructureIterator(boolean direction){
         //TODO remember to handle base cases. like start of book and end of book.
         Structure structure;
-        if(readForward){
-
+        if(direction){
             structure = srcIterator.next();
         }
         else{
             structure = srcIterator.previous();
         }
-
         return structure;
     }
 
@@ -394,33 +419,12 @@ public class ReaderActivity extends Activity {
         Log.i(TAG,libraryItem.getSrcVersionId() + "   " +libraryItem.getSwychVersionId());
 
         List<Sentence> srcSentenceList =  libraryItem.getSrcVersion().getSentences();
-        StringBuffer buffer = new StringBuffer();
-        long start = System.currentTimeMillis();
         for(Sentence sentence:srcSentenceList){
             srcVersionSentences.put(sentence.getSentence_id(), sentence);
         }
         List<Structure> structure = libraryItem.getSrcVersion().getStructure();
         srcIterator = structure.listIterator();
-        /*Structure struct;
-        Long sentenceId;
-        while (srcIterator.hasNext()){
-            struct = srcIterator.next();
-            if((sentenceId = isSentence(struct.getContent()))>0){
-                buffer.append(srcVersionSentences.get(sentenceId));
-            }
-            else if(isParagraph(struct.getContent())){
-                buffer.append("</p><p align=\"justify\">").append("\n");
-            }
-            else if(isStructTag(struct.getContent())){
-                buffer.append("<h2>Chapter ").append(struct.getContent().split("|||")[1]);
-                buffer.append("</h2>").append("\n");
-            }
-        }*/
-
-
-
-        webView.loadDataWithBaseURL("file:///android_asset/", templateFirstPart + buffer.toString() + templateSecondPart, "text/html", "utf-8", null);
-        Log.i(TAG, "loaded sentences into memory in " + ((System.currentTimeMillis() - start) / 1000) +"ms for loading");
+        Log.i(TAG, "completed loading sentences into memory");
 
 
     }
@@ -428,24 +432,23 @@ public class ReaderActivity extends Activity {
     private Long isSentence(String s){
 
         long sentId;
-
         try{
             sentId = Long.parseLong(s);
             return sentId;
             // is an integer!
         } catch (NumberFormatException e) {
-
+            // do nothing.. just a random sentence ID.
         }
         return (long)-1;
     }
     private boolean isStructTag(String s){
-        if( s.contains("CHAPTER")){
+        if( s.contains(CHAPTER)){
             return true;
         }
         return false;
     }
     private boolean isParagraph(String s){
-        if (s.contains("<P>")){
+        if (s.contains(PARAGRAPH_TAG)){
             return true;
         }
         return false;
@@ -457,7 +460,6 @@ public class ReaderActivity extends Activity {
         private float velocityMin = 100;
         @Override
         public boolean onDown(MotionEvent event) {
-            System.out.println("Inside OnDown Method");
             //webView.onTouchEvent(event);
             return true;
         }
@@ -465,7 +467,6 @@ public class ReaderActivity extends Activity {
         @Override
         public boolean onFling(MotionEvent event1, MotionEvent event2,
                                float velocityX, float velocityY) {
-            System.out.println("Inside FLing detect method");
             //determine what happens on fling events
             //user will move forward through messages on fling up or left
             boolean forward = false;
@@ -498,7 +499,6 @@ public class ReaderActivity extends Activity {
                 System.out.println("Moving forward Through Messages");
                 readForward = true;
                 webViewBuffer = new StringBuffer();
-                pageLoadStart  = System.currentTimeMillis();
                 populateWebView();
             }
             //user is cycling backwards through pages
