@@ -13,10 +13,24 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.webkit.JsResult;
+import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 
 
+import com.swych.mobile.MyApplication;
 import com.swych.mobile.R;
+import com.swych.mobile.db.DaoSession;
+import com.swych.mobile.db.Library;
+import com.swych.mobile.db.LibraryDao;
+import com.swych.mobile.db.Sentence;
+import com.swych.mobile.db.Structure;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
 
 public class ReaderActivity2 extends AppCompatActivity {
 
@@ -24,46 +38,157 @@ public class ReaderActivity2 extends AppCompatActivity {
     private GestureDetectorCompat gDetect;
     private boolean AUTO_HIDE=true;
     private static final int AUTO_HIDE_DELAY_MILLIS = 3000;
-    private static String Text = "After the death of Charles, who had never thought of designating a \n" +
-            "successor, two claimants for the throne came forward; his sister \n" +
-            "Ulrika and his nephew Carl Frederick. By intrigue with the nobles the \n" +
-            "former secured the prize, promising to give up the almost absolute \n" +
-            "power that had been wielded by the Vasa line. Two years later Ulrika \n" +
-            "resigned the sovereignty to her husband, Prince Frederick of Hesse. \n" +
-            "One of the most distressing chapters of Swedish history now begins. \n" +
-            "Frederick I. was indolent and indifferent to the claims of his \n" +
-            "position. When an energetic policy might at least have protected the \n" +
-            "country, he looked on in apathy while party strife within and greed \n" +
-            "of conquest from without nearly sundered the kingdom. Russia obtained \n" +
-            "Ingermanland, Esthonia, Livonia, and part of Finland, and in effect \n" +
-            "controlled the territory which it spared. After thirty years of such \n" +
-            "virtual interregnum the throne was again mounted by an alien prince, \n" +
-            "Adolf Frederick of Holstein. This was going from bad to worse. The new \n" +
-            "Frederick was weaker, if not more indolent than his predecessor, and \n" +
-            "in the twenty years of his authority the nation reached the bottom \n" +
-            "of its helplessness and insignificance. In 1771, Gustaf III., son of \n" +
-            "Adolf Frederick, was crowned. None of the father’s qualities appear in \n" +
-            "this son. Born on Swedish soil, though of alien blood, he had early \n" +
-            "imbibed the spirit of the Vasa monarchs, and set out to rival their \n" +
-            "achievements. He at once overthrew the power of the council and assumed \n" +
-            "again the reins of irresponsible authority. He became involved in a war \n" +
-            "with Russia, then ruled by Catherine II., who effected an alliance with \n" +
-            "Denmark against him. By the influence of Prussia and England Danish \n" +
-            "co-operation with Russia was abandoned. After a few skirmishes Gustaf \n" +
-            "was induced to close the campaign without accomplishing the results \n" +
-            "attempted. It was clear the odds were too great. \n" +
+
+
+    // reader fields and controls.
+    private static final String CHAPTER = "CHAPTER";
+    private static final String PARAGRAPH_TAG = "<P>";
+
+    private String previousContent = null;
+
+    private boolean chapterEnd = false;
+
+    private long libraryItemId;
+    private WebView webView;
+    private Map<Long, Sentence> srcVersionSentences;
+    private ListIterator<Structure> srcIterator;
+
+    private String currentPagePrefix="";
+    private String currentPageSuffix="";
+    private String previousPageSuffix="";
+    private String nextPagePrefix="";
+
+    private long firstSentenceId;
+    private long lastSentenceId;
+
+    private String bufferLineForward = null;
+    private long bufferLineForwardSentenceId;
+    private long bufferLinePreviousSentenceId;
+    private String bufferLineBackward = null;
+
+    private StringBuffer webViewBuffer = new StringBuffer();
+
+    private static String CLICK_EVENT="onClick";
+    private static String RENDER_EVENT="render";
+    private static String LOW_BUFFER="need_more";
+
+
+    private static String SENTENCE_FORMAT= "<span class='sentence_block' data-sentence_id='%s'>%s</span>" ;
+    private static String PARAGRAPH_FORMAT="</p>\n<p> ";
+    private static String CHAPTER_FORMAT = "<h2>Chapter %s </h2> \n";
+
+    // js script.
+
+    String templateFirstPartForward = "<html>"+
+            "<head> "+
+            "<script src='jquery-2.1.3.min.js' type='text/javascript'></script>"+
+            "</head>"+
+            "<body>"+
+            "<div id='page_content' align=\"justify\" style='visibility:hidden'>"+
+            "<script>" +
+            "$( document ).ready(function() {" +
+            "cutoff=' ';\n" +
+            "    rem_sentece_id=' ';\n" +
+            "var viewportHeight;\n" +
+            "if (document.compatMode === 'BackCompat') {\n" +
+            "    viewportHeight = document.body.clientHeight;\n" +
+            "} else {\n" +
+            "    viewportHeight = document.documentElement.clientHeight;\n" +
+            "}" +
+            "    var lastSpan;\n" +
+            "    var removeSentences = true;\n" +
+            "  if(document.getElementById('page_content').offsetHeight < viewportHeight){\n" +
+            "    alert('need_more')\n" +
+            "  }\n" +
+            "  else{"+
+            "    while(document.getElementById('page_content').offsetHeight > viewportHeight){\n" +
+            "        lastSpan =  $('#page_content span:last');\n" +
+            "        if(removeSentences){\n" +
+            "        rem_sentece_id = lastSpan.attr(\"data-sentence_id\") + ' '+rem_sentece_id;\n" +
+            "        lastSpan.remove();\n" +
+            "        if(document.getElementById('page_content').offsetHeight > viewportHeight){\n" +
+            "            continue;\n" +
+            "        }\n" +
+            "        removeSentences=false;\n" +
+            "        $('#page_content').append(\"<span class='sentence_block' data-sentence_id=\" + lastSpan.attr('data-sentence_id') +\">\" + lastSpan.text()+\"</span>\");\n" +
+            "        }\n" +
+            "        //remove maximum number of sentences;\n" +
             "\n" +
-            "Sweden, now that all foreign differences were adjusted, was in \n" +
-            "condition to enter upon a long period of prosperity. But to the \n" +
-            "restless temper of the king, peace was impossible. He was ever \n" +
-            "entertaining great schemes, and laid plans even for interfering with \n" +
-            "the course of events in France, hoping to set aside the course of the \n" +
-            "revolution and set up again the authority of the Bourbon family. Money \n" +
-            "was solicited from the Diet for this purpose. The wildness of such \n" +
-            "a project when the country was groaning under an accumulated burden \n" +
-            "of debt, caused a strong revulsion of feeling against the king. A \n" +
-            "conspiracy was formed to remove him, and on the 16th of March, 1792, \n" +
-            "while attending a masked ball in Stockholm, he was assassinated.";
+            "        \n" +
+            "        var s = $('#page_content span:last').text();\n" +
+            "        var pos = s.lastIndexOf(' ');\n" +
+            "         cutoff = s.substr(pos+1, s.length) + ' ' +cutoff;\n" +
+            "        s = s.substr(0,pos);\n" +
+            "         $('#page_content span:last').html(s);\n" +
+            "    }\n" +
+            "\n" +
+            "    alert('"+RENDER_EVENT+"' +'###' + cutoff +\"###\" + 'rem_sentece_id' + \"###\" + rem_sentece_id+\"###\"+'included_string'+\"### \"+ s); }" +
+            "});\n" +
+            "$(document).on('click', '.sentence_block', function() {\n" +
+            "  alert('"+CLICK_EVENT+":'+$(this).attr('data-sentence_id'));\n" +
+            "});" +
+            "</script>"+
+            "<p span class='paragraph_block' align=\"justify\">";
+
+
+
+    String templateFirstPartBackward = "<html>"+
+            "<head> "+
+            "<script src='jquery-2.1.3.min.js' type='text/javascript'></script>"+
+            "</head>"+
+            "<body>"+
+            "<div id='page_content' align=\"justify\" style='visibility:hidden'>"+
+            "<script>" +
+            "$( document ).ready(function() {" +
+            "var viewportHeight;\n" +
+            "  if (document.compatMode === 'BackCompat') {\n" +
+            "      viewportHeight = document.body.clientHeight;\n" +
+            "  } else {\n" +
+            "      viewportHeight = document.documentElement.clientHeight;\n" +
+            "  }\n" +
+            "  cutoff=' ';\n" +
+            "  rem_sentece_id='';\n" +
+            "  var firstSpan;\n" +
+            "  var removeSentences = true;\n" +
+            "  if(document.getElementById('page_content').offsetHeight < viewportHeight){\n" +
+            "    alert('need_more')\n" +
+            "  }\n" +
+            "  else{"+
+            "  while(document.getElementById('page_content').offsetHeight > viewportHeight){\n" +
+            "      firstSpan =  $('#page_content span:first');\n" +
+            "      if(removeSentences){\n" +
+            "\n" +
+            "        rem_sentece_id = rem_sentece_id + ' '+ firstSpan.attr(\"data-sentence_id\");\n" +
+            "        firstSpan.detach();\n" +
+            "        if(document.getElementById('page_content').offsetHeight > viewportHeight){\n" +
+            "           continue;\n" +
+            "        }\n" +
+            "        removeSentences=false;\n" +
+            "        $('p').each(function(index, item) {\n" +
+            "            if($.trim($(item).text()) === \"\") {\n" +
+            "                $(item).remove(); // $(item).remove();\n" +
+            "            }\n" +
+            "        });\n" +
+            "        firstSpan.prependTo($('p:first'));}      \n" +
+            "      var s = $('#page_content span:first').text();\n" +
+            "      var pos = s.indexOf(' ');\n" +
+            "\n" +
+            "      cutoff = cutoff + ' '+s.substr(0, pos);\n" +
+            "      s = s.substr(pos+1,s.length);\n" +
+            "      $('#page_content span:first').html(s);\n" +
+            "    }\n" +
+            "\n" +
+            "\n" +
+            "    alert('cutoff_string' +'###' + cutoff +\"###\" + 'rem_sentece_id' + \"###\" + rem_sentece_id +\"###\"+'included_string'+\"### \"+ s);}"+
+            "});" +
+            "</script>"+
+            "<p span class='paragraph_block' align=\"justify\">";
+
+    String templateSecondPart = "</p> " +
+            "</div></body></html>";
+
+
+    private boolean readForward = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,9 +205,7 @@ public class ReaderActivity2 extends AppCompatActivity {
 
         // configure webview
 
-        WebView webView =(WebView) findViewById(R.id.reader);
-        String template = "<html><body style=\"text-align:justify\"> %s </body></Html>";
-        webView.loadData(String.format(template, Text), "text/html", "utf-8");
+        webView =(WebView) findViewById(R.id.reader);
 
         webView.setHorizontalScrollBarEnabled(false);
         webView.setVerticalScrollBarEnabled(false);
@@ -92,17 +215,16 @@ public class ReaderActivity2 extends AppCompatActivity {
                 if(AUTO_HIDE){
                     delayedHide(AUTO_HIDE_DELAY_MILLIS);
                 }
-
                 return (event.getAction() == MotionEvent.ACTION_MOVE);
             }
         });
 
 
 
-        // configuring gestures.
+        // configuring gestures and immersive mode screen.
 
         gDetect = new GestureDetectorCompat(this,new GestureListener());
-        delayedHide(5000);
+        hideSystemUI();
         View decorView = getWindow().getDecorView();
         decorView.setOnSystemUiVisibilityChangeListener
                 (new View.OnSystemUiVisibilityChangeListener() {
@@ -119,6 +241,86 @@ public class ReaderActivity2 extends AppCompatActivity {
                         }
                     }
                 });
+
+
+
+        // configure reader from here.
+
+        libraryItemId = 1;
+        //        libraryItemId = getIntent().getLongExtra(LibraryActivity.libraryActivityId,-1);
+        Log.d(TAG,"started reading book: " + libraryItemId);
+        if(libraryItemId<0){
+            Log.d(TAG,"Error reading library item, id=" +libraryItemId);
+            //TODO go back to library page.
+        }
+
+        loadBookIntoMemory(libraryItemId);
+
+        // javascript for webview.
+        final class MyWebChromeClient extends WebChromeClient {
+            @Override
+            public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
+                Log.d(TAG, message);
+
+                if(message.startsWith(LOW_BUFFER)){
+                    // todo get more line in the buffer.
+                    if(!chapterEnd) {
+                        populateWebView(false);
+                    }
+                    else {
+                        if(readForward){
+                            nextPagePrefix="";
+                        }
+                        else{
+
+                        }
+                        webView.loadUrl("javascript:$('#page_content').css('visibility', 'visible')");
+                    }
+                }
+                else if( message.startsWith(RENDER_EVENT)){
+                    String splits[] = message.split("###");
+
+                    // update state;
+                    if(readForward){
+                        previousPageSuffix = currentPageSuffix;
+                        currentPagePrefix = nextPagePrefix;
+
+                        currentPageSuffix = splits[5];
+                        nextPagePrefix = splits[1];
+                        firstSentenceId = lastSentenceId;
+                        int[] numbers = getNumFromString(splits[3]);
+                        lastSentenceId = numbers[0];
+                        rewindIterator(numbers.length-1);
+                        webView.loadUrl("javascript:$('#page_content').css('visibility', 'visible')");
+                    }
+                    else{
+                        //going backward
+                        nextPagePrefix = currentPagePrefix;
+                        currentPageSuffix = previousPageSuffix;
+
+                        currentPagePrefix = splits[5];
+                        previousPageSuffix = splits[1];
+
+                        int[] numbers = getNumFromString(splits[3]);
+                        lastSentenceId=firstSentenceId;
+                        firstSentenceId = numbers[numbers.length-1];
+                        webView.loadUrl("javascript:$('#page_content').css('visibility', 'visible')");
+                    }
+
+
+
+                }
+                else if(message.startsWith(CLICK_EVENT)){
+                    int senID = Integer.parseInt(message.split(":")[1]);
+                }
+                result.confirm();
+                return true;
+            }
+        }
+        webView.setWebChromeClient(new MyWebChromeClient());
+        webView.getSettings().setJavaScriptEnabled(true);
+        populateWebView(true);
+
 
     }
 
@@ -206,10 +408,16 @@ public class ReaderActivity2 extends AppCompatActivity {
 
             if(forward){
                 Log.d(TAG, "Moving forward.");
+                readForward = true;
+                webViewBuffer = new StringBuffer();
+                populateWebView(true);
             }
             //user is cycling backwards through pages
             else if(backward){
                 Log.d(TAG, "Moving backward.");
+                readForward=false;
+                webViewBuffer=new StringBuffer();
+                populateWebView(true);
             }
             return true;
         }
@@ -249,4 +457,176 @@ public class ReaderActivity2 extends AppCompatActivity {
                         | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                         | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
     }
+
+
+    private void loadBookIntoMemory(long libraryItemId){
+        DaoSession session = MyApplication.getSession();
+        LibraryDao libraryDao = session.getLibraryDao();
+        Library libraryItem = libraryDao.loadDeep(libraryItemId);
+        Log.d(TAG,libraryItem.getSrcVersionId() + "   " +libraryItem.getSwychVersionId());
+        srcVersionSentences = new HashMap<Long, Sentence>();
+        List<Sentence> srcSentenceList =  libraryItem.getSrcVersion().getSentences();
+        for(Sentence sentence:srcSentenceList){
+            srcVersionSentences.put(sentence.getSentence_id(), sentence);
+        }
+        List<Structure> structure = libraryItem.getSrcVersion().getStructure();
+        srcIterator = structure.listIterator();
+        Log.d(TAG, "completed loading sentences into memory");
+    }
+
+
+    private boolean isStructTag(String s){
+        if( s.contains(CHAPTER)){
+            return true;
+        }
+        return false;
+    }
+    private boolean isParagraph(String s){
+        if (s.contains(PARAGRAPH_TAG)){
+            return true;
+        }
+        return false;
+    }
+    private Long isSentence(String s){
+        long sentId;
+        try{
+            sentId = Long.parseLong(s);
+            return sentId;
+        } catch (NumberFormatException e) {
+            // do nothing.. just a random sentence ID.
+        }
+        return (long)-1;
+    }
+
+    private void rewindIterator(int numLines){
+        while(numLines > 0){
+            Structure structure = moveStructureIterator(!readForward);
+            if(isSentence(structure.getContent())>0){
+                numLines--;
+            }
+        }
+    }
+    private Structure moveStructureIterator(boolean direction){
+        //TODO remember to handle base cases. like start of book and end of book.
+        Structure structure;
+        if(direction){
+            structure = srcIterator.next();
+        }
+        else{
+            structure = srcIterator.previous();
+        }
+        return structure;
+    }
+
+    private String getLines(int numLines, boolean newPage){
+        boolean read = true;
+        StringBuffer buffer = new StringBuffer();
+
+        Structure struct;
+
+        if(newPage){
+            if(readForward && nextPagePrefix.trim().length()>0){
+                buffer.append(String.format(SENTENCE_FORMAT,lastSentenceId,nextPagePrefix));
+            }
+            else if(!readForward && previousPageSuffix.trim().length()>0){
+                buffer.append(String.format(SENTENCE_FORMAT,firstSentenceId,previousPageSuffix));
+            }
+        }
+
+        if(readForward) {
+            while (numLines > 0) {
+                struct = moveStructureIterator(readForward);
+                long sentenceId;
+                if((sentenceId = isSentence(struct.getContent()))>0){
+                    buffer.append(String.format(SENTENCE_FORMAT, sentenceId,srcVersionSentences.get(sentenceId).getContent()));
+                    numLines--;
+                }
+                else if(isParagraph(struct.getContent())){
+                    buffer.append(PARAGRAPH_FORMAT);
+                }
+                else if(isStructTag(struct.getContent())){
+                    if(buffer.length()>0) {
+                        chapterEnd=true;
+                        moveStructureIterator(!readForward);
+                        numLines=0;
+                    }
+                    else {
+                        Log.d(TAG, struct.getContent());
+                        buffer.append(String.format(CHAPTER_FORMAT, struct.getContent().split("\\|\\|\\|")[1]));
+                        chapterEnd=false;
+                    }
+                }
+
+            }
+        }
+        else{
+            while (numLines > 0) {
+                struct = moveStructureIterator(readForward);
+                long sentenceId;
+                if((sentenceId = isSentence(struct.getContent()))>0){
+                    buffer.insert(0, String.format(SENTENCE_FORMAT, sentenceId, srcVersionSentences.get(sentenceId).getContent()));
+                    numLines--;
+                }
+                else if(isParagraph(struct.getContent())){
+                    buffer.insert(0, PARAGRAPH_FORMAT);
+                }
+                else if(isStructTag(struct.getContent())){
+                    if(buffer.length()>0) {
+                        chapterEnd=true;
+                        moveStructureIterator(!readForward);
+                        numLines=0;
+                    }
+                    else {
+                        Log.d(TAG, struct.getContent());
+                        buffer.insert(0, String.format(CHAPTER_FORMAT, struct.getContent().split("\\|\\|\\|")[1]));
+                        chapterEnd=false;
+                    }
+                }
+
+            }
+
+        }
+
+        return buffer.toString();
+    }
+
+
+//    private String getLinesForNewPage(int numLines){
+//        boolean read = true;
+//        StringBuffer buffer=new StringBuffer();
+//        String lines = getLines(numLines);
+//        if(readForward){
+//            buffer.append(String.format(SENTENCE_FORMAT,lastSentenceId,nextPagePrefix));
+//            buffer.append(lines);
+//        }
+//        else{
+//            buffer.append(String.format(SENTENCE_FORMAT,firstSentenceId,previousPageSuffix));
+//            buffer.insert(0,lines+" ");
+//        }
+//
+//        return buffer.toString();
+//    }
+
+    private void populateWebView(boolean newPage) {
+        String nextLine = getLines(15, newPage);
+        System.out.println(nextLine);
+        webViewBuffer.append(nextLine);
+        String htmlContent = templateFirstPartForward + webViewBuffer.toString()+ templateSecondPart;
+
+        webView.loadDataWithBaseURL("file:///android_asset/", htmlContent, "text/html", "utf-8", null);
+    }
+
+
+    private static int[] getNumFromString(String s){
+        String[] splits = s.trim().split("\\s");
+        int[] numbers = new int[splits.length];
+
+        for(int i=0;i<splits.length;i++){
+            numbers[i] = Integer.parseInt(splits[i]);
+        }
+
+        return numbers;
+    }
+
+
 }

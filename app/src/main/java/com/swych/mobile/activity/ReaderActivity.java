@@ -84,7 +84,7 @@ public class ReaderActivity extends Activity {
     private static String RENDER_EVENT="render";
 
 
-//    String templateFirstPart =
+//    String templateFirstPartForward =
 //            "<html>" +
 //            "<head>" +
 //            "<script src='jquery-2.1.3.min.js' type='text/javascript'>"

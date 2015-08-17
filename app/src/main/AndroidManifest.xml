@@ -90,10 +90,12 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
         </activity>
         <activity
             android:name=".activity.TmpActivity"
             android:label="@string/title_activity_tmp" >
+
         </activity>
     </application>
 
