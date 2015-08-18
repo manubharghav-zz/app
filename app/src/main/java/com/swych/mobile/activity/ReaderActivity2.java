@@ -28,6 +28,7 @@ import com.swych.mobile.db.Structure;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -51,7 +52,8 @@ public class ReaderActivity2 extends AppCompatActivity {
     private long libraryItemId;
     private WebView webView;
     private Map<Long, Sentence> srcVersionSentences;
-    private ListIterator<Structure> srcIterator;
+    private ArrayList<Structure> structureList;
+
 
     private String currentPagePrefix="";
     private String currentPageSuffix="";
@@ -60,6 +62,9 @@ public class ReaderActivity2 extends AppCompatActivity {
 
     private long firstSentenceId;
     private long lastSentenceId;
+
+    private int startOfPage;
+    private int endOfPage;
 
     private String bufferLineForward = null;
     private long bufferLineForwardSentenceId;
@@ -179,7 +184,7 @@ public class ReaderActivity2 extends AppCompatActivity {
             "    }\n" +
             "\n" +
             "\n" +
-            "    alert('cutoff_string' +'###' + cutoff +\"###\" + 'rem_sentece_id' + \"###\" + rem_sentece_id +\"###\"+'included_string'+\"### \"+ s);}"+
+            "    alert('"+RENDER_EVENT+"' +'###' + cutoff +\"###\" + 'rem_sentece_id' + \"###\" + rem_sentece_id +\"###\"+'included_string'+\"### \"+ s);}"+
             "});" +
             "</script>"+
             "<p span class='paragraph_block' align=\"justify\">";
@@ -272,7 +277,13 @@ public class ReaderActivity2 extends AppCompatActivity {
                             nextPagePrefix="";
                         }
                         else{
+                            chapterEnd=false;
+                            previousPageSuffix="";
 
+                            nextPagePrefix = currentPagePrefix;
+                            currentPagePrefix="";
+                            currentPageSuffix="";
+                            lastSentenceId=firstSentenceId;
                         }
                         webView.loadUrl("javascript:$('#page_content').css('visibility', 'visible')");
                     }
@@ -290,8 +301,9 @@ public class ReaderActivity2 extends AppCompatActivity {
                         firstSentenceId = lastSentenceId;
                         int[] numbers = getNumFromString(splits[3]);
                         lastSentenceId = numbers[0];
-                        rewindIterator(numbers.length-1);
+                        rewindIterator(false, numbers[0]);
                         webView.loadUrl("javascript:$('#page_content').css('visibility', 'visible')");
+
                     }
                     else{
                         //going backward
@@ -303,10 +315,10 @@ public class ReaderActivity2 extends AppCompatActivity {
 
                         int[] numbers = getNumFromString(splits[3]);
                         lastSentenceId=firstSentenceId;
-                        firstSentenceId = numbers[numbers.length-1];
+                        firstSentenceId = numbers[0];
+                        rewindIterator(true, numbers[0]);
                         webView.loadUrl("javascript:$('#page_content').css('visibility', 'visible')");
                     }
-
 
 
                 }
@@ -314,6 +326,11 @@ public class ReaderActivity2 extends AppCompatActivity {
                     int senID = Integer.parseInt(message.split(":")[1]);
                 }
                 result.confirm();
+                Log.d(TAG,"start of Page: " + startOfPage+ "  End of page: " + endOfPage);
+                Log.d(TAG,"Previous Page Suffix : " + previousPageSuffix);
+                Log.d(TAG,"Current Page Prefix : " + currentPagePrefix );
+                Log.d(TAG,"Current Page Suffix: " + currentPageSuffix);
+                Log.d(TAG, "Next Page Prefix: " + nextPagePrefix);
                 return true;
             }
         }
@@ -407,16 +424,40 @@ public class ReaderActivity2 extends AppCompatActivity {
 
 
             if(forward){
+                if(endOfPage >= structureList.size()-1 ){
+                    Log.d(TAG,"reached end of Book");
+                    return true;
+                }
                 Log.d(TAG, "Moving forward.");
                 readForward = true;
+                startOfPage = endOfPage;
+                firstSentenceId=lastSentenceId;
+
+                currentPagePrefix="";
+                previousPageSuffix="";
                 webViewBuffer = new StringBuffer();
+                chapterEnd=false;
                 populateWebView(true);
             }
             //user is cycling backwards through pages
             else if(backward){
                 Log.d(TAG, "Moving backward.");
+
+                if(startOfPage<=0){
+                    Log.d(TAG,"reached start of book");
+                    return true;
+                }
+
                 readForward=false;
+                endOfPage = startOfPage;
+                startOfPage = startOfPage-2;
+                lastSentenceId = firstSentenceId;
+
+                currentPageSuffix="";
+                nextPagePrefix="";
+
                 webViewBuffer=new StringBuffer();
+                chapterEnd=false;
                 populateWebView(true);
             }
             return true;
@@ -464,13 +505,22 @@ public class ReaderActivity2 extends AppCompatActivity {
         LibraryDao libraryDao = session.getLibraryDao();
         Library libraryItem = libraryDao.loadDeep(libraryItemId);
         Log.d(TAG,libraryItem.getSrcVersionId() + "   " +libraryItem.getSwychVersionId());
+        Log.d(TAG,libraryItem.getTitle()+ "    " + libraryItem.getSrcVersion().getTitle() + "   " + libraryItem.getSrcVersion().getLanguage());
         srcVersionSentences = new HashMap<Long, Sentence>();
         List<Sentence> srcSentenceList =  libraryItem.getSrcVersion().getSentences();
         for(Sentence sentence:srcSentenceList){
             srcVersionSentences.put(sentence.getSentence_id(), sentence);
         }
         List<Structure> structure = libraryItem.getSrcVersion().getStructure();
-        srcIterator = structure.listIterator();
+
+        structureList = new ArrayList<Structure>();
+        structureList.addAll(structure);
+
+        // testing book.
+
+
+        startOfPage = 0;
+        endOfPage = 0;
         Log.d(TAG, "completed loading sentences into memory");
     }
 
@@ -498,23 +548,52 @@ public class ReaderActivity2 extends AppCompatActivity {
         return (long)-1;
     }
 
-    private void rewindIterator(int numLines){
-        while(numLines > 0){
-            Structure structure = moveStructureIterator(!readForward);
-            if(isSentence(structure.getContent())>0){
-                numLines--;
+    private void rewindIterator(boolean start ,int sentenceNumber){
+        while(true){
+            Structure structure = moveStructureIterator(start,!readForward);
+            if(structure==null){
+                continue;
+            }
+            if(isSentence(structure.getContent())==sentenceNumber){
+                moveStructureIterator(start,readForward);
+                moveStructureIterator(start,readForward);
+                return;
             }
         }
     }
-    private Structure moveStructureIterator(boolean direction){
+    private Structure moveStructureIterator(boolean start,boolean direction){
         //TODO remember to handle base cases. like start of book and end of book.
         Structure structure;
-        if(direction){
-            structure = srcIterator.next();
+        if(endOfPage > structureList.size()-1 || startOfPage < 0){
+            if(start){
+                startOfPage=0;
+            }
+            else{
+                endOfPage = structureList.size()-1;
+            }
+            return null;
+        }
+        if(start && direction){
+            structure = structureList.get(startOfPage);
+            startOfPage++;
+
+        }
+        else if(start && !direction){
+            structure=structureList.get(startOfPage);
+            startOfPage--;
+
+        }
+        else if(!start && direction){
+            structure=structureList.get(endOfPage);
+            endOfPage++;
         }
         else{
-            structure = srcIterator.previous();
+            structure = structureList.get(endOfPage);
+            endOfPage--;
         }
+
+
+
         return structure;
     }
 
@@ -535,9 +614,15 @@ public class ReaderActivity2 extends AppCompatActivity {
 
         if(readForward) {
             while (numLines > 0) {
-                struct = moveStructureIterator(readForward);
+                // end of page.
+                struct = moveStructureIterator(false,readForward);
                 long sentenceId;
+                if(struct==null){
+                    Log.d(TAG,"reached end of book");
+                    break;
+                }
                 if((sentenceId = isSentence(struct.getContent()))>0){
+
                     buffer.append(String.format(SENTENCE_FORMAT, sentenceId,srcVersionSentences.get(sentenceId).getContent()));
                     numLines--;
                 }
@@ -547,7 +632,7 @@ public class ReaderActivity2 extends AppCompatActivity {
                 else if(isStructTag(struct.getContent())){
                     if(buffer.length()>0) {
                         chapterEnd=true;
-                        moveStructureIterator(!readForward);
+                        moveStructureIterator(false,!readForward);
                         numLines=0;
                     }
                     else {
@@ -561,9 +646,14 @@ public class ReaderActivity2 extends AppCompatActivity {
         }
         else{
             while (numLines > 0) {
-                struct = moveStructureIterator(readForward);
+                struct = moveStructureIterator(true,readForward);
+                if(struct==null){
+                    Log.d(TAG,"reached end of book");
+                    break;
+                }
                 long sentenceId;
                 if((sentenceId = isSentence(struct.getContent()))>0){
+//                    Log.d(TAG,"adding sentence Id:  " + sentenceId);
                     buffer.insert(0, String.format(SENTENCE_FORMAT, sentenceId, srcVersionSentences.get(sentenceId).getContent()));
                     numLines--;
                 }
@@ -571,16 +661,10 @@ public class ReaderActivity2 extends AppCompatActivity {
                     buffer.insert(0, PARAGRAPH_FORMAT);
                 }
                 else if(isStructTag(struct.getContent())){
-                    if(buffer.length()>0) {
-                        chapterEnd=true;
-                        moveStructureIterator(!readForward);
-                        numLines=0;
-                    }
-                    else {
                         Log.d(TAG, struct.getContent());
                         buffer.insert(0, String.format(CHAPTER_FORMAT, struct.getContent().split("\\|\\|\\|")[1]));
-                        chapterEnd=false;
-                    }
+                        chapterEnd=true;
+
                 }
 
             }
@@ -609,9 +693,21 @@ public class ReaderActivity2 extends AppCompatActivity {
 
     private void populateWebView(boolean newPage) {
         String nextLine = getLines(15, newPage);
-        System.out.println(nextLine);
-        webViewBuffer.append(nextLine);
-        String htmlContent = templateFirstPartForward + webViewBuffer.toString()+ templateSecondPart;
+
+        if(readForward) {
+            webViewBuffer.append(nextLine);
+        }
+        else{
+            webViewBuffer.insert(0,nextLine);
+        }
+//        Log.d(TAG,webViewBuffer.toString());
+        String htmlContent;
+        if(readForward) {
+            htmlContent = templateFirstPartForward + webViewBuffer.toString() + templateSecondPart;
+        }
+        else{
+            htmlContent = templateFirstPartBackward+webViewBuffer.toString()+templateSecondPart;
+        }
 
         webView.loadDataWithBaseURL("file:///android_asset/", htmlContent, "text/html", "utf-8", null);
     }
