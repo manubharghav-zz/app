@@ -24,19 +24,20 @@ public class Deserializer {
     public static String TAG = "Deserializer";
     public static List<DisplayBookObject> getBooksFromJsonResponse(JSONObject response) throws JSONException {
         List<DisplayBookObject> books = new ArrayList<DisplayBookObject>();
-        Iterator<String> bookIterator = response.keys();
+        JSONObject library = response.getJSONObject("library");
+        Iterator<String> bookIterator = library.keys();
         while(bookIterator.hasNext()){
             String bookName = bookIterator.next();
-
-            JSONObject bookJson = new JSONObject(response.get(bookName).toString());
+//            Log.d(TAG,"deserialising book: " + bookName);
+            JSONObject bookJson = library.getJSONObject(bookName);
             String imageUrl = bookJson.get("image").toString();
             DisplayBookObject book = new DisplayBookObject();
             book.setImageUrl(imageUrl);
             book.setTitle(bookName);
-            JSONArray versions = new JSONArray(bookJson.get("books").toString());
+            JSONArray versions = new JSONArray(bookJson.get("versions").toString());
             for(int i=0;i<versions.length();i++){
                 JSONObject version = versions.getJSONObject(i);
-                boolean versionAdded = book.addVersion().setLanguage(version.getString("language")).setTitle(version.getString("title")).setDescription(version.getString("description")).setAuthor(version.getString("author")).addToBook();
+                boolean versionAdded = book.addVersion().setLanguage(version.getString("language")).setTitle(version.getString("title")).setAuthor(version.getString("author")).addToBook();
                 if(!versionAdded){
                     Log.d(TAG, "Error adding version " + version.getString("language"));
                 }

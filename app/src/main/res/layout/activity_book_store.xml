@@ -1,21 +1,74 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:layout_height="match_parent"
     tools:context="com.swych.mobile.activity.BookStoreActivity">
 
-    <GridView xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/gridview"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:columnWidth="150dp"
-        android:numColumns="auto_fit"
-        android:verticalSpacing="5dp"
-        android:horizontalSpacing="10dp"
-        android:stretchMode="columnWidth"
-        android:gravity="center"
-        />
+    <!--
+    Will delete soon.
+    <GridView xmlns:android="http://schemas.android.com/apk/res/android"-->
+        <!--android:id="@+id/gridview"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:columnWidth="150dp"-->
+        <!--android:numColumns="auto_fit"-->
+        <!--android:verticalSpacing="5dp"-->
+        <!--android:horizontalSpacing="10dp"-->
+        <!--android:stretchMode="columnWidth"-->
+        <!--android:gravity="center"-->
+              <!--android:visibility="gone"-->
+        <!--/>-->
 
+
+    <LinearLayout
+            android:id="@+id/filters"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true" android:layout_alignParentTop="true">
+        <LinearLayout android:layout_width="fill_parent"
+                      android:layout_height="40dp"
+                      android:orientation="horizontal"
+                      android:paddingLeft="3dp"
+                      android:paddingRight="3dp"
+                      android:background="@android:color/darker_gray"
+                >
+            <Spinner
+                    android:id="@+id/src_language_store"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:entries="@array/languages"
+                    android:layout_gravity="center_vertical"
+                    >
+            </Spinner>
+
+            <Spinner
+                    android:id="@+id/swych_language_store"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:entries="@array/languages"
+                    android:layout_gravity="center_vertical"
+                    >
+            </Spinner>
+            <Switch android:layout_width="50dp" android:layout_height="wrap_content"
+                    android:textOn="@string/Mode1short"
+                    android:textOff="@string/Mode2short"
+                    android:showText="true"
+                    android:textSize="20dp"
+                    android:layout_gravity="center_vertical"
+
+                    />
+            <Button android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Filter"
+                    />
+
+        </LinearLayout>
+    </LinearLayout>
+    <ListView
+            android:id="@+id/book_store_books"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_below="@+id/filters"
+            >
+
+    </ListView>
 </RelativeLayout>

@@ -9,9 +9,11 @@ import android.widget.BaseAdapter;
 import com.android.volley.toolbox.NetworkImageView;
 
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.swych.mobile.R;
+import com.swych.mobile.commons.utils.Language;
 import com.swych.mobile.networking.DisplayBookObject;
 import com.swych.mobile.networking.RequestManager;
 import com.swych.mobile.networking.URLs;
@@ -58,26 +60,51 @@ public class BookStoreAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        View grid;
+        View bookListViewItem;
         TextView bookName;
+        TextView bookAuthor;
         NetworkImageView imageView;
+        LinearLayout availableLanguages;
+        TextView Mode1;
+        TextView Mode2;
 
         if (convertView == null) {
-            grid = new View(mContext);
+            bookListViewItem = new View(mContext);
             LayoutInflater inflater = (LayoutInflater) mContext
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            grid = inflater.inflate(R.layout.bookstore_book, null);
+            bookListViewItem = inflater.inflate(R.layout.bookstore_book_2, null);
         } else {
-            grid = (View) convertView;
+            bookListViewItem = (View) convertView;
         }
-        bookName = (TextView) grid.findViewById(R.id.grid_text);
-        imageView = (NetworkImageView)grid.findViewById(R.id.image);
 
-        bookName.setText(books.get(position).getNativeVersion().getTitle());
-//            authorTextView.setText(books.get(position).getNativeVersion().getAuthor());
-        imageView.setImageUrl(URLs.BASE + books.get(position).getImageUrl(), RequestManager.getInstance().getImageLoader());
+        DisplayBookObject book = books.get(position);
+
+        bookName = (TextView) bookListViewItem.findViewById(R.id.book_title);
+        imageView = (NetworkImageView)bookListViewItem.findViewById(R.id.image);
+
+        imageView.setImageUrl(URLs.BASE + book.getImageUrl(), RequestManager.getInstance().getImageLoader());
         imageView.setDefaultImageResId(R.drawable.book);
+
+        bookAuthor = (TextView) bookListViewItem.findViewById(R.id.book_author);
+        Mode1 = (TextView) bookListViewItem.findViewById(R.id.Mode1);
+        Mode2 = (TextView) bookListViewItem.findViewById(R.id.Mode2);
+        availableLanguages = (LinearLayout) bookListViewItem.findViewById(R.id.available_languages);
+
+        bookName.setText(book.getNativeVersion().getTitle());
+
+        bookAuthor.setText(book.getNativeVersion().getAuthor());
+        availableLanguages.removeAllViews();
+        for(Language language: book.getAvailableLanguages()){
+            ImageView languageImageView = new ImageView(mContext);
+            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(24, 24);
+            languageImageView.setLayoutParams(layoutParams);
+            languageImageView.setImageResource(language.getImageCode());
+            availableLanguages.addView(languageImageView);
+        }
+
+
+
         Log.d(TAG,"position: " + position + " Book: " +books.get(position).getTitle());
-        return grid;
+        return bookListViewItem;
     }
 }

@@ -42,4 +42,22 @@
 
     <string name="title_activity_reader2">ReaderActivity2</string>
     <string name="title_activity_tmp">TmpActivity</string>
+    <string name="title_activity_sign_up">SignUpActivity</string>
+
+
+    <string name="src_language">Source Language</string>
+    <string name="swych_language">Swych Language</string>
+
+    <string-array name="languages">
+        <item>English</item>
+        <item>French</item>
+        <item>Espaniol</item>
+        <item>Mandarin</item>
+        <item>Deutch</item>
+        <item>German</item>
+    </string-array>
+
+    <string name="Mode1short">M1</string>
+    <string name="Mode2short">M2</string>
+
 </resources>

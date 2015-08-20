@@ -7,6 +7,7 @@ import android.net.http.AndroidHttpClient;
 import android.os.Build;
 import android.util.Log;
 import android.widget.GridView;
+import android.widget.ListView;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.ExecutorDelivery;
@@ -118,21 +119,21 @@ public class RequestProxy {
         // login request
     }
 
-    public void getBooksForStore(final GridView gridView) {
+    public void getBooksForStore(final ArrayList<DisplayBookObject> bookList, final ListView listView) {
         Response.Listener<JSONObject> listener = new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 // not UI thread, do parsing
-                final List<DisplayBookObject> list=new ArrayList<>();
+
                 try {
-                    list.addAll(Deserializer.getBooksFromJsonResponse(response));
+                    bookList.addAll(Deserializer.getBooksFromJsonResponse(response));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        gridView.setAdapter(new BookStoreAdapter(context, list));
+                        listView.setAdapter(new BookStoreAdapter(context, bookList));
                     }
                 });
             }

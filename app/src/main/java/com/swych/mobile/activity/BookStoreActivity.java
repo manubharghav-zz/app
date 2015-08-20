@@ -12,6 +12,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
+import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.Toast;
 
@@ -23,11 +24,15 @@ import com.swych.mobile.networking.background.DownloadResultReceiver;
 import com.swych.mobile.networking.background.DownloadService;
 import com.swych.mobile.networking.background.DownloadType;
 
+import java.util.ArrayList;
+
 public class BookStoreActivity extends BaseActivity {
 
     private static String TAG="BookStoreActivity";
     private GridView gridView;
     private BookStoreAdapter adapter;
+
+    private ListView listView;
 
     @Override
     public String getActivityName() {
@@ -40,29 +45,36 @@ public class BookStoreActivity extends BaseActivity {
 //        setContentView(R.layout.activity_book_store);
 
         getLayoutInflater().inflate(R.layout.activity_book_store, frameLayout);
-        gridView = (GridView) findViewById(R.id.gridview);
-        RequestManager.getInstance().doRequest().getBooksForStore(gridView);
-        adapter = (BookStoreAdapter) gridView.getAdapter();
+        ArrayList<DisplayBookObject> bookList = new ArrayList<DisplayBookObject>();
+//        gridView = (GridView) findViewById(R.id.gridview);
+        listView = (ListView) findViewById(R.id.book_store_books);
+
+        RequestManager.getInstance().doRequest().getBooksForStore(bookList, listView);
+        Log.d(TAG, ""+bookList.size());
+//        adapter = (BookStoreAdapter) gridView.getAdapter();
 
 
 
 
-        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//
+//            @Override
+//            public void onItemClick(AdapterView<?> arg0, View v, int position,
+//                                    long arg3) {
+//                if(adapter==null){
+//                    adapter = (BookStoreAdapter)gridView.getAdapter();
+//                    Log.d(TAG, "adapter is null. attacing reference to the gridview's adapter");
+//                }
+////                Toast.makeText(getApplicationContext(),"Downloading "+ adapter.getSluggifiedTitle(position), Toast.LENGTH_SHORT).show();
+//                Intent intent = new Intent(getApplicationContext(), BookDetail.class);
+//                intent.putExtra(DisplayBookObject.class.getName(), adapter.getItem(position));
+//                startActivity(intent);
+//
+//            }
+//        });
 
-            @Override
-            public void onItemClick(AdapterView<?> arg0, View v, int position,
-                                    long arg3) {
-                if(adapter==null){
-                    adapter = (BookStoreAdapter)gridView.getAdapter();
-                    Log.d(TAG, "adapter is null. attacing reference to the gridview's adapter");
-                }
-//                Toast.makeText(getApplicationContext(),"Downloading "+ adapter.getSluggifiedTitle(position), Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(getApplicationContext(), BookDetail.class);
-                intent.putExtra(DisplayBookObject.class.getName(), adapter.getItem(position));
-                startActivity(intent);
 
-            }
-        });
+
     }
 
 

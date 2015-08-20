@@ -57,9 +57,14 @@
         <activity
             android:name=".activity.BookStoreActivity"
             android:label="@string/title_activity_book_store" >
+
             <meta-data
                 android:name="android.app.default_searchable"
                 android:value=".activity.SearchResultsActivity" />
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
         <activity
             android:name=".activity.SearchResultsActivity"
@@ -83,14 +88,7 @@
         <activity
             android:name=".activity.ReaderActivity2"
             android:label="@string/title_activity_reader2"
-            android:theme="@style/Theme.AppCompat.Light"
-                >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-
+            android:theme="@style/Theme.AppCompat.Light" >
         </activity>
         <activity
             android:name=".activity.TmpActivity"
