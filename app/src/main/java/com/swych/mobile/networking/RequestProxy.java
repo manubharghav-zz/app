@@ -34,8 +34,10 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executors;
 
 import static com.google.android.gms.internal.zzhl.runOnUiThread;
@@ -119,7 +121,7 @@ public class RequestProxy {
         // login request
     }
 
-    public void getBooksForStore(final ArrayList<DisplayBookObject> bookList, final ListView listView) {
+    public void getBooksForStore(final ArrayList<DisplayBookObject> bookList,final Set<String> readingOptions, final ListView listView) {
         Response.Listener<JSONObject> listener = new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
@@ -127,6 +129,7 @@ public class RequestProxy {
 
                 try {
                     bookList.addAll(Deserializer.getBooksFromJsonResponse(response));
+                    readingOptions.addAll(Deserializer.getReadingOptionsFromJsonResponse(response));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
