@@ -102,6 +102,18 @@ public class BookStoreAdapter extends BaseAdapter {
             availableLanguages.addView(languageImageView);
         }
 
+        if(!book.isMode1Present()){
+            Mode1.setVisibility(View.INVISIBLE);
+        }
+        else{
+            Mode1.setVisibility(View.VISIBLE);
+        }
+        if(!book.isMode2Present()){
+            Mode2.setVisibility(View.INVISIBLE);
+        }
+        else{
+            Mode2.setVisibility(View.VISIBLE);
+        }
 
 
         Log.d(TAG,"position: " + position + " Book: " +books.get(position).getTitle());

@@ -121,15 +121,15 @@ public class RequestProxy {
         // login request
     }
 
-    public void getBooksForStore(final ArrayList<DisplayBookObject> bookList,final Set<String> readingOptions, final ListView listView) {
+    public void getBooksForStore(final ArrayList<DisplayBookObject> bookList,final Map<String, Integer> readingOptions, final ListView listView) {
         Response.Listener<JSONObject> listener = new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 // not UI thread, do parsing
 
                 try {
+                    readingOptions.putAll(Deserializer.getReadingOptionsFromJsonResponse(response));
                     bookList.addAll(Deserializer.getBooksFromJsonResponse(response));
-                    readingOptions.addAll(Deserializer.getReadingOptionsFromJsonResponse(response));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }

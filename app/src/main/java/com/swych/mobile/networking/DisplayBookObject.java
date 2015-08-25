@@ -97,7 +97,23 @@ public class DisplayBookObject implements Serializable{
         return languages.toArray(new Language[0]);
     }
 
+    private boolean isMode1Present=false;
+    private boolean isMode2Present=false;
 
+    public void setMode1Present(boolean flag){
+        isMode1Present=flag;
+    }
+
+    public void setMode2Present(boolean flag){
+        isMode2Present=flag;
+    }
+
+    public boolean isMode1Present(){
+        return isMode1Present;
+    }
+    public boolean isMode2Present(){
+        return  isMode2Present;
+    }
 
     public Version addVersion(){
         Version version = new Version();

@@ -54,13 +54,23 @@ public class Deserializer {
 
 
 
-    public static Set<String> getReadingOptionsFromJsonResponse(JSONObject response) throws JSONException{
-        Set<String> set = new HashSet<>();
+    public static Map<String, Integer> getReadingOptionsFromJsonResponse(JSONObject response) throws JSONException{
+        Map<String, Integer> map = new HashMap<>();
 
         JSONArray readingOptions = response.getJSONArray("reading_options");
+        int mode;
         for(int i=0;i<readingOptions.length();i++){
-            set.add(readingOptions.get(i).toString());
+            String[] splits = readingOptions.get(i).toString().split(",");
+
+            mode = Integer.parseInt(splits[3]);
+            String key = splits[0]+","+splits[1]+","+ splits[2];
+            if(map.containsKey(key)) {
+                map.put(key, 3);
+            }
+            else{
+                map.put(key,mode);
+            }
         }
-        return set;
+        return map;
     }
 }

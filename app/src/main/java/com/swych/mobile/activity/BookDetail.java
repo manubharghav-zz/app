@@ -29,7 +29,7 @@ import org.w3c.dom.Text;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BookDetail extends ActionBarActivity implements DownloadResultReceiver.Receiver {
+public class BookDetail extends ActionBarActivity  {
     DisplayBookObject bookObject;
     private static String TAG="BookDetail";
     private NetworkImageView bookImageView;
@@ -80,60 +80,10 @@ public class BookDetail extends ActionBarActivity implements DownloadResultRecei
             return;
         }
         Toast.makeText(getApplicationContext(),"Source "+nativeLanguage +" Foreign " + foreignLanguage  , Toast.LENGTH_SHORT).show();
-        startBookDownload(bookObject, nativeLanguage, foreignLanguage);
+        //startBookDownload(bookObject, nativeLanguage, foreignLanguage);
 
     }
 
 
-    private void startBookDownload(DisplayBookObject book, Language nativeLanguage, Language foreignLanguage) {
-        /* Starting Download Service */
-        mReceiver = new DownloadResultReceiver(new Handler());
-        mReceiver.setReceiver(this);
-        Intent intent = new Intent(Intent.ACTION_SYNC, null, this, DownloadService.class);
 
-        intent.putExtra("book", book);
-//        intent.putExtra("bookName", book.getTitle());
-        intent.putExtra("nativeLanguage",nativeLanguage.getShortVersion());
-        intent.putExtra("foreignLanguage", foreignLanguage.getShortVersion());
-        intent.putExtra("receiver", mReceiver);
-        intent.putExtra("DownloadType", DownloadType.BOOK);
-//        intent.putExtra("requestId", 101);
-
-        startService(intent);
-    }
-
-
-    @Override
-    public void onReceiveResult(int resultCode, Bundle resultData) {
-        if(resultCode == DownloadService.STATUS_FINISHED){
-            Log.d(TAG, "Book download completed");
-            Toast.makeText(getApplicationContext(), "Book is downloaded. Visit library", Toast.LENGTH_SHORT).show();
-        }
-        else{
-            //TODO Download failed. decide later
-        }
-
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_book_detail, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
 }

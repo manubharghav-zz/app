@@ -56,11 +56,25 @@
                     android:showText="true"
                     android:textSize="20dp"
                     android:layout_gravity="center_vertical"
-
+                    android:visibility="gone"
                     />
+            <CheckBox
+                    android:id="@+id/chkMode1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:text="Mode1" />
+            <CheckBox
+                    android:id="@+id/chkMode2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:text="Mode2" />
+
             <Button android:layout_width="wrap_content" android:layout_height="wrap_content"
                     android:text="Filter"
                     android:onClick="filterBooks"
+                    android:visibility="gone"
                     />
 
         </LinearLayout>
