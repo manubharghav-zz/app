@@ -10,6 +10,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.CheckBox;
 import android.widget.GridView;
 import android.widget.ListView;
 import android.widget.SearchView;
@@ -46,7 +47,12 @@ public class BookStoreActivity extends BaseActivity implements DownloadResultRec
     private Language srcLanguageSelected;
     private Spinner swychLanguageSpinner;
     private Language swychLanguageSelected;
-    private Switch modeSwitch;
+
+    private CheckBox chkMode1;
+    private boolean isMode1checked=false;
+    private CheckBox chkMode2;
+    private boolean isMode2Checked=false;
+
 
     private boolean userSelectionDetected=false;
 
@@ -68,13 +74,15 @@ public class BookStoreActivity extends BaseActivity implements DownloadResultRec
 //        gridView = (GridView) findViewById(R.id.gridview);
         listView = (ListView) findViewById(R.id.book_store_books);
 
-        RequestManager.getInstance().doRequest().getBooksForStore(bookList,readingOptions, listView);
+        RequestManager.getInstance().doRequest().getBooksForStore(bookList, readingOptions, listView);
         Log.d(TAG, "" + bookList.size());
         adapter = (BookStoreAdapter) listView.getAdapter();
 
         srcLanguageSpinner = (Spinner) findViewById(R.id.src_language_store);
         swychLanguageSpinner = (Spinner) findViewById(R.id.swych_language_store);
-        modeSwitch = (Switch) findViewById(R.id.mode_button);
+
+        chkMode1 = (CheckBox) findViewById(R.id.chkMode1);
+        chkMode2 = (CheckBox) findViewById(R.id.chkMode2);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
@@ -97,9 +105,83 @@ public class BookStoreActivity extends BaseActivity implements DownloadResultRec
         });
 
 
+        addListenerOnSrcSpinner();
+        addListenerOnSwychSpinner();
+        addListeneronMode1ChkBox();
+        addListeneronMode2ChkBox();
+
 
     }
 
+
+    // add listeners on spinners.
+    public void addListenerOnSrcSpinner(){
+        srcLanguageSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                Log.d(TAG, "selected in src Spinner: " + parent.getItemAtPosition(position));
+                srcLanguageSelected = Language.valueOf(parent.getItemAtPosition(position).toString());
+
+                filterBooks();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                // Do Nothing;
+            }
+        });
+
+    }
+
+    public void addListenerOnSwychSpinner(){
+        swychLanguageSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                Log.d(TAG, "selected in swych Spinner: " + parent.getItemAtPosition(position));
+                swychLanguageSelected = Language.valueOf(parent.getItemAtPosition(position).toString());
+                filterBooks();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+    }
+
+    // add listeners on checkBoxes
+    public void addListeneronMode1ChkBox(){
+        chkMode1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(((CheckBox) v).isChecked()){
+                    isMode1checked=true;
+                }
+                else{
+                    isMode1checked=false;
+                }
+
+                filterBooks();
+            }
+        });
+    }
+
+    public void addListeneronMode2ChkBox(){
+        chkMode2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(((CheckBox) v).isChecked()){
+                    isMode2Checked=true;
+                }
+                else{
+                    isMode2Checked=false;
+                }
+
+                filterBooks();
+            }
+        });
+    }
 
 
     public ArrayList<DisplayBookObject> filterList(String srcLanguage, String targetLanguage, int modePref){
@@ -136,24 +218,28 @@ public class BookStoreActivity extends BaseActivity implements DownloadResultRec
     }
 
 
-    public void filterBooks(View v){
-        srcLanguageSelected = Language.valueOf(srcLanguageSpinner.getSelectedItem().toString());
-        swychLanguageSelected = Language.valueOf(swychLanguageSpinner.getSelectedItem().toString());
+    public void filterBooks(){
+//        srcLanguageSelected = Language.valueOf(srcLanguageSpinner.getSelectedItem().toString());
+//        swychLanguageSelected = Language.valueOf(swychLanguageSpinner.getSelectedItem().toString());
+        int modePref=0;
 
-        if(srcLanguageSelected==swychLanguageSelected){
-            Toast.makeText(getApplicationContext(),"Source and Swych Languages are same. Please select different languages", Toast.LENGTH_SHORT).show();
+        if(isMode1checked && isMode2Checked){
+            modePref=3;
+        }
+        else if(isMode1checked){
+            modePref=1;
+        }
+        else if (isMode2Checked){
+            modePref=2;
+        }
+
+
+        if(srcLanguageSelected==null || swychLanguageSelected==null || srcLanguageSelected==swychLanguageSelected){
             return;
         }
         userSelectionDetected = true;
-        boolean modeSwitchStatus = modeSwitch.isChecked();
-        int mode;
-        if(modeSwitchStatus){
-            mode =1;
-        }
-        else{
-            mode= 2;
-        }
-        ArrayList<DisplayBookObject> filteredList = filterList(srcLanguageSelected.getShortVersion(),swychLanguageSelected.getShortVersion(),mode);
+
+        ArrayList<DisplayBookObject> filteredList = filterList(srcLanguageSelected.getShortVersion(),swychLanguageSelected.getShortVersion(),modePref);
         listView.setAdapter(new BookStoreAdapter(getApplicationContext(), filteredList));
     }
 

@@ -38,6 +38,8 @@
                     android:layout_height="wrap_content"
                     android:entries="@array/languages"
                     android:layout_gravity="center_vertical"
+                    android:prompt="@string/src_language"
+
                     >
             </Spinner>
 
@@ -47,35 +49,21 @@
                     android:layout_height="wrap_content"
                     android:entries="@array/languages"
                     android:layout_gravity="center_vertical"
+                    android:prompt="@string/swych_language"
                     >
             </Spinner>
-            <Switch android:id="@+id/mode_button"
-                    android:layout_width="50dp" android:layout_height="wrap_content"
-                    android:textOn="@string/Mode1short"
-                    android:textOff="@string/Mode2short"
-                    android:showText="true"
-                    android:textSize="20dp"
-                    android:layout_gravity="center_vertical"
-                    android:visibility="gone"
-                    />
             <CheckBox
                     android:id="@+id/chkMode1"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
-                    android:text="Mode1" />
+                    android:text="@string/Mode1" />
             <CheckBox
                     android:id="@+id/chkMode2"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
-                    android:text="Mode2" />
-
-            <Button android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="Filter"
-                    android:onClick="filterBooks"
-                    android:visibility="gone"
-                    />
+                    android:text="@string/Mode2" />
 
         </LinearLayout>
     </LinearLayout>

@@ -59,5 +59,7 @@
 
     <string name="Mode1short">M1</string>
     <string name="Mode2short">M2</string>
+    <string name="Mode1">Mode1</string>
+    <string name="Mode2">Mode2</string>
 
 </resources>
