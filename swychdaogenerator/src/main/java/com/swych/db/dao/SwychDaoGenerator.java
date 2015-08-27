@@ -35,13 +35,13 @@ public class SwychDaoGenerator {
         book.addIndex(titleIndex);
         book.addLongProperty("author_id").index();
         book.addStringProperty("author_name").index();
-        book.addDateProperty("date").index();
+        book.addDateProperty("last_modified_date").index();
         book.addStringProperty("imageUrl");
         // version table
         Entity version = schema.addEntity(VERSION);
         version.addIdProperty();
         version.addStringProperty("language").notNull();
-        version.addDateProperty("date").notNull();
+        version.addDateProperty("last_modified_date").notNull();
         version.addStringProperty("description");
         Property bookIdProperty = version.addLongProperty("book_id").notNull().getProperty();
         version.addStringProperty("title").notNull();
@@ -54,8 +54,21 @@ public class SwychDaoGenerator {
         // user library table;
         Entity library = schema.addEntity(LIBRARY);
         library.addIdProperty();
+        Property libraryTitleProperty = library.addStringProperty("title").getProperty();
+        Property librarysrcLangProperty  =library.addStringProperty("srcLanguage").getProperty();
+        Property libraryswychLangProperty = library.addStringProperty("swychLanguage").getProperty();
+
+        Index libraryUniqueItemIndex = new Index();
+        libraryUniqueItemIndex.addProperty(libraryTitleProperty);
+        libraryUniqueItemIndex.addProperty(librarysrcLangProperty);
+        libraryUniqueItemIndex.addProperty(libraryswychLangProperty);
+        libraryUniqueItemIndex.makeUnique();
+        library.addIndex(libraryUniqueItemIndex);
+
         Property srcVersionProperty = library.addLongProperty("srcVersionId").getProperty();
         Property swychVersionProperty = library.addLongProperty("swychVersionId").getProperty();
+
+
         library.addToOne(version,srcVersionProperty,"srcVersion");
         ToMany srcMappings = version.addToMany(library, srcVersionProperty);
         srcMappings.setName("srcMappings");
@@ -64,9 +77,9 @@ public class SwychDaoGenerator {
         ToMany swychMappings = version.addToMany(library, swychVersionProperty);
         swychMappings.setName("swychMappings");
 
-        library.addStringProperty("srcLanguage");
-        library.addStringProperty("swychLanguage");
-        library.addStringProperty("title");
+        library.addDateProperty("last_modified_date");
+
+
 
 
         // bookmarks table;
@@ -74,7 +87,7 @@ public class SwychDaoGenerator {
         bookmarks.addIdProperty().primaryKey().notNull();
         bookmarks.addIntProperty("mode").notNull();
         bookmarks.addIntProperty("book_position").notNull();
-        bookmarks.addDateProperty("date").notNull();
+        bookmarks.addDateProperty("last_modified_date").notNull();
         Property nativeLanguageVersionId = bookmarks.addLongProperty("version1_id").notNull().getProperty();
         bookmarks.addToOne(version, nativeLanguageVersionId, "nativeVersion");
         Property foreignLanguageVersionId = bookmarks.addLongProperty("version2_id").getProperty();
@@ -138,7 +151,7 @@ public class SwychDaoGenerator {
         Entity sentenceMappings = schema.addEntity(MAPPINGS);
         sentenceMappings.addIdProperty().autoincrement();
         sentenceMappings.addStringProperty("strMapping");
-        sentenceMappings.addDateProperty("date").notNull();
+        sentenceMappings.addDateProperty("last_modified_date").notNull();
         nativeLanguageVersionId = sentenceMappings.addLongProperty("version1_id").getProperty();
         foreignLanguageVersionId = sentenceMappings.addLongProperty("version2_id").getProperty();
         sentenceMappings.addToOne(version, nativeLanguageVersionId, "nativeVersion");

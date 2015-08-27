@@ -44,6 +44,7 @@ import java.text.SimpleDateFormat;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 
 import de.greenrobot.dao.AbstractDaoMaster;
@@ -57,6 +58,7 @@ public class DownloadService extends IntentService {
     public static final int STATUS_RUNNING = 0;
     public static final int STATUS_FINISHED = 1;
     public static final int STATUS_ERROR = 2;
+    public static final int STATUS_DUPLICATE=3;
 
     private DownloadType downloadType;
 
@@ -97,6 +99,18 @@ public class DownloadService extends IntentService {
 
         Bundle bundle = new Bundle();
         receiver.send(STATUS_RUNNING, Bundle.EMPTY);
+
+        DaoSession session = MyApplication.getSession();
+        LibraryDao libraryDao = session.getLibraryDao();
+        List<Library> list = libraryDao.queryBuilder().where(LibraryDao.Properties.Title.eq(bookName)).where(LibraryDao.Properties.SrcLanguage.eq(srcLanguage)).where(LibraryDao.Properties.SwychLanguage.eq(swychLanguage)).list();
+
+        if(list.size()>0){
+            Log.d(TAG,"Book"+bookName+ "already present in the library.");
+            receiver.send(STATUS_DUPLICATE, bundle);
+            return;
+        }
+
+
 
         try {
             JSONObject srcLangBook = downloadData(URLs.VERSION + bookName + "/" + srcLanguage);
@@ -208,7 +222,8 @@ public class DownloadService extends IntentService {
         Version swychVersion = new Version(null, swychLanguage,swychVerLastModifiedDate, swychDispVersion.getDescription(), bookId, swychDispVersion.getTitle(), swychDispVersion.getAuthor());
         long swychVersionId = session.insert(swychVersion);
 
-        Library item = new Library(null,srcVersionId,swychVersionId,srcLanguage,swychLanguage,title);
+
+        Library item = new Library(null,title,srcLanguage,swychLanguage,srcVersionId,swychVersionId,new Date());
         session.insert(item);
         long libraryId = item.getId();
 

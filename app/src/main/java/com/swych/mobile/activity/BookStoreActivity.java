@@ -273,6 +273,10 @@ public class BookStoreActivity extends BaseActivity implements DownloadResultRec
             Log.d(TAG, "Book download completed");
             Toast.makeText(getApplicationContext(), "Book is downloaded. Visit library", Toast.LENGTH_SHORT).show();
         }
+        else if(resultCode==DownloadService.STATUS_DUPLICATE){
+            Log.d(TAG, "Book already present in your library");
+            Toast.makeText(getApplicationContext(), "This book exists in your library. Please visit library to read", Toast.LENGTH_SHORT).show();
+        }
         else{
             //TODO Download failed. decide later
         }
