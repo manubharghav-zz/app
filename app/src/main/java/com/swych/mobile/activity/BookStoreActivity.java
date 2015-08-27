@@ -66,7 +66,7 @@ public class BookStoreActivity extends BaseActivity implements DownloadResultRec
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_book_store);
+//        setContentView(R.layout.activity_book_store);
 
         getLayoutInflater().inflate(R.layout.activity_book_store, frameLayout);
         bookList = new ArrayList<DisplayBookObject>();
@@ -282,7 +282,11 @@ public class BookStoreActivity extends BaseActivity implements DownloadResultRec
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_book_detail, menu);
+        getMenuInflater().inflate(R.menu.menu_book_store, menu);
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        SearchView searchView = (SearchView) menu.findItem(R.id.search).getActionView();
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        searchView.setIconifiedByDefault(false);
         return true;
     }
 
