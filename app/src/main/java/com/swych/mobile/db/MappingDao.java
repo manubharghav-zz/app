@@ -30,7 +30,7 @@ public class MappingDao extends AbstractDao<Mapping, Long> {
     public static class Properties {
         public final static Property Id = new Property(0, Long.class, "id", true, "_id");
         public final static Property StrMapping = new Property(1, String.class, "strMapping", false, "STR_MAPPING");
-        public final static Property Date = new Property(2, java.util.Date.class, "date", false, "DATE");
+        public final static Property Last_modified_date = new Property(2, java.util.Date.class, "last_modified_date", false, "LAST_MODIFIED_DATE");
         public final static Property Version1_id = new Property(3, Long.class, "version1_id", false, "VERSION1_ID");
         public final static Property Version2_id = new Property(4, Long.class, "version2_id", false, "VERSION2_ID");
         public final static Property Library_item_mapping = new Property(5, Long.class, "library_item_mapping", false, "LIBRARY_ITEM_MAPPING");
@@ -55,7 +55,7 @@ public class MappingDao extends AbstractDao<Mapping, Long> {
         db.execSQL("CREATE TABLE " + constraint + "'MAPPING' (" + //
                 "'_id' INTEGER PRIMARY KEY AUTOINCREMENT ," + // 0: id
                 "'STR_MAPPING' TEXT," + // 1: strMapping
-                "'DATE' INTEGER NOT NULL ," + // 2: date
+                "'LAST_MODIFIED_DATE' INTEGER NOT NULL ," + // 2: last_modified_date
                 "'VERSION1_ID' INTEGER," + // 3: version1_id
                 "'VERSION2_ID' INTEGER," + // 4: version2_id
                 "'LIBRARY_ITEM_MAPPING' INTEGER);"); // 5: library_item_mapping
@@ -81,7 +81,7 @@ public class MappingDao extends AbstractDao<Mapping, Long> {
         if (strMapping != null) {
             stmt.bindString(2, strMapping);
         }
-        stmt.bindLong(3, entity.getDate().getTime());
+        stmt.bindLong(3, entity.getLast_modified_date().getTime());
  
         Long version1_id = entity.getVersion1_id();
         if (version1_id != null) {
@@ -117,7 +117,7 @@ public class MappingDao extends AbstractDao<Mapping, Long> {
         Mapping entity = new Mapping( //
             cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
             cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1), // strMapping
-            new java.util.Date(cursor.getLong(offset + 2)), // date
+            new java.util.Date(cursor.getLong(offset + 2)), // last_modified_date
             cursor.isNull(offset + 3) ? null : cursor.getLong(offset + 3), // version1_id
             cursor.isNull(offset + 4) ? null : cursor.getLong(offset + 4), // version2_id
             cursor.isNull(offset + 5) ? null : cursor.getLong(offset + 5) // library_item_mapping
@@ -130,7 +130,7 @@ public class MappingDao extends AbstractDao<Mapping, Long> {
     public void readEntity(Cursor cursor, Mapping entity, int offset) {
         entity.setId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
         entity.setStrMapping(cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1));
-        entity.setDate(new java.util.Date(cursor.getLong(offset + 2)));
+        entity.setLast_modified_date(new java.util.Date(cursor.getLong(offset + 2)));
         entity.setVersion1_id(cursor.isNull(offset + 3) ? null : cursor.getLong(offset + 3));
         entity.setVersion2_id(cursor.isNull(offset + 4) ? null : cursor.getLong(offset + 4));
         entity.setLibrary_item_mapping(cursor.isNull(offset + 5) ? null : cursor.getLong(offset + 5));

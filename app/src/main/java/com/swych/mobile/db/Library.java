@@ -14,11 +14,12 @@ import de.greenrobot.dao.DaoException;
 public class Library {
 
     private Long id;
-    private Long srcVersionId;
-    private Long swychVersionId;
+    private String title;
     private String srcLanguage;
     private String swychLanguage;
-    private String title;
+    private Long srcVersionId;
+    private Long swychVersionId;
+    private java.util.Date last_modified_date;
 
     /** Used to resolve relations */
     private transient DaoSession daoSession;
@@ -45,13 +46,14 @@ public class Library {
         this.id = id;
     }
 
-    public Library(Long id, Long srcVersionId, Long swychVersionId, String srcLanguage, String swychLanguage, String title) {
+    public Library(Long id, String title, String srcLanguage, String swychLanguage, Long srcVersionId, Long swychVersionId, java.util.Date last_modified_date) {
         this.id = id;
-        this.srcVersionId = srcVersionId;
-        this.swychVersionId = swychVersionId;
+        this.title = title;
         this.srcLanguage = srcLanguage;
         this.swychLanguage = swychLanguage;
-        this.title = title;
+        this.srcVersionId = srcVersionId;
+        this.swychVersionId = swychVersionId;
+        this.last_modified_date = last_modified_date;
     }
 
     /** called by internal mechanisms, do not call yourself. */
@@ -68,20 +70,12 @@ public class Library {
         this.id = id;
     }
 
-    public Long getSrcVersionId() {
-        return srcVersionId;
+    public String getTitle() {
+        return title;
     }
 
-    public void setSrcVersionId(Long srcVersionId) {
-        this.srcVersionId = srcVersionId;
-    }
-
-    public Long getSwychVersionId() {
-        return swychVersionId;
-    }
-
-    public void setSwychVersionId(Long swychVersionId) {
-        this.swychVersionId = swychVersionId;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public String getSrcLanguage() {
@@ -100,12 +94,28 @@ public class Library {
         this.swychLanguage = swychLanguage;
     }
 
-    public String getTitle() {
-        return title;
+    public Long getSrcVersionId() {
+        return srcVersionId;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public void setSrcVersionId(Long srcVersionId) {
+        this.srcVersionId = srcVersionId;
+    }
+
+    public Long getSwychVersionId() {
+        return swychVersionId;
+    }
+
+    public void setSwychVersionId(Long swychVersionId) {
+        this.swychVersionId = swychVersionId;
+    }
+
+    public java.util.Date getLast_modified_date() {
+        return last_modified_date;
+    }
+
+    public void setLast_modified_date(java.util.Date last_modified_date) {
+        this.last_modified_date = last_modified_date;
     }
 
     /** To-one relationship, resolved on first access. */

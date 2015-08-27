@@ -15,7 +15,7 @@ public class Mapping {
     private Long id;
     private String strMapping;
     /** Not-null value. */
-    private java.util.Date date;
+    private java.util.Date last_modified_date;
     private Long version1_id;
     private Long version2_id;
     private Long library_item_mapping;
@@ -46,10 +46,10 @@ public class Mapping {
         this.id = id;
     }
 
-    public Mapping(Long id, String strMapping, java.util.Date date, Long version1_id, Long version2_id, Long library_item_mapping) {
+    public Mapping(Long id, String strMapping, java.util.Date last_modified_date, Long version1_id, Long version2_id, Long library_item_mapping) {
         this.id = id;
         this.strMapping = strMapping;
-        this.date = date;
+        this.last_modified_date = last_modified_date;
         this.version1_id = version1_id;
         this.version2_id = version2_id;
         this.library_item_mapping = library_item_mapping;
@@ -78,13 +78,13 @@ public class Mapping {
     }
 
     /** Not-null value. */
-    public java.util.Date getDate() {
-        return date;
+    public java.util.Date getLast_modified_date() {
+        return last_modified_date;
     }
 
     /** Not-null value; ensure this value is available before it is saved to the database. */
-    public void setDate(java.util.Date date) {
-        this.date = date;
+    public void setLast_modified_date(java.util.Date last_modified_date) {
+        this.last_modified_date = last_modified_date;
     }
 
     public Long getVersion1_id() {

@@ -30,7 +30,7 @@ public class VersionDao extends AbstractDao<Version, Long> {
     public static class Properties {
         public final static Property Id = new Property(0, Long.class, "id", true, "_id");
         public final static Property Language = new Property(1, String.class, "language", false, "LANGUAGE");
-        public final static Property Date = new Property(2, java.util.Date.class, "date", false, "DATE");
+        public final static Property Last_modified_date = new Property(2, java.util.Date.class, "last_modified_date", false, "LAST_MODIFIED_DATE");
         public final static Property Description = new Property(3, String.class, "description", false, "DESCRIPTION");
         public final static Property Book_id = new Property(4, long.class, "book_id", false, "BOOK_ID");
         public final static Property Title = new Property(5, String.class, "title", false, "TITLE");
@@ -56,7 +56,7 @@ public class VersionDao extends AbstractDao<Version, Long> {
         db.execSQL("CREATE TABLE " + constraint + "'VERSION' (" + //
                 "'_id' INTEGER PRIMARY KEY ," + // 0: id
                 "'LANGUAGE' TEXT NOT NULL ," + // 1: language
-                "'DATE' INTEGER NOT NULL ," + // 2: date
+                "'LAST_MODIFIED_DATE' INTEGER NOT NULL ," + // 2: last_modified_date
                 "'DESCRIPTION' TEXT," + // 3: description
                 "'BOOK_ID' INTEGER NOT NULL ," + // 4: book_id
                 "'TITLE' TEXT NOT NULL ," + // 5: title
@@ -79,7 +79,7 @@ public class VersionDao extends AbstractDao<Version, Long> {
             stmt.bindLong(1, id);
         }
         stmt.bindString(2, entity.getLanguage());
-        stmt.bindLong(3, entity.getDate().getTime());
+        stmt.bindLong(3, entity.getLast_modified_date().getTime());
  
         String description = entity.getDescription();
         if (description != null) {
@@ -108,7 +108,7 @@ public class VersionDao extends AbstractDao<Version, Long> {
         Version entity = new Version( //
             cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
             cursor.getString(offset + 1), // language
-            new java.util.Date(cursor.getLong(offset + 2)), // date
+            new java.util.Date(cursor.getLong(offset + 2)), // last_modified_date
             cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3), // description
             cursor.getLong(offset + 4), // book_id
             cursor.getString(offset + 5), // title
@@ -122,7 +122,7 @@ public class VersionDao extends AbstractDao<Version, Long> {
     public void readEntity(Cursor cursor, Version entity, int offset) {
         entity.setId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
         entity.setLanguage(cursor.getString(offset + 1));
-        entity.setDate(new java.util.Date(cursor.getLong(offset + 2)));
+        entity.setLast_modified_date(new java.util.Date(cursor.getLong(offset + 2)));
         entity.setDescription(cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3));
         entity.setBook_id(cursor.getLong(offset + 4));
         entity.setTitle(cursor.getString(offset + 5));

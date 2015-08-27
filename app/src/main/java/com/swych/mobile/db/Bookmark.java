@@ -16,7 +16,7 @@ public class Bookmark {
     private int mode;
     private int book_position;
     /** Not-null value. */
-    private java.util.Date date;
+    private java.util.Date last_modified_date;
     private long version1_id;
     private Long version2_id;
 
@@ -43,11 +43,11 @@ public class Bookmark {
         this.id = id;
     }
 
-    public Bookmark(long id, int mode, int book_position, java.util.Date date, long version1_id, Long version2_id) {
+    public Bookmark(long id, int mode, int book_position, java.util.Date last_modified_date, long version1_id, Long version2_id) {
         this.id = id;
         this.mode = mode;
         this.book_position = book_position;
-        this.date = date;
+        this.last_modified_date = last_modified_date;
         this.version1_id = version1_id;
         this.version2_id = version2_id;
     }
@@ -83,13 +83,13 @@ public class Bookmark {
     }
 
     /** Not-null value. */
-    public java.util.Date getDate() {
-        return date;
+    public java.util.Date getLast_modified_date() {
+        return last_modified_date;
     }
 
     /** Not-null value; ensure this value is available before it is saved to the database. */
-    public void setDate(java.util.Date date) {
-        this.date = date;
+    public void setLast_modified_date(java.util.Date last_modified_date) {
+        this.last_modified_date = last_modified_date;
     }
 
     public long getVersion1_id() {

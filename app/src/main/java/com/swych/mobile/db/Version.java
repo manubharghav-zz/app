@@ -17,7 +17,7 @@ public class Version {
     /** Not-null value. */
     private String language;
     /** Not-null value. */
-    private java.util.Date date;
+    private java.util.Date last_modified_date;
     private String description;
     private long book_id;
     /** Not-null value. */
@@ -49,10 +49,10 @@ public class Version {
         this.id = id;
     }
 
-    public Version(Long id, String language, java.util.Date date, String description, long book_id, String title, String author) {
+    public Version(Long id, String language, java.util.Date last_modified_date, String description, long book_id, String title, String author) {
         this.id = id;
         this.language = language;
-        this.date = date;
+        this.last_modified_date = last_modified_date;
         this.description = description;
         this.book_id = book_id;
         this.title = title;
@@ -84,13 +84,13 @@ public class Version {
     }
 
     /** Not-null value. */
-    public java.util.Date getDate() {
-        return date;
+    public java.util.Date getLast_modified_date() {
+        return last_modified_date;
     }
 
     /** Not-null value; ensure this value is available before it is saved to the database. */
-    public void setDate(java.util.Date date) {
-        this.date = date;
+    public void setLast_modified_date(java.util.Date last_modified_date) {
+        this.last_modified_date = last_modified_date;
     }
 
     public String getDescription() {

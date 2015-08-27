@@ -27,7 +27,7 @@ public class BookDao extends AbstractDao<Book, Long> {
         public final static Property Title = new Property(1, String.class, "title", false, "TITLE");
         public final static Property Author_id = new Property(2, Long.class, "author_id", false, "AUTHOR_ID");
         public final static Property Author_name = new Property(3, String.class, "author_name", false, "AUTHOR_NAME");
-        public final static Property Date = new Property(4, java.util.Date.class, "date", false, "DATE");
+        public final static Property Last_modified_date = new Property(4, java.util.Date.class, "last_modified_date", false, "LAST_MODIFIED_DATE");
         public final static Property ImageUrl = new Property(5, String.class, "imageUrl", false, "IMAGE_URL");
     };
 
@@ -51,7 +51,7 @@ public class BookDao extends AbstractDao<Book, Long> {
                 "'TITLE' TEXT NOT NULL ," + // 1: title
                 "'AUTHOR_ID' INTEGER," + // 2: author_id
                 "'AUTHOR_NAME' TEXT," + // 3: author_name
-                "'DATE' INTEGER," + // 4: date
+                "'LAST_MODIFIED_DATE' INTEGER," + // 4: last_modified_date
                 "'IMAGE_URL' TEXT);"); // 5: imageUrl
         // Add Indexes
         db.execSQL("CREATE UNIQUE INDEX " + constraint + "IDX_BOOK_TITLE ON BOOK" +
@@ -60,8 +60,8 @@ public class BookDao extends AbstractDao<Book, Long> {
                 " (AUTHOR_ID);");
         db.execSQL("CREATE INDEX " + constraint + "IDX_BOOK_AUTHOR_NAME ON BOOK" +
                 " (AUTHOR_NAME);");
-        db.execSQL("CREATE INDEX " + constraint + "IDX_BOOK_DATE ON BOOK" +
-                " (DATE);");
+        db.execSQL("CREATE INDEX " + constraint + "IDX_BOOK_LAST_MODIFIED_DATE ON BOOK" +
+                " (LAST_MODIFIED_DATE);");
     }
 
     /** Drops the underlying database table. */
@@ -91,9 +91,9 @@ public class BookDao extends AbstractDao<Book, Long> {
             stmt.bindString(4, author_name);
         }
  
-        java.util.Date date = entity.getDate();
-        if (date != null) {
-            stmt.bindLong(5, date.getTime());
+        java.util.Date last_modified_date = entity.getLast_modified_date();
+        if (last_modified_date != null) {
+            stmt.bindLong(5, last_modified_date.getTime());
         }
  
         String imageUrl = entity.getImageUrl();
@@ -122,7 +122,7 @@ public class BookDao extends AbstractDao<Book, Long> {
             cursor.getString(offset + 1), // title
             cursor.isNull(offset + 2) ? null : cursor.getLong(offset + 2), // author_id
             cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3), // author_name
-            cursor.isNull(offset + 4) ? null : new java.util.Date(cursor.getLong(offset + 4)), // date
+            cursor.isNull(offset + 4) ? null : new java.util.Date(cursor.getLong(offset + 4)), // last_modified_date
             cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5) // imageUrl
         );
         return entity;
@@ -135,7 +135,7 @@ public class BookDao extends AbstractDao<Book, Long> {
         entity.setTitle(cursor.getString(offset + 1));
         entity.setAuthor_id(cursor.isNull(offset + 2) ? null : cursor.getLong(offset + 2));
         entity.setAuthor_name(cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3));
-        entity.setDate(cursor.isNull(offset + 4) ? null : new java.util.Date(cursor.getLong(offset + 4)));
+        entity.setLast_modified_date(cursor.isNull(offset + 4) ? null : new java.util.Date(cursor.getLong(offset + 4)));
         entity.setImageUrl(cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5));
      }
     

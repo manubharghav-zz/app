@@ -29,7 +29,7 @@ public class BookmarkDao extends AbstractDao<Bookmark, Long> {
         public final static Property Id = new Property(0, long.class, "id", true, "_id");
         public final static Property Mode = new Property(1, int.class, "mode", false, "MODE");
         public final static Property Book_position = new Property(2, int.class, "book_position", false, "BOOK_POSITION");
-        public final static Property Date = new Property(3, java.util.Date.class, "date", false, "DATE");
+        public final static Property Last_modified_date = new Property(3, java.util.Date.class, "last_modified_date", false, "LAST_MODIFIED_DATE");
         public final static Property Version1_id = new Property(4, long.class, "version1_id", false, "VERSION1_ID");
         public final static Property Version2_id = new Property(5, Long.class, "version2_id", false, "VERSION2_ID");
     };
@@ -53,7 +53,7 @@ public class BookmarkDao extends AbstractDao<Bookmark, Long> {
                 "'_id' INTEGER PRIMARY KEY NOT NULL ," + // 0: id
                 "'MODE' INTEGER NOT NULL ," + // 1: mode
                 "'BOOK_POSITION' INTEGER NOT NULL ," + // 2: book_position
-                "'DATE' INTEGER NOT NULL ," + // 3: date
+                "'LAST_MODIFIED_DATE' INTEGER NOT NULL ," + // 3: last_modified_date
                 "'VERSION1_ID' INTEGER NOT NULL ," + // 4: version1_id
                 "'VERSION2_ID' INTEGER);"); // 5: version2_id
         // Add Indexes
@@ -74,7 +74,7 @@ public class BookmarkDao extends AbstractDao<Bookmark, Long> {
         stmt.bindLong(1, entity.getId());
         stmt.bindLong(2, entity.getMode());
         stmt.bindLong(3, entity.getBook_position());
-        stmt.bindLong(4, entity.getDate().getTime());
+        stmt.bindLong(4, entity.getLast_modified_date().getTime());
         stmt.bindLong(5, entity.getVersion1_id());
  
         Long version2_id = entity.getVersion2_id();
@@ -102,7 +102,7 @@ public class BookmarkDao extends AbstractDao<Bookmark, Long> {
             cursor.getLong(offset + 0), // id
             cursor.getInt(offset + 1), // mode
             cursor.getInt(offset + 2), // book_position
-            new java.util.Date(cursor.getLong(offset + 3)), // date
+            new java.util.Date(cursor.getLong(offset + 3)), // last_modified_date
             cursor.getLong(offset + 4), // version1_id
             cursor.isNull(offset + 5) ? null : cursor.getLong(offset + 5) // version2_id
         );
@@ -115,7 +115,7 @@ public class BookmarkDao extends AbstractDao<Bookmark, Long> {
         entity.setId(cursor.getLong(offset + 0));
         entity.setMode(cursor.getInt(offset + 1));
         entity.setBook_position(cursor.getInt(offset + 2));
-        entity.setDate(new java.util.Date(cursor.getLong(offset + 3)));
+        entity.setLast_modified_date(new java.util.Date(cursor.getLong(offset + 3)));
         entity.setVersion1_id(cursor.getLong(offset + 4));
         entity.setVersion2_id(cursor.isNull(offset + 5) ? null : cursor.getLong(offset + 5));
      }
