@@ -9,6 +9,7 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -29,6 +30,8 @@ import com.swych.mobile.R;
  * This activity layout contain one frame layout in which we will add our child activity layout.  
  */
 public abstract class BaseActivity extends AppCompatActivity {
+
+    private static String TAG = "BaseActivity";
 
     /**
      *  Frame layout: Which is going to be used as parent layout for child activity layout.
@@ -220,11 +223,9 @@ public abstract class BaseActivity extends AppCompatActivity {
         if (actionBarDrawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
-
         switch (item.getItemId()) {
             case R.id.action_settings:
                 return true;
-
             default:
                 return super.onOptionsItemSelected(item);
         }
