@@ -14,7 +14,8 @@ public class Structure {
 
     private Long id;
     private Long position;
-    private String content;
+    private Long sentenceId;
+    private int type;
     private Long version_id;
 
     /** Used to resolve relations */
@@ -37,10 +38,11 @@ public class Structure {
         this.id = id;
     }
 
-    public Structure(Long id, Long position, String content, Long version_id) {
+    public Structure(Long id, Long position, Long sentenceId, int type, Long version_id) {
         this.id = id;
         this.position = position;
-        this.content = content;
+        this.sentenceId = sentenceId;
+        this.type = type;
         this.version_id = version_id;
     }
 
@@ -66,12 +68,20 @@ public class Structure {
         this.position = position;
     }
 
-    public String getContent() {
-        return content;
+    public Long getSentenceId() {
+        return sentenceId;
     }
 
-    public void setContent(String content) {
-        this.content = content;
+    public void setSentenceId(Long sentenceId) {
+        this.sentenceId = sentenceId;
+    }
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
     }
 
     public Long getVersion_id() {

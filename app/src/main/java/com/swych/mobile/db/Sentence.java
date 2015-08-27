@@ -1,6 +1,5 @@
 package com.swych.mobile.db;
 
-import java.util.List;
 import com.swych.mobile.db.DaoSession;
 import de.greenrobot.dao.DaoException;
 
@@ -28,7 +27,6 @@ public class Sentence {
     private Version version;
     private Long version__resolvedKey;
 
-    private List<PhraseReplacement> containedPhraseTranslation;
 
     // KEEP FIELDS - put your custom fields here
     // KEEP FIELDS END
@@ -113,28 +111,6 @@ public class Sentence {
             version_id = version.getId();
             version__resolvedKey = version_id;
         }
-    }
-
-    /** To-many relationship, resolved on first access (and after reset). Changes to to-many relations are not persisted, make changes to the target entity. */
-    public List<PhraseReplacement> getContainedPhraseTranslation() {
-        if (containedPhraseTranslation == null) {
-            if (daoSession == null) {
-                throw new DaoException("Entity is detached from DAO context");
-            }
-            PhraseReplacementDao targetDao = daoSession.getPhraseReplacementDao();
-            List<PhraseReplacement> containedPhraseTranslationNew = targetDao._querySentence_ContainedPhraseTranslation(id);
-            synchronized (this) {
-                if(containedPhraseTranslation == null) {
-                    containedPhraseTranslation = containedPhraseTranslationNew;
-                }
-            }
-        }
-        return containedPhraseTranslation;
-    }
-
-    /** Resets a to-many relationship, making the next get call to query for a fresh result. */
-    public synchronized void resetContainedPhraseTranslation() {
-        containedPhraseTranslation = null;
     }
 
     /** Convenient call for {@link AbstractDao#delete(Object)}. Entity must attached to an entity context. */

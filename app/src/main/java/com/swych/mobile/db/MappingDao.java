@@ -10,6 +10,8 @@ import de.greenrobot.dao.AbstractDao;
 import de.greenrobot.dao.Property;
 import de.greenrobot.dao.internal.SqlUtils;
 import de.greenrobot.dao.internal.DaoConfig;
+import de.greenrobot.dao.query.Query;
+import de.greenrobot.dao.query.QueryBuilder;
 
 import com.swych.mobile.db.Mapping;
 
@@ -28,13 +30,15 @@ public class MappingDao extends AbstractDao<Mapping, Long> {
     public static class Properties {
         public final static Property Id = new Property(0, Long.class, "id", true, "_id");
         public final static Property StrMapping = new Property(1, String.class, "strMapping", false, "STR_MAPPING");
-        public final static Property RevisionNumber = new Property(2, long.class, "revisionNumber", false, "REVISION_NUMBER");
+        public final static Property Date = new Property(2, java.util.Date.class, "date", false, "DATE");
         public final static Property Version1_id = new Property(3, Long.class, "version1_id", false, "VERSION1_ID");
         public final static Property Version2_id = new Property(4, Long.class, "version2_id", false, "VERSION2_ID");
+        public final static Property Library_item_mapping = new Property(5, Long.class, "library_item_mapping", false, "LIBRARY_ITEM_MAPPING");
     };
 
     private DaoSession daoSession;
 
+    private Query<Mapping> library_SentenceMappingsQuery;
 
     public MappingDao(DaoConfig config) {
         super(config);
@@ -49,11 +53,12 @@ public class MappingDao extends AbstractDao<Mapping, Long> {
     public static void createTable(SQLiteDatabase db, boolean ifNotExists) {
         String constraint = ifNotExists? "IF NOT EXISTS ": "";
         db.execSQL("CREATE TABLE " + constraint + "'MAPPING' (" + //
-                "'_id' INTEGER PRIMARY KEY ," + // 0: id
+                "'_id' INTEGER PRIMARY KEY AUTOINCREMENT ," + // 0: id
                 "'STR_MAPPING' TEXT," + // 1: strMapping
-                "'REVISION_NUMBER' INTEGER NOT NULL ," + // 2: revisionNumber
+                "'DATE' INTEGER NOT NULL ," + // 2: date
                 "'VERSION1_ID' INTEGER," + // 3: version1_id
-                "'VERSION2_ID' INTEGER);"); // 4: version2_id
+                "'VERSION2_ID' INTEGER," + // 4: version2_id
+                "'LIBRARY_ITEM_MAPPING' INTEGER);"); // 5: library_item_mapping
     }
 
     /** Drops the underlying database table. */
@@ -76,7 +81,7 @@ public class MappingDao extends AbstractDao<Mapping, Long> {
         if (strMapping != null) {
             stmt.bindString(2, strMapping);
         }
-        stmt.bindLong(3, entity.getRevisionNumber());
+        stmt.bindLong(3, entity.getDate().getTime());
  
         Long version1_id = entity.getVersion1_id();
         if (version1_id != null) {
@@ -86,6 +91,11 @@ public class MappingDao extends AbstractDao<Mapping, Long> {
         Long version2_id = entity.getVersion2_id();
         if (version2_id != null) {
             stmt.bindLong(5, version2_id);
+        }
+ 
+        Long library_item_mapping = entity.getLibrary_item_mapping();
+        if (library_item_mapping != null) {
+            stmt.bindLong(6, library_item_mapping);
         }
     }
 
@@ -107,9 +117,10 @@ public class MappingDao extends AbstractDao<Mapping, Long> {
         Mapping entity = new Mapping( //
             cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
             cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1), // strMapping
-            cursor.getLong(offset + 2), // revisionNumber
+            new java.util.Date(cursor.getLong(offset + 2)), // date
             cursor.isNull(offset + 3) ? null : cursor.getLong(offset + 3), // version1_id
-            cursor.isNull(offset + 4) ? null : cursor.getLong(offset + 4) // version2_id
+            cursor.isNull(offset + 4) ? null : cursor.getLong(offset + 4), // version2_id
+            cursor.isNull(offset + 5) ? null : cursor.getLong(offset + 5) // library_item_mapping
         );
         return entity;
     }
@@ -119,9 +130,10 @@ public class MappingDao extends AbstractDao<Mapping, Long> {
     public void readEntity(Cursor cursor, Mapping entity, int offset) {
         entity.setId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
         entity.setStrMapping(cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1));
-        entity.setRevisionNumber(cursor.getLong(offset + 2));
+        entity.setDate(new java.util.Date(cursor.getLong(offset + 2)));
         entity.setVersion1_id(cursor.isNull(offset + 3) ? null : cursor.getLong(offset + 3));
         entity.setVersion2_id(cursor.isNull(offset + 4) ? null : cursor.getLong(offset + 4));
+        entity.setLibrary_item_mapping(cursor.isNull(offset + 5) ? null : cursor.getLong(offset + 5));
      }
     
     /** @inheritdoc */
@@ -147,6 +159,20 @@ public class MappingDao extends AbstractDao<Mapping, Long> {
         return true;
     }
     
+    /** Internal query to resolve the "sentenceMappings" to-many relationship of Library. */
+    public List<Mapping> _queryLibrary_SentenceMappings(Long library_item_mapping) {
+        synchronized (this) {
+            if (library_SentenceMappingsQuery == null) {
+                QueryBuilder<Mapping> queryBuilder = queryBuilder();
+                queryBuilder.where(Properties.Library_item_mapping.eq(null));
+                library_SentenceMappingsQuery = queryBuilder.build();
+            }
+        }
+        Query<Mapping> query = library_SentenceMappingsQuery.forCurrentThread();
+        query.setParameter(0, library_item_mapping);
+        return query.list();
+    }
+
     private String selectDeep;
 
     protected String getSelectDeep() {
@@ -157,9 +183,12 @@ public class MappingDao extends AbstractDao<Mapping, Long> {
             SqlUtils.appendColumns(builder, "T0", daoSession.getVersionDao().getAllColumns());
             builder.append(',');
             SqlUtils.appendColumns(builder, "T1", daoSession.getVersionDao().getAllColumns());
+            builder.append(',');
+            SqlUtils.appendColumns(builder, "T2", daoSession.getLibraryDao().getAllColumns());
             builder.append(" FROM MAPPING T");
             builder.append(" LEFT JOIN VERSION T0 ON T.'VERSION1_ID'=T0.'_id'");
             builder.append(" LEFT JOIN VERSION T1 ON T.'VERSION2_ID'=T1.'_id'");
+            builder.append(" LEFT JOIN LIBRARY T2 ON T.'LIBRARY_ITEM_MAPPING'=T2.'_id'");
             builder.append(' ');
             selectDeep = builder.toString();
         }
@@ -176,6 +205,10 @@ public class MappingDao extends AbstractDao<Mapping, Long> {
 
         Version foreignVersion = loadCurrentOther(daoSession.getVersionDao(), cursor, offset);
         entity.setForeignVersion(foreignVersion);
+        offset += daoSession.getVersionDao().getAllColumns().length;
+
+        Library library = loadCurrentOther(daoSession.getLibraryDao(), cursor, offset);
+        entity.setLibrary(library);
 
         return entity;    
     }

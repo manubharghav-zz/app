@@ -18,7 +18,6 @@ public class Version {
     private String language;
     /** Not-null value. */
     private java.util.Date date;
-    /** Not-null value. */
     private String description;
     private long book_id;
     /** Not-null value. */
@@ -35,10 +34,10 @@ public class Version {
     private Book book;
     private Long book__resolvedKey;
 
+    private List<Library> srcMappings;
+    private List<Library> swychMappings;
     private List<Sentence> sentences;
     private List<Structure> structure;
-    private List<Library> swychMappings;
-    private List<Library> libraryList;
 
     // KEEP FIELDS - put your custom fields here
     // KEEP FIELDS END
@@ -94,12 +93,10 @@ public class Version {
         this.date = date;
     }
 
-    /** Not-null value. */
     public String getDescription() {
         return description;
     }
 
-    /** Not-null value; ensure this value is available before it is saved to the database. */
     public void setDescription(String description) {
         this.description = description;
     }
@@ -161,6 +158,50 @@ public class Version {
     }
 
     /** To-many relationship, resolved on first access (and after reset). Changes to to-many relations are not persisted, make changes to the target entity. */
+    public List<Library> getSrcMappings() {
+        if (srcMappings == null) {
+            if (daoSession == null) {
+                throw new DaoException("Entity is detached from DAO context");
+            }
+            LibraryDao targetDao = daoSession.getLibraryDao();
+            List<Library> srcMappingsNew = targetDao._queryVersion_SrcMappings(id);
+            synchronized (this) {
+                if(srcMappings == null) {
+                    srcMappings = srcMappingsNew;
+                }
+            }
+        }
+        return srcMappings;
+    }
+
+    /** Resets a to-many relationship, making the next get call to query for a fresh result. */
+    public synchronized void resetSrcMappings() {
+        srcMappings = null;
+    }
+
+    /** To-many relationship, resolved on first access (and after reset). Changes to to-many relations are not persisted, make changes to the target entity. */
+    public List<Library> getSwychMappings() {
+        if (swychMappings == null) {
+            if (daoSession == null) {
+                throw new DaoException("Entity is detached from DAO context");
+            }
+            LibraryDao targetDao = daoSession.getLibraryDao();
+            List<Library> swychMappingsNew = targetDao._queryVersion_SwychMappings(id);
+            synchronized (this) {
+                if(swychMappings == null) {
+                    swychMappings = swychMappingsNew;
+                }
+            }
+        }
+        return swychMappings;
+    }
+
+    /** Resets a to-many relationship, making the next get call to query for a fresh result. */
+    public synchronized void resetSwychMappings() {
+        swychMappings = null;
+    }
+
+    /** To-many relationship, resolved on first access (and after reset). Changes to to-many relations are not persisted, make changes to the target entity. */
     public List<Sentence> getSentences() {
         if (sentences == null) {
             if (daoSession == null) {
@@ -202,50 +243,6 @@ public class Version {
     /** Resets a to-many relationship, making the next get call to query for a fresh result. */
     public synchronized void resetStructure() {
         structure = null;
-    }
-
-    /** To-many relationship, resolved on first access (and after reset). Changes to to-many relations are not persisted, make changes to the target entity. */
-    public List<Library> getSwychMappings() {
-        if (swychMappings == null) {
-            if (daoSession == null) {
-                throw new DaoException("Entity is detached from DAO context");
-            }
-            LibraryDao targetDao = daoSession.getLibraryDao();
-            List<Library> swychMappingsNew = targetDao._queryVersion_SwychMappings(id);
-            synchronized (this) {
-                if(swychMappings == null) {
-                    swychMappings = swychMappingsNew;
-                }
-            }
-        }
-        return swychMappings;
-    }
-
-    /** Resets a to-many relationship, making the next get call to query for a fresh result. */
-    public synchronized void resetSwychMappings() {
-        swychMappings = null;
-    }
-
-    /** To-many relationship, resolved on first access (and after reset). Changes to to-many relations are not persisted, make changes to the target entity. */
-    public List<Library> getLibraryList() {
-        if (libraryList == null) {
-            if (daoSession == null) {
-                throw new DaoException("Entity is detached from DAO context");
-            }
-            LibraryDao targetDao = daoSession.getLibraryDao();
-            List<Library> libraryListNew = targetDao._queryVersion_LibraryList(id);
-            synchronized (this) {
-                if(libraryList == null) {
-                    libraryList = libraryListNew;
-                }
-            }
-        }
-        return libraryList;
-    }
-
-    /** Resets a to-many relationship, making the next get call to query for a fresh result. */
-    public synchronized void resetLibraryList() {
-        libraryList = null;
     }
 
     /** Convenient call for {@link AbstractDao#delete(Object)}. Entity must attached to an entity context. */

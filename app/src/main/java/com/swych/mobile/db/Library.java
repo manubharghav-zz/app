@@ -1,5 +1,6 @@
 package com.swych.mobile.db;
 
+import java.util.List;
 import com.swych.mobile.db.DaoSession;
 import de.greenrobot.dao.DaoException;
 
@@ -31,6 +32,8 @@ public class Library {
     private Version swychVersion;
     private Long swychVersion__resolvedKey;
 
+    private List<PhraseReplacement> phraseMappings;
+    private List<Mapping> sentenceMappings;
 
     // KEEP FIELDS - put your custom fields here
     // KEEP FIELDS END
@@ -153,6 +156,50 @@ public class Library {
             swychVersionId = swychVersion == null ? null : swychVersion.getId();
             swychVersion__resolvedKey = swychVersionId;
         }
+    }
+
+    /** To-many relationship, resolved on first access (and after reset). Changes to to-many relations are not persisted, make changes to the target entity. */
+    public List<PhraseReplacement> getPhraseMappings() {
+        if (phraseMappings == null) {
+            if (daoSession == null) {
+                throw new DaoException("Entity is detached from DAO context");
+            }
+            PhraseReplacementDao targetDao = daoSession.getPhraseReplacementDao();
+            List<PhraseReplacement> phraseMappingsNew = targetDao._queryLibrary_PhraseMappings(id);
+            synchronized (this) {
+                if(phraseMappings == null) {
+                    phraseMappings = phraseMappingsNew;
+                }
+            }
+        }
+        return phraseMappings;
+    }
+
+    /** Resets a to-many relationship, making the next get call to query for a fresh result. */
+    public synchronized void resetPhraseMappings() {
+        phraseMappings = null;
+    }
+
+    /** To-many relationship, resolved on first access (and after reset). Changes to to-many relations are not persisted, make changes to the target entity. */
+    public List<Mapping> getSentenceMappings() {
+        if (sentenceMappings == null) {
+            if (daoSession == null) {
+                throw new DaoException("Entity is detached from DAO context");
+            }
+            MappingDao targetDao = daoSession.getMappingDao();
+            List<Mapping> sentenceMappingsNew = targetDao._queryLibrary_SentenceMappings(id);
+            synchronized (this) {
+                if(sentenceMappings == null) {
+                    sentenceMappings = sentenceMappingsNew;
+                }
+            }
+        }
+        return sentenceMappings;
+    }
+
+    /** Resets a to-many relationship, making the next get call to query for a fresh result. */
+    public synchronized void resetSentenceMappings() {
+        sentenceMappings = null;
     }
 
     /** Convenient call for {@link AbstractDao#delete(Object)}. Entity must attached to an entity context. */

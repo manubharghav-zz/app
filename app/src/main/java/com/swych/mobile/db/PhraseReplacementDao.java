@@ -28,17 +28,17 @@ public class PhraseReplacementDao extends AbstractDao<PhraseReplacement, Long> {
      * Can be used for QueryBuilder and for referencing column names.
     */
     public static class Properties {
-        public final static Property Id = new Property(0, long.class, "id", true, "_id");
+        public final static Property Id = new Property(0, Long.class, "id", true, "_id");
         public final static Property Language = new Property(1, String.class, "language", false, "LANGUAGE");
-        public final static Property FromChar = new Property(2, Integer.class, "fromChar", false, "FROM_CHAR");
-        public final static Property ToChar = new Property(3, Integer.class, "toChar", false, "TO_CHAR");
-        public final static Property Content = new Property(4, String.class, "content", false, "CONTENT");
-        public final static Property Sentence_id = new Property(5, Long.class, "sentence_id", false, "SENTENCE_ID");
+        public final static Property Phrases = new Property(2, String.class, "phrases", false, "PHRASES");
+        public final static Property Version1_id = new Property(3, Long.class, "version1_id", false, "VERSION1_ID");
+        public final static Property Version2_id = new Property(4, Long.class, "version2_id", false, "VERSION2_ID");
+        public final static Property Library_id = new Property(5, Long.class, "library_id", false, "LIBRARY_ID");
     };
 
     private DaoSession daoSession;
 
-    private Query<PhraseReplacement> sentence_ContainedPhraseTranslationQuery;
+    private Query<PhraseReplacement> library_PhraseMappingsQuery;
 
     public PhraseReplacementDao(DaoConfig config) {
         super(config);
@@ -53,12 +53,12 @@ public class PhraseReplacementDao extends AbstractDao<PhraseReplacement, Long> {
     public static void createTable(SQLiteDatabase db, boolean ifNotExists) {
         String constraint = ifNotExists? "IF NOT EXISTS ": "";
         db.execSQL("CREATE TABLE " + constraint + "'PHRASE_REPLACEMENT' (" + //
-                "'_id' INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL ," + // 0: id
+                "'_id' INTEGER PRIMARY KEY AUTOINCREMENT ," + // 0: id
                 "'LANGUAGE' TEXT," + // 1: language
-                "'FROM_CHAR' INTEGER," + // 2: fromChar
-                "'TO_CHAR' INTEGER," + // 3: toChar
-                "'CONTENT' TEXT," + // 4: content
-                "'SENTENCE_ID' INTEGER);"); // 5: sentence_id
+                "'PHRASES' TEXT," + // 2: phrases
+                "'VERSION1_ID' INTEGER," + // 3: version1_id
+                "'VERSION2_ID' INTEGER," + // 4: version2_id
+                "'LIBRARY_ID' INTEGER);"); // 5: library_id
     }
 
     /** Drops the underlying database table. */
@@ -71,31 +71,35 @@ public class PhraseReplacementDao extends AbstractDao<PhraseReplacement, Long> {
     @Override
     protected void bindValues(SQLiteStatement stmt, PhraseReplacement entity) {
         stmt.clearBindings();
-        stmt.bindLong(1, entity.getId());
+ 
+        Long id = entity.getId();
+        if (id != null) {
+            stmt.bindLong(1, id);
+        }
  
         String language = entity.getLanguage();
         if (language != null) {
             stmt.bindString(2, language);
         }
  
-        Integer fromChar = entity.getFromChar();
-        if (fromChar != null) {
-            stmt.bindLong(3, fromChar);
+        String phrases = entity.getPhrases();
+        if (phrases != null) {
+            stmt.bindString(3, phrases);
         }
  
-        Integer toChar = entity.getToChar();
-        if (toChar != null) {
-            stmt.bindLong(4, toChar);
+        Long version1_id = entity.getVersion1_id();
+        if (version1_id != null) {
+            stmt.bindLong(4, version1_id);
         }
  
-        String content = entity.getContent();
-        if (content != null) {
-            stmt.bindString(5, content);
+        Long version2_id = entity.getVersion2_id();
+        if (version2_id != null) {
+            stmt.bindLong(5, version2_id);
         }
  
-        Long sentence_id = entity.getSentence_id();
-        if (sentence_id != null) {
-            stmt.bindLong(6, sentence_id);
+        Long library_id = entity.getLibrary_id();
+        if (library_id != null) {
+            stmt.bindLong(6, library_id);
         }
     }
 
@@ -108,19 +112,19 @@ public class PhraseReplacementDao extends AbstractDao<PhraseReplacement, Long> {
     /** @inheritdoc */
     @Override
     public Long readKey(Cursor cursor, int offset) {
-        return cursor.getLong(offset + 0);
+        return cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0);
     }    
 
     /** @inheritdoc */
     @Override
     public PhraseReplacement readEntity(Cursor cursor, int offset) {
         PhraseReplacement entity = new PhraseReplacement( //
-            cursor.getLong(offset + 0), // id
+            cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
             cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1), // language
-            cursor.isNull(offset + 2) ? null : cursor.getInt(offset + 2), // fromChar
-            cursor.isNull(offset + 3) ? null : cursor.getInt(offset + 3), // toChar
-            cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4), // content
-            cursor.isNull(offset + 5) ? null : cursor.getLong(offset + 5) // sentence_id
+            cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2), // phrases
+            cursor.isNull(offset + 3) ? null : cursor.getLong(offset + 3), // version1_id
+            cursor.isNull(offset + 4) ? null : cursor.getLong(offset + 4), // version2_id
+            cursor.isNull(offset + 5) ? null : cursor.getLong(offset + 5) // library_id
         );
         return entity;
     }
@@ -128,12 +132,12 @@ public class PhraseReplacementDao extends AbstractDao<PhraseReplacement, Long> {
     /** @inheritdoc */
     @Override
     public void readEntity(Cursor cursor, PhraseReplacement entity, int offset) {
-        entity.setId(cursor.getLong(offset + 0));
+        entity.setId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
         entity.setLanguage(cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1));
-        entity.setFromChar(cursor.isNull(offset + 2) ? null : cursor.getInt(offset + 2));
-        entity.setToChar(cursor.isNull(offset + 3) ? null : cursor.getInt(offset + 3));
-        entity.setContent(cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4));
-        entity.setSentence_id(cursor.isNull(offset + 5) ? null : cursor.getLong(offset + 5));
+        entity.setPhrases(cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2));
+        entity.setVersion1_id(cursor.isNull(offset + 3) ? null : cursor.getLong(offset + 3));
+        entity.setVersion2_id(cursor.isNull(offset + 4) ? null : cursor.getLong(offset + 4));
+        entity.setLibrary_id(cursor.isNull(offset + 5) ? null : cursor.getLong(offset + 5));
      }
     
     /** @inheritdoc */
@@ -159,18 +163,17 @@ public class PhraseReplacementDao extends AbstractDao<PhraseReplacement, Long> {
         return true;
     }
     
-    /** Internal query to resolve the "containedPhraseTranslation" to-many relationship of Sentence. */
-    public List<PhraseReplacement> _querySentence_ContainedPhraseTranslation(Long sentence_id) {
+    /** Internal query to resolve the "phraseMappings" to-many relationship of Library. */
+    public List<PhraseReplacement> _queryLibrary_PhraseMappings(Long library_id) {
         synchronized (this) {
-            if (sentence_ContainedPhraseTranslationQuery == null) {
+            if (library_PhraseMappingsQuery == null) {
                 QueryBuilder<PhraseReplacement> queryBuilder = queryBuilder();
-                queryBuilder.where(Properties.Sentence_id.eq(null));
-                queryBuilder.orderRaw("LANGUAGE ASC");
-                sentence_ContainedPhraseTranslationQuery = queryBuilder.build();
+                queryBuilder.where(Properties.Library_id.eq(null));
+                library_PhraseMappingsQuery = queryBuilder.build();
             }
         }
-        Query<PhraseReplacement> query = sentence_ContainedPhraseTranslationQuery.forCurrentThread();
-        query.setParameter(0, sentence_id);
+        Query<PhraseReplacement> query = library_PhraseMappingsQuery.forCurrentThread();
+        query.setParameter(0, library_id);
         return query.list();
     }
 
@@ -181,9 +184,15 @@ public class PhraseReplacementDao extends AbstractDao<PhraseReplacement, Long> {
             StringBuilder builder = new StringBuilder("SELECT ");
             SqlUtils.appendColumns(builder, "T", getAllColumns());
             builder.append(',');
-            SqlUtils.appendColumns(builder, "T0", daoSession.getSentenceDao().getAllColumns());
+            SqlUtils.appendColumns(builder, "T0", daoSession.getLibraryDao().getAllColumns());
+            builder.append(',');
+            SqlUtils.appendColumns(builder, "T1", daoSession.getVersionDao().getAllColumns());
+            builder.append(',');
+            SqlUtils.appendColumns(builder, "T2", daoSession.getVersionDao().getAllColumns());
             builder.append(" FROM PHRASE_REPLACEMENT T");
-            builder.append(" LEFT JOIN SENTENCE T0 ON T.'SENTENCE_ID'=T0.'_id'");
+            builder.append(" LEFT JOIN LIBRARY T0 ON T.'LIBRARY_ID'=T0.'_id'");
+            builder.append(" LEFT JOIN VERSION T1 ON T.'VERSION1_ID'=T1.'_id'");
+            builder.append(" LEFT JOIN VERSION T2 ON T.'VERSION2_ID'=T2.'_id'");
             builder.append(' ');
             selectDeep = builder.toString();
         }
@@ -194,8 +203,16 @@ public class PhraseReplacementDao extends AbstractDao<PhraseReplacement, Long> {
         PhraseReplacement entity = loadCurrent(cursor, 0, lock);
         int offset = getAllColumns().length;
 
-        Sentence sentence = loadCurrentOther(daoSession.getSentenceDao(), cursor, offset);
-        entity.setSentence(sentence);
+        Library library = loadCurrentOther(daoSession.getLibraryDao(), cursor, offset);
+        entity.setLibrary(library);
+        offset += daoSession.getLibraryDao().getAllColumns().length;
+
+        Version nativeVersion = loadCurrentOther(daoSession.getVersionDao(), cursor, offset);
+        entity.setNativeVersion(nativeVersion);
+        offset += daoSession.getVersionDao().getAllColumns().length;
+
+        Version foreignVersion = loadCurrentOther(daoSession.getVersionDao(), cursor, offset);
+        entity.setForeignVersion(foreignVersion);
 
         return entity;    
     }

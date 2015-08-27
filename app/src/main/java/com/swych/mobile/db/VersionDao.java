@@ -57,7 +57,7 @@ public class VersionDao extends AbstractDao<Version, Long> {
                 "'_id' INTEGER PRIMARY KEY ," + // 0: id
                 "'LANGUAGE' TEXT NOT NULL ," + // 1: language
                 "'DATE' INTEGER NOT NULL ," + // 2: date
-                "'DESCRIPTION' TEXT NOT NULL ," + // 3: description
+                "'DESCRIPTION' TEXT," + // 3: description
                 "'BOOK_ID' INTEGER NOT NULL ," + // 4: book_id
                 "'TITLE' TEXT NOT NULL ," + // 5: title
                 "'AUTHOR' TEXT NOT NULL );"); // 6: author
@@ -80,7 +80,11 @@ public class VersionDao extends AbstractDao<Version, Long> {
         }
         stmt.bindString(2, entity.getLanguage());
         stmt.bindLong(3, entity.getDate().getTime());
-        stmt.bindString(4, entity.getDescription());
+ 
+        String description = entity.getDescription();
+        if (description != null) {
+            stmt.bindString(4, description);
+        }
         stmt.bindLong(5, entity.getBook_id());
         stmt.bindString(6, entity.getTitle());
         stmt.bindString(7, entity.getAuthor());
@@ -105,7 +109,7 @@ public class VersionDao extends AbstractDao<Version, Long> {
             cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
             cursor.getString(offset + 1), // language
             new java.util.Date(cursor.getLong(offset + 2)), // date
-            cursor.getString(offset + 3), // description
+            cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3), // description
             cursor.getLong(offset + 4), // book_id
             cursor.getString(offset + 5), // title
             cursor.getString(offset + 6) // author
@@ -119,7 +123,7 @@ public class VersionDao extends AbstractDao<Version, Long> {
         entity.setId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
         entity.setLanguage(cursor.getString(offset + 1));
         entity.setDate(new java.util.Date(cursor.getLong(offset + 2)));
-        entity.setDescription(cursor.getString(offset + 3));
+        entity.setDescription(cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3));
         entity.setBook_id(cursor.getLong(offset + 4));
         entity.setTitle(cursor.getString(offset + 5));
         entity.setAuthor(cursor.getString(offset + 6));

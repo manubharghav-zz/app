@@ -12,12 +12,12 @@ import de.greenrobot.dao.DaoException;
  */
 public class PhraseReplacement {
 
-    private long id;
+    private Long id;
     private String language;
-    private Integer fromChar;
-    private Integer toChar;
-    private String content;
-    private Long sentence_id;
+    private String phrases;
+    private Long version1_id;
+    private Long version2_id;
+    private Long library_id;
 
     /** Used to resolve relations */
     private transient DaoSession daoSession;
@@ -25,8 +25,14 @@ public class PhraseReplacement {
     /** Used for active entity operations. */
     private transient PhraseReplacementDao myDao;
 
-    private Sentence sentence;
-    private Long sentence__resolvedKey;
+    private Library library;
+    private Long library__resolvedKey;
+
+    private Version nativeVersion;
+    private Long nativeVersion__resolvedKey;
+
+    private Version foreignVersion;
+    private Long foreignVersion__resolvedKey;
 
 
     // KEEP FIELDS - put your custom fields here
@@ -35,17 +41,17 @@ public class PhraseReplacement {
     public PhraseReplacement() {
     }
 
-    public PhraseReplacement(long id) {
+    public PhraseReplacement(Long id) {
         this.id = id;
     }
 
-    public PhraseReplacement(long id, String language, Integer fromChar, Integer toChar, String content, Long sentence_id) {
+    public PhraseReplacement(Long id, String language, String phrases, Long version1_id, Long version2_id, Long library_id) {
         this.id = id;
         this.language = language;
-        this.fromChar = fromChar;
-        this.toChar = toChar;
-        this.content = content;
-        this.sentence_id = sentence_id;
+        this.phrases = phrases;
+        this.version1_id = version1_id;
+        this.version2_id = version2_id;
+        this.library_id = library_id;
     }
 
     /** called by internal mechanisms, do not call yourself. */
@@ -54,11 +60,11 @@ public class PhraseReplacement {
         myDao = daoSession != null ? daoSession.getPhraseReplacementDao() : null;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -70,60 +76,110 @@ public class PhraseReplacement {
         this.language = language;
     }
 
-    public Integer getFromChar() {
-        return fromChar;
+    public String getPhrases() {
+        return phrases;
     }
 
-    public void setFromChar(Integer fromChar) {
-        this.fromChar = fromChar;
+    public void setPhrases(String phrases) {
+        this.phrases = phrases;
     }
 
-    public Integer getToChar() {
-        return toChar;
+    public Long getVersion1_id() {
+        return version1_id;
     }
 
-    public void setToChar(Integer toChar) {
-        this.toChar = toChar;
+    public void setVersion1_id(Long version1_id) {
+        this.version1_id = version1_id;
     }
 
-    public String getContent() {
-        return content;
+    public Long getVersion2_id() {
+        return version2_id;
     }
 
-    public void setContent(String content) {
-        this.content = content;
+    public void setVersion2_id(Long version2_id) {
+        this.version2_id = version2_id;
     }
 
-    public Long getSentence_id() {
-        return sentence_id;
+    public Long getLibrary_id() {
+        return library_id;
     }
 
-    public void setSentence_id(Long sentence_id) {
-        this.sentence_id = sentence_id;
+    public void setLibrary_id(Long library_id) {
+        this.library_id = library_id;
     }
 
     /** To-one relationship, resolved on first access. */
-    public Sentence getSentence() {
-        Long __key = this.sentence_id;
-        if (sentence__resolvedKey == null || !sentence__resolvedKey.equals(__key)) {
+    public Library getLibrary() {
+        Long __key = this.library_id;
+        if (library__resolvedKey == null || !library__resolvedKey.equals(__key)) {
             if (daoSession == null) {
                 throw new DaoException("Entity is detached from DAO context");
             }
-            SentenceDao targetDao = daoSession.getSentenceDao();
-            Sentence sentenceNew = targetDao.load(__key);
+            LibraryDao targetDao = daoSession.getLibraryDao();
+            Library libraryNew = targetDao.load(__key);
             synchronized (this) {
-                sentence = sentenceNew;
-            	sentence__resolvedKey = __key;
+                library = libraryNew;
+            	library__resolvedKey = __key;
             }
         }
-        return sentence;
+        return library;
     }
 
-    public void setSentence(Sentence sentence) {
+    public void setLibrary(Library library) {
         synchronized (this) {
-            this.sentence = sentence;
-            sentence_id = sentence == null ? null : sentence.getId();
-            sentence__resolvedKey = sentence_id;
+            this.library = library;
+            library_id = library == null ? null : library.getId();
+            library__resolvedKey = library_id;
+        }
+    }
+
+    /** To-one relationship, resolved on first access. */
+    public Version getNativeVersion() {
+        Long __key = this.version1_id;
+        if (nativeVersion__resolvedKey == null || !nativeVersion__resolvedKey.equals(__key)) {
+            if (daoSession == null) {
+                throw new DaoException("Entity is detached from DAO context");
+            }
+            VersionDao targetDao = daoSession.getVersionDao();
+            Version nativeVersionNew = targetDao.load(__key);
+            synchronized (this) {
+                nativeVersion = nativeVersionNew;
+            	nativeVersion__resolvedKey = __key;
+            }
+        }
+        return nativeVersion;
+    }
+
+    public void setNativeVersion(Version nativeVersion) {
+        synchronized (this) {
+            this.nativeVersion = nativeVersion;
+            version1_id = nativeVersion == null ? null : nativeVersion.getId();
+            nativeVersion__resolvedKey = version1_id;
+        }
+    }
+
+    /** To-one relationship, resolved on first access. */
+    public Version getForeignVersion() {
+        Long __key = this.version2_id;
+        if (foreignVersion__resolvedKey == null || !foreignVersion__resolvedKey.equals(__key)) {
+            if (daoSession == null) {
+                throw new DaoException("Entity is detached from DAO context");
+            }
+            VersionDao targetDao = daoSession.getVersionDao();
+            Version foreignVersionNew = targetDao.load(__key);
+            synchronized (this) {
+                foreignVersion = foreignVersionNew;
+            	foreignVersion__resolvedKey = __key;
+            }
+        }
+        return foreignVersion;
+    }
+
+    public void setForeignVersion(Version foreignVersion) {
+        synchronized (this) {
+            this.foreignVersion = foreignVersion;
+            version2_id = foreignVersion == null ? null : foreignVersion.getId();
+            foreignVersion__resolvedKey = version2_id;
         }
     }
 

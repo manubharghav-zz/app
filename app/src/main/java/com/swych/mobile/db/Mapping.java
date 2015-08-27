@@ -14,9 +14,11 @@ public class Mapping {
 
     private Long id;
     private String strMapping;
-    private long revisionNumber;
+    /** Not-null value. */
+    private java.util.Date date;
     private Long version1_id;
     private Long version2_id;
+    private Long library_item_mapping;
 
     /** Used to resolve relations */
     private transient DaoSession daoSession;
@@ -30,6 +32,9 @@ public class Mapping {
     private Version foreignVersion;
     private Long foreignVersion__resolvedKey;
 
+    private Library library;
+    private Long library__resolvedKey;
+
 
     // KEEP FIELDS - put your custom fields here
     // KEEP FIELDS END
@@ -41,12 +46,13 @@ public class Mapping {
         this.id = id;
     }
 
-    public Mapping(Long id, String strMapping, long revisionNumber, Long version1_id, Long version2_id) {
+    public Mapping(Long id, String strMapping, java.util.Date date, Long version1_id, Long version2_id, Long library_item_mapping) {
         this.id = id;
         this.strMapping = strMapping;
-        this.revisionNumber = revisionNumber;
+        this.date = date;
         this.version1_id = version1_id;
         this.version2_id = version2_id;
+        this.library_item_mapping = library_item_mapping;
     }
 
     /** called by internal mechanisms, do not call yourself. */
@@ -71,12 +77,14 @@ public class Mapping {
         this.strMapping = strMapping;
     }
 
-    public long getRevisionNumber() {
-        return revisionNumber;
+    /** Not-null value. */
+    public java.util.Date getDate() {
+        return date;
     }
 
-    public void setRevisionNumber(long revisionNumber) {
-        this.revisionNumber = revisionNumber;
+    /** Not-null value; ensure this value is available before it is saved to the database. */
+    public void setDate(java.util.Date date) {
+        this.date = date;
     }
 
     public Long getVersion1_id() {
@@ -93,6 +101,14 @@ public class Mapping {
 
     public void setVersion2_id(Long version2_id) {
         this.version2_id = version2_id;
+    }
+
+    public Long getLibrary_item_mapping() {
+        return library_item_mapping;
+    }
+
+    public void setLibrary_item_mapping(Long library_item_mapping) {
+        this.library_item_mapping = library_item_mapping;
     }
 
     /** To-one relationship, resolved on first access. */
@@ -142,6 +158,31 @@ public class Mapping {
             this.foreignVersion = foreignVersion;
             version2_id = foreignVersion == null ? null : foreignVersion.getId();
             foreignVersion__resolvedKey = version2_id;
+        }
+    }
+
+    /** To-one relationship, resolved on first access. */
+    public Library getLibrary() {
+        Long __key = this.library_item_mapping;
+        if (library__resolvedKey == null || !library__resolvedKey.equals(__key)) {
+            if (daoSession == null) {
+                throw new DaoException("Entity is detached from DAO context");
+            }
+            LibraryDao targetDao = daoSession.getLibraryDao();
+            Library libraryNew = targetDao.load(__key);
+            synchronized (this) {
+                library = libraryNew;
+            	library__resolvedKey = __key;
+            }
+        }
+        return library;
+    }
+
+    public void setLibrary(Library library) {
+        synchronized (this) {
+            this.library = library;
+            library_item_mapping = library == null ? null : library.getId();
+            library__resolvedKey = library_item_mapping;
         }
     }
 

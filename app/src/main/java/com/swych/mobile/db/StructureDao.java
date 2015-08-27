@@ -30,8 +30,9 @@ public class StructureDao extends AbstractDao<Structure, Long> {
     public static class Properties {
         public final static Property Id = new Property(0, Long.class, "id", true, "_id");
         public final static Property Position = new Property(1, Long.class, "position", false, "POSITION");
-        public final static Property Content = new Property(2, String.class, "content", false, "CONTENT");
-        public final static Property Version_id = new Property(3, Long.class, "version_id", false, "VERSION_ID");
+        public final static Property SentenceId = new Property(2, Long.class, "sentenceId", false, "SENTENCE_ID");
+        public final static Property Type = new Property(3, int.class, "type", false, "TYPE");
+        public final static Property Version_id = new Property(4, Long.class, "version_id", false, "VERSION_ID");
     };
 
     private DaoSession daoSession;
@@ -53,8 +54,9 @@ public class StructureDao extends AbstractDao<Structure, Long> {
         db.execSQL("CREATE TABLE " + constraint + "'STRUCTURE' (" + //
                 "'_id' INTEGER PRIMARY KEY AUTOINCREMENT ," + // 0: id
                 "'POSITION' INTEGER," + // 1: position
-                "'CONTENT' TEXT," + // 2: content
-                "'VERSION_ID' INTEGER);"); // 3: version_id
+                "'SENTENCE_ID' INTEGER," + // 2: sentenceId
+                "'TYPE' INTEGER NOT NULL ," + // 3: type
+                "'VERSION_ID' INTEGER);"); // 4: version_id
         // Add Indexes
         db.execSQL("CREATE UNIQUE INDEX " + constraint + "IDX_STRUCTURE_POSITION_VERSION_ID ON STRUCTURE" +
                 " (POSITION,VERSION_ID);");
@@ -81,14 +83,15 @@ public class StructureDao extends AbstractDao<Structure, Long> {
             stmt.bindLong(2, position);
         }
  
-        String content = entity.getContent();
-        if (content != null) {
-            stmt.bindString(3, content);
+        Long sentenceId = entity.getSentenceId();
+        if (sentenceId != null) {
+            stmt.bindLong(3, sentenceId);
         }
+        stmt.bindLong(4, entity.getType());
  
         Long version_id = entity.getVersion_id();
         if (version_id != null) {
-            stmt.bindLong(4, version_id);
+            stmt.bindLong(5, version_id);
         }
     }
 
@@ -110,8 +113,9 @@ public class StructureDao extends AbstractDao<Structure, Long> {
         Structure entity = new Structure( //
             cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
             cursor.isNull(offset + 1) ? null : cursor.getLong(offset + 1), // position
-            cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2), // content
-            cursor.isNull(offset + 3) ? null : cursor.getLong(offset + 3) // version_id
+            cursor.isNull(offset + 2) ? null : cursor.getLong(offset + 2), // sentenceId
+            cursor.getInt(offset + 3), // type
+            cursor.isNull(offset + 4) ? null : cursor.getLong(offset + 4) // version_id
         );
         return entity;
     }
@@ -121,8 +125,9 @@ public class StructureDao extends AbstractDao<Structure, Long> {
     public void readEntity(Cursor cursor, Structure entity, int offset) {
         entity.setId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
         entity.setPosition(cursor.isNull(offset + 1) ? null : cursor.getLong(offset + 1));
-        entity.setContent(cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2));
-        entity.setVersion_id(cursor.isNull(offset + 3) ? null : cursor.getLong(offset + 3));
+        entity.setSentenceId(cursor.isNull(offset + 2) ? null : cursor.getLong(offset + 2));
+        entity.setType(cursor.getInt(offset + 3));
+        entity.setVersion_id(cursor.isNull(offset + 4) ? null : cursor.getLong(offset + 4));
      }
     
     /** @inheritdoc */

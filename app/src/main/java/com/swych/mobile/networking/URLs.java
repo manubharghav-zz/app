@@ -10,5 +10,6 @@ public class URLs {
     public static String BOOK = "http://www.swych.co/";
     public static String VERSION = "http://www.swych.co/api/version/";
     public static String MAPPING= "http://www.swych.co/api/mapping/";
+    public static String PHRASES= "http://www.swych.co/api/phrases/";
     public static String USER = "http://www.swych.co/";
 }

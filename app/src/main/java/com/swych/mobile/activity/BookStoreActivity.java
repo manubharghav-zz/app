@@ -255,12 +255,12 @@ public class BookStoreActivity extends BaseActivity implements DownloadResultRec
 
         intent.putExtra("book", book);
 //        intent.putExtra("bookName", book.getTitle());
-        intent.putExtra("nativeLanguage",nativeLanguage.getShortVersion());
-        intent.putExtra("foreignLanguage", foreignLanguage.getShortVersion());
+        intent.putExtra("nativeLanguage",srcLanguageSelected.getShortVersion());
+        intent.putExtra("foreignLanguage", swychLanguageSelected.getShortVersion());
         intent.putExtra("receiver", mReceiver);
         intent.putExtra("DownloadType", DownloadType.BOOK);
-        intent.putExtra("Mode1", book.isMode1Present());
-        intent.putExtra("Mode2", book.isMode2Present());
+        intent.putExtra("isMode1Present", book.isMode1Present());
+        intent.putExtra("isMode2Present", book.isMode2Present());
 //        intent.putExtra("requestId", 101);
 
         startService(intent);

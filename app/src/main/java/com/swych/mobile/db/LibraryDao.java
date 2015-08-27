@@ -38,8 +38,8 @@ public class LibraryDao extends AbstractDao<Library, Long> {
 
     private DaoSession daoSession;
 
+    private Query<Library> version_SrcMappingsQuery;
     private Query<Library> version_SwychMappingsQuery;
-    private Query<Library> version_LibraryListQuery;
 
     public LibraryDao(DaoConfig config) {
         super(config);
@@ -164,30 +164,30 @@ public class LibraryDao extends AbstractDao<Library, Long> {
         return true;
     }
     
-    /** Internal query to resolve the "swychMappings" to-many relationship of Version. */
-    public List<Library> _queryVersion_SwychMappings(Long srcVersionId) {
+    /** Internal query to resolve the "srcMappings" to-many relationship of Version. */
+    public List<Library> _queryVersion_SrcMappings(Long srcVersionId) {
         synchronized (this) {
-            if (version_SwychMappingsQuery == null) {
+            if (version_SrcMappingsQuery == null) {
                 QueryBuilder<Library> queryBuilder = queryBuilder();
                 queryBuilder.where(Properties.SrcVersionId.eq(null));
-                version_SwychMappingsQuery = queryBuilder.build();
+                version_SrcMappingsQuery = queryBuilder.build();
             }
         }
-        Query<Library> query = version_SwychMappingsQuery.forCurrentThread();
+        Query<Library> query = version_SrcMappingsQuery.forCurrentThread();
         query.setParameter(0, srcVersionId);
         return query.list();
     }
 
-    /** Internal query to resolve the "libraryList" to-many relationship of Version. */
-    public List<Library> _queryVersion_LibraryList(Long swychVersionId) {
+    /** Internal query to resolve the "swychMappings" to-many relationship of Version. */
+    public List<Library> _queryVersion_SwychMappings(Long swychVersionId) {
         synchronized (this) {
-            if (version_LibraryListQuery == null) {
+            if (version_SwychMappingsQuery == null) {
                 QueryBuilder<Library> queryBuilder = queryBuilder();
                 queryBuilder.where(Properties.SwychVersionId.eq(null));
-                version_LibraryListQuery = queryBuilder.build();
+                version_SwychMappingsQuery = queryBuilder.build();
             }
         }
-        Query<Library> query = version_LibraryListQuery.forCurrentThread();
+        Query<Library> query = version_SwychMappingsQuery.forCurrentThread();
         query.setParameter(0, swychVersionId);
         return query.list();
     }
