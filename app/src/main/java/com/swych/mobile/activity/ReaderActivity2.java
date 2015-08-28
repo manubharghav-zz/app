@@ -80,7 +80,7 @@ public class ReaderActivity2 extends AppCompatActivity {
 
     private static String SENTENCE_FORMAT= "<span class='sentence_block' data-sentence_id='%s'>%s</span>" ;
     private static String PARAGRAPH_FORMAT="</p>\n<p> ";
-    private static String CHAPTER_FORMAT = "<h2>Chapter %s </h2> \n";
+    private static String CHAPTER_FORMAT = "<h2>%s </h2> \n";
 
     // js script.
 
@@ -554,7 +554,7 @@ public class ReaderActivity2 extends AppCompatActivity {
             if(structure==null){
                 continue;
             }
-            if(isSentence(structure.getContent())==sentenceNumber){
+            if(structure.getSentenceId()==sentenceNumber){
                 moveStructureIterator(start,readForward);
                 moveStructureIterator(start,readForward);
                 return;
@@ -616,28 +616,27 @@ public class ReaderActivity2 extends AppCompatActivity {
             while (numLines > 0) {
                 // end of page.
                 struct = moveStructureIterator(false,readForward);
-                long sentenceId;
+                long sentenceId = struct.getSentenceId();
                 if(struct==null){
                     Log.d(TAG,"reached end of book");
                     break;
                 }
-                if((sentenceId = isSentence(struct.getContent()))>0){
-
+                if(struct.getType()==1){
                     buffer.append(String.format(SENTENCE_FORMAT, sentenceId,srcVersionSentences.get(sentenceId).getContent()));
                     numLines--;
                 }
-                else if(isParagraph(struct.getContent())){
+                else if(struct.getType()==2){
                     buffer.append(PARAGRAPH_FORMAT);
                 }
-                else if(isStructTag(struct.getContent())){
+                else if(struct.getType()>2){
                     if(buffer.length()>0) {
                         chapterEnd=true;
                         moveStructureIterator(false,!readForward);
                         numLines=0;
                     }
                     else {
-                        Log.d(TAG, struct.getContent());
-                        buffer.append(String.format(CHAPTER_FORMAT, struct.getContent().split("\\|\\|\\|")[1]));
+                        Log.d(TAG, struct.getSentenceId() + "   " + struct.getType());
+                        buffer.append(String.format(CHAPTER_FORMAT, srcVersionSentences.get(sentenceId).getContent()));
                         chapterEnd=false;
                     }
                 }
@@ -647,22 +646,23 @@ public class ReaderActivity2 extends AppCompatActivity {
         else{
             while (numLines > 0) {
                 struct = moveStructureIterator(true,readForward);
+
                 if(struct==null){
                     Log.d(TAG,"reached end of book");
                     break;
                 }
-                long sentenceId;
-                if((sentenceId = isSentence(struct.getContent()))>0){
+                long sentenceId = struct.getSentenceId();
+                if(struct.getType()==1){
 //                    Log.d(TAG,"adding sentence Id:  " + sentenceId);
                     buffer.insert(0, String.format(SENTENCE_FORMAT, sentenceId, srcVersionSentences.get(sentenceId).getContent()));
                     numLines--;
                 }
-                else if(isParagraph(struct.getContent())){
+                else if(struct.getType()==2){
                     buffer.insert(0, PARAGRAPH_FORMAT);
                 }
-                else if(isStructTag(struct.getContent())){
-                        Log.d(TAG, struct.getContent());
-                        buffer.insert(0, String.format(CHAPTER_FORMAT, struct.getContent().split("\\|\\|\\|")[1]));
+                else if(struct.getType()>2){
+                        Log.d(TAG, struct.getType()+ "   " + struct.getSentenceId());
+                        buffer.append(String.format(CHAPTER_FORMAT, srcVersionSentences.get(sentenceId).getContent()));
                         chapterEnd=true;
 
                 }

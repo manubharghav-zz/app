@@ -62,7 +62,7 @@ public class LibraryActivity extends BaseActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Cursor cursor = (Cursor) listview.getItemAtPosition(position);
-                Intent intent = new Intent(getApplicationContext(),ReaderActivity.class);
+                Intent intent = new Intent(getApplicationContext(),ReaderActivity2.class);
                 intent.putExtra(libraryActivityId, cursor.getLong(cursor.getColumnIndexOrThrow("_id")));
                 startActivity(intent);
             }
