@@ -73,4 +73,26 @@ public class Deserializer {
         }
         return map;
     }
+
+
+    public static String parseMappings(String mapping) {
+        StringBuffer buffer = new StringBuffer();
+        mapping = mapping.replaceAll(",\\[\\],", "");
+        mapping = mapping.replaceAll(",\\[\\]", "");
+        mapping = mapping.replaceAll("\\[\\],", "");
+        String[] splits = mapping.split("\\]\\],\\[\\[");
+        String key, value;
+        String[] keySplits, subSplits;
+        for (String split : splits) {
+            subSplits = split.split("\\],\\[");
+            if (subSplits.length == 2) {
+                key = subSplits[0].replaceAll("[\\[\\]]", "");
+                value = subSplits[1].replaceAll("[\\[\\]]", "");
+
+                keySplits = key.split(",");
+                buffer.append(keySplits[0]).append(":").append(keySplits.length).append(",").append(value).append(";");
+            }
+        }
+        return buffer.toString();
+    }
 }

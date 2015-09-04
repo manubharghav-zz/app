@@ -20,9 +20,11 @@ import android.webkit.WebView;
 
 import com.swych.mobile.MyApplication;
 import com.swych.mobile.R;
+import com.swych.mobile.commons.utils.Mode;
 import com.swych.mobile.db.DaoSession;
 import com.swych.mobile.db.Library;
 import com.swych.mobile.db.LibraryDao;
+import com.swych.mobile.db.Mapping;
 import com.swych.mobile.db.Sentence;
 import com.swych.mobile.db.Structure;
 
@@ -32,6 +34,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 public class ReaderActivity2 extends AppCompatActivity {
 
@@ -49,9 +52,16 @@ public class ReaderActivity2 extends AppCompatActivity {
 
     private boolean chapterEnd = false;
 
+    private Mode mode;
+    private boolean readForward = true;
+
     private long libraryItemId;
     private WebView webView;
     private Map<Long, Sentence> srcVersionSentences;
+    private Map<Long,Sentence> destVersionSentences;
+    private Map<Long, String> mappings;
+
+//    private
     private ArrayList<Structure> structureList;
 
 
@@ -80,7 +90,7 @@ public class ReaderActivity2 extends AppCompatActivity {
 
     private static String SENTENCE_FORMAT= "<span class='sentence_block' data-sentence_id='%s'>%s</span>" ;
     private static String PARAGRAPH_FORMAT="</p>\n<p> ";
-    private static String CHAPTER_FORMAT = "<h2>%s </h2> \n";
+    private static String CHAPTER_FORMAT = "<span class='heading' data-sentence_id='%s'>%s</span> \n";
 
     // js script.
 
@@ -88,6 +98,17 @@ public class ReaderActivity2 extends AppCompatActivity {
             "<head> "+
             "<script src='jquery-2.1.3.min.js' type='text/javascript'></script>"+
             "</head>"+
+            "<style type=\"text/css\">\n" +
+            ".heading {\n" +
+            "    text-align: center;\n" +
+            "    font-size: 25px;\n" +
+            "}\n" +
+            ".sentence_block{\n" +
+            "\tfont-size: 17px;\n" +
+            "}\n" +
+            "\n" +
+            "\n" +
+            "</style>"+
             "<body>"+
             "<div id='page_content' align=\"justify\" style='visibility:hidden'>"+
             "<script>" +
@@ -100,6 +121,7 @@ public class ReaderActivity2 extends AppCompatActivity {
             "} else {\n" +
             "    viewportHeight = document.documentElement.clientHeight;\n" +
             "}" +
+            "viewportHeight=viewportHeight-10; \n"+
             "    var lastSpan;\n" +
             "    var removeSentences = true;\n" +
             "  if(document.getElementById('page_content').offsetHeight < viewportHeight){\n" +
@@ -109,6 +131,11 @@ public class ReaderActivity2 extends AppCompatActivity {
             "    while(document.getElementById('page_content').offsetHeight > viewportHeight){\n" +
             "        lastSpan =  $('#page_content span:last');\n" +
             "        if(removeSentences){\n" +
+            "        $('p').each(function(index, item) {\n" +
+            "            if($.trim($(item).text()) === \"\") {\n" +
+            "                $(item).remove(); // $(item).remove();\n" +
+            "            }\n" +
+            "        });\n" +
             "        rem_sentece_id = lastSpan.attr(\"data-sentence_id\") + ' '+rem_sentece_id;\n" +
             "        lastSpan.remove();\n" +
             "        if(document.getElementById('page_content').offsetHeight > viewportHeight){\n" +
@@ -133,7 +160,7 @@ public class ReaderActivity2 extends AppCompatActivity {
             "  alert('"+CLICK_EVENT+":'+$(this).attr('data-sentence_id'));\n" +
             "});" +
             "</script>"+
-            "<p span class='paragraph_block' align=\"justify\">";
+            "<p>";
 
 
 
@@ -141,6 +168,17 @@ public class ReaderActivity2 extends AppCompatActivity {
             "<head> "+
             "<script src='jquery-2.1.3.min.js' type='text/javascript'></script>"+
             "</head>"+
+            "<style type=\"text/css\">\n" +
+            ".heading {\n" +
+            "    text-align: center;\n" +
+            "    font-size: 25px;\n" +
+            "}\n" +
+            ".sentence_block{\n" +
+            "\tfont-size: 17px;\n" +
+            "}\n" +
+            "\n" +
+            "\n" +
+            "</style>"+
             "<body>"+
             "<div id='page_content' align=\"justify\" style='visibility:hidden'>"+
             "<script>" +
@@ -151,6 +189,7 @@ public class ReaderActivity2 extends AppCompatActivity {
             "  } else {\n" +
             "      viewportHeight = document.documentElement.clientHeight;\n" +
             "  }\n" +
+            "viewportHeight=viewportHeight-10; \n"+
             "  cutoff=' ';\n" +
             "  rem_sentece_id='';\n" +
             "  var firstSpan;\n" +
@@ -162,6 +201,11 @@ public class ReaderActivity2 extends AppCompatActivity {
             "  while(document.getElementById('page_content').offsetHeight > viewportHeight){\n" +
             "      firstSpan =  $('#page_content span:first');\n" +
             "      if(removeSentences){\n" +
+            "        $('p').each(function(index, item) {\n" +
+            "            if($.trim($(item).text()) === \"\") {\n" +
+            "                $(item).remove(); // $(item).remove();\n" +
+            "            }\n" +
+            "        });\n" +
             "\n" +
             "        rem_sentece_id = rem_sentece_id + ' '+ firstSpan.attr(\"data-sentence_id\");\n" +
             "        firstSpan.detach();\n" +
@@ -169,17 +213,18 @@ public class ReaderActivity2 extends AppCompatActivity {
             "           continue;\n" +
             "        }\n" +
             "        removeSentences=false;\n" +
-            "        $('p').each(function(index, item) {\n" +
-            "            if($.trim($(item).text()) === \"\") {\n" +
-            "                $(item).remove(); // $(item).remove();\n" +
-            "            }\n" +
-            "        });\n" +
             "        firstSpan.prependTo($('p:first'));}      \n" +
             "      var s = $('#page_content span:first').text();\n" +
             "      var pos = s.indexOf(' ');\n" +
             "\n" +
-            "      cutoff = cutoff + ' '+s.substr(0, pos);\n" +
-            "      s = s.substr(pos+1,s.length);\n" +
+            "      if(pos>0){\n" +
+            "           cutoff = cutoff + ' '+s.substr(0, pos);\n" +
+            "           s = s.substr(pos+1,s.length);\n" +
+            "      }\n" +
+            "      else{\n" +
+            "           cutoff = cutoff + ' '+s;\n" +
+            "           s=\"\";\n" +
+            "      }"+
             "      $('#page_content span:first').html(s);\n" +
             "    }\n" +
             "\n" +
@@ -187,13 +232,13 @@ public class ReaderActivity2 extends AppCompatActivity {
             "    alert('"+RENDER_EVENT+"' +'###' + cutoff +\"###\" + 'rem_sentece_id' + \"###\" + rem_sentece_id +\"###\"+'included_string'+\"### \"+ s);}"+
             "});" +
             "</script>"+
-            "<p span class='paragraph_block' align=\"justify\">";
+            "<p>";
 
     String templateSecondPart = "</p> " +
             "</div></body></html>";
 
 
-    private boolean readForward = true;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -451,6 +496,8 @@ public class ReaderActivity2 extends AppCompatActivity {
                 readForward=false;
                 endOfPage = startOfPage;
                 startOfPage = startOfPage-2;
+                // move start of page to the strucure element just before the firstSentenceId.
+
                 lastSentenceId = firstSentenceId;
 
                 currentPageSuffix="";
@@ -465,7 +512,7 @@ public class ReaderActivity2 extends AppCompatActivity {
     }
 
     @Override
-    public boolean dispatchTouchEvent(MotionEvent e){
+    public boolean dispatchTouchEvent(MotionEvent e) {
         super.dispatchTouchEvent(e);
         return this.gDetect.onTouchEvent(e);
     }
@@ -516,7 +563,36 @@ public class ReaderActivity2 extends AppCompatActivity {
         structureList = new ArrayList<Structure>();
         structureList.addAll(structure);
 
+
+        // load destination version book into memory;
+        destVersionSentences = new HashMap<>();
+        List<Sentence> swychVersionSentenceList = libraryItem.getSwychVersion().getSentences();
+        for(Sentence sentence:swychVersionSentenceList){
+            destVersionSentences.put(sentence.getSentence_id(),sentence);
+        }
+
+
+        // load mappings into memory;
+        mappings = new HashMap<>();
+        List<Mapping> sentMappingsFromDB = libraryItem.getSentenceMappings();
+        if(sentMappingsFromDB.size()==0){
+            Log.i(TAG,"No mode 2 mappings for the book");
+        }
+        else{
+            String mappingStr = sentMappingsFromDB.get(0).getStrMapping();
+            StringTokenizer tokenizer = new StringTokenizer(mappingStr,";");
+            String pair;
+            String splits[];
+            while(tokenizer.hasMoreTokens()){
+                pair = tokenizer.nextToken();
+                splits = pair.split(":");
+                mappings.put(Long.parseLong(splits[0]),splits[1]);
+            }
+        }
+        Log.d(TAG,"mappings loaded, num mappings = "+mappings.size());
+
         // testing book.
+
 
 
         startOfPage = 0;
@@ -525,42 +601,23 @@ public class ReaderActivity2 extends AppCompatActivity {
     }
 
 
-    private boolean isStructTag(String s){
-        if( s.contains(CHAPTER)){
-            return true;
-        }
-        return false;
-    }
-    private boolean isParagraph(String s){
-        if (s.contains(PARAGRAPH_TAG)){
-            return true;
-        }
-        return false;
-    }
-    private Long isSentence(String s){
-        long sentId;
-        try{
-            sentId = Long.parseLong(s);
-            return sentId;
-        } catch (NumberFormatException e) {
-            // do nothing.. just a random sentence ID.
-        }
-        return (long)-1;
-    }
+
 
     private void rewindIterator(boolean start ,int sentenceNumber){
         while(true){
             Structure structure = moveStructureIterator(start,!readForward);
             if(structure==null){
+                //assuming it always moves backward.
                 continue;
             }
-            if(structure.getSentenceId()==sentenceNumber){
+            else if(structure.getSentenceId()==sentenceNumber){
                 moveStructureIterator(start,readForward);
                 moveStructureIterator(start,readForward);
                 return;
             }
         }
     }
+
     private Structure moveStructureIterator(boolean start,boolean direction){
         //TODO remember to handle base cases. like start of book and end of book.
         Structure structure;
@@ -598,6 +655,7 @@ public class ReaderActivity2 extends AppCompatActivity {
     }
 
     private String getLines(int numLines, boolean newPage){
+        Log.d(TAG,"in getlines: " + readForward);
         boolean read = true;
         StringBuffer buffer = new StringBuffer();
 
@@ -636,7 +694,7 @@ public class ReaderActivity2 extends AppCompatActivity {
                     }
                     else {
                         Log.d(TAG, struct.getSentenceId() + "   " + struct.getType());
-                        buffer.append(String.format(CHAPTER_FORMAT, srcVersionSentences.get(sentenceId).getContent()));
+                        buffer.append(String.format(CHAPTER_FORMAT,sentenceId, srcVersionSentences.get(sentenceId).getContent()));
                         chapterEnd=false;
                     }
                 }
@@ -648,7 +706,7 @@ public class ReaderActivity2 extends AppCompatActivity {
                 struct = moveStructureIterator(true,readForward);
 
                 if(struct==null){
-                    Log.d(TAG,"reached end of book");
+                    Log.d(TAG,"reached start of book");
                     break;
                 }
                 long sentenceId = struct.getSentenceId();
@@ -662,9 +720,10 @@ public class ReaderActivity2 extends AppCompatActivity {
                 }
                 else if(struct.getType()>2){
                         Log.d(TAG, struct.getType()+ "   " + struct.getSentenceId());
-                        buffer.append(String.format(CHAPTER_FORMAT, srcVersionSentences.get(sentenceId).getContent()));
+                        buffer.insert(0,String.format(CHAPTER_FORMAT,sentenceId, srcVersionSentences.get(sentenceId).getContent()));
+                        moveStructureIterator(true,!readForward);
                         chapterEnd=true;
-
+                        numLines=0;
                 }
 
             }
@@ -700,7 +759,7 @@ public class ReaderActivity2 extends AppCompatActivity {
         else{
             webViewBuffer.insert(0,nextLine);
         }
-//        Log.d(TAG,webViewBuffer.toString());
+        Log.d(TAG,webViewBuffer.toString());
         String htmlContent;
         if(readForward) {
             htmlContent = templateFirstPartForward + webViewBuffer.toString() + templateSecondPart;

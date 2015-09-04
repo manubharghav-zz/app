@@ -24,6 +24,7 @@ import com.swych.mobile.db.SentenceDao;
 import com.swych.mobile.db.Structure;
 import com.swych.mobile.db.StructureDao;
 import com.swych.mobile.db.Version;
+import com.swych.mobile.networking.Deserializer;
 import com.swych.mobile.networking.Details;
 import com.swych.mobile.networking.DisplayBookObject;
 import com.swych.mobile.networking.URLs;
@@ -117,10 +118,10 @@ public class DownloadService extends IntentService {
             JSONObject tarLangBook = downloadData(URLs.VERSION + bookName + "/" + swychLanguage);
             JSONObject mappings=null;
             JSONObject phrases = null;
-            if(isMode1Present) {
+            if(isMode2Present) {
                 mappings = downloadData(URLs.MAPPING + bookName + "/" + srcLanguage + "/" + swychLanguage);
             }
-            if(isMode2Present){
+            if(isMode1Present){
                 phrases = downloadData(URLs.PHRASES + bookName + "/" + srcLanguage + "/" + swychLanguage);
             }
             //persist these objects to database;
@@ -242,8 +243,10 @@ public class DownloadService extends IntentService {
         // handle mappings.
 //        MappingDao mappingDao = session.getMappingDao();
         Date mappingLastModifiedDate = df.parse(mappings.getString("date_modified"));
+        String parsedMappingString = Deserializer.parseMappings(mappings.getString("mapping"));
 
-        Mapping mapping = new Mapping(null, mappings.getString("mapping"),mappingLastModifiedDate, srcVersionId ,swychVersionId,libraryId);
+
+        Mapping mapping = new Mapping(null, parsedMappingString,mappingLastModifiedDate, srcVersionId ,swychVersionId,libraryId);
         session.insert(mapping);
 
         Date phrasesLastModifiedDate = df.parse(phrases.getString("date_modified"));

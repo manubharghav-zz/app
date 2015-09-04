@@ -368,26 +368,26 @@ public class ReaderActivity extends Activity {
 
         Structure struct;
 
-        while(numLines>0){
-            struct = moveStructureIterator(readForward);
-            long sentenceId;
-            if((sentenceId = isSentence(struct.getContent()))>0){
-                buffer.append("<span class='sentence_block' data-sentence_id='");
-                buffer.append(sentenceId);
-                buffer.append("'>");
-                buffer.append(srcVersionSentences.get(sentenceId).getContent());
-                buffer.append("</span>");
-                numLines--;
-            }
-            else if(isParagraph(struct.getContent())){
-                buffer.append("</p><p align=\"justify\">").append("\n");
-            }
-            else if(isStructTag(struct.getContent())){
-                buffer.append("<h2>Chapter ").append(struct.getContent().split("\\|\\|\\|")[1]);
-                buffer.append("</h2>").append("\n");
-            }
-
-        }
+//        while(numLines>0){
+//            struct = moveStructureIterator(readForward);
+//            long sentenceId;
+//            if((sentenceId = isSentence(struct.getContent()))>0){
+//                buffer.append("<span class='sentence_block' data-sentence_id='");
+//                buffer.append(sentenceId);
+//                buffer.append("'>");
+//                buffer.append(srcVersionSentences.get(sentenceId).getContent());
+//                buffer.append("</span>");
+//                numLines--;
+//            }
+//            else if(isParagraph(struct.getContent())){
+//                buffer.append("</p><p align=\"justify\">").append("\n");
+//            }
+//            else if(isStructTag(struct.getContent())){
+//                buffer.append("<h2>Chapter ").append(struct.getContent().split("\\|\\|\\|")[1]);
+//                buffer.append("</h2>").append("\n");
+//            }
+//
+//        }
         return buffer.toString();
     }
 
@@ -395,9 +395,9 @@ public class ReaderActivity extends Activity {
     private void rewindIterator(int numPages){
         while(numPages > 0){
             Structure structure = moveStructureIterator(!readForward);
-            if(isSentence(structure.getContent())>0){
-                numPages--;
-            }
+//            if(isSentence(structure.getContent())>0){
+//                numPages--;
+//            }
         }
     }
     private Structure moveStructureIterator(boolean direction){
