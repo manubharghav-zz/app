@@ -21,6 +21,7 @@ import android.webkit.WebView;
 import com.swych.mobile.MyApplication;
 import com.swych.mobile.R;
 import com.swych.mobile.commons.utils.Mode;
+import com.swych.mobile.commons.utils.Utils;
 import com.swych.mobile.db.DaoSession;
 import com.swych.mobile.db.Library;
 import com.swych.mobile.db.LibraryDao;
@@ -30,9 +31,7 @@ import com.swych.mobile.db.Structure;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.StringTokenizer;
 
@@ -70,9 +69,13 @@ public class ReaderActivity2 extends AppCompatActivity {
     private String previousPageSuffix="";
     private String nextPagePrefix="";
 
+
+
     private long firstSentenceId;
     private long lastSentenceId;
 
+    private boolean isFirstSentenceMode2=false;
+    private boolean isLastSentenceMode2=false;
     private int startOfPage;
     private int endOfPage;
 
@@ -89,6 +92,7 @@ public class ReaderActivity2 extends AppCompatActivity {
 
 
     private static String SENTENCE_FORMAT= "<span class='sentence_block' data-sentence_id='%s'>%s</span>" ;
+    private static String MODE2_FORMAT = "<span class='mode2_block' data-sentence_id='%s'>%s</span>";
     private static String PARAGRAPH_FORMAT="</p>\n<p> ";
     private static String CHAPTER_FORMAT = "<span class='heading' data-sentence_id='%s'>%s</span> \n";
 
@@ -104,9 +108,13 @@ public class ReaderActivity2 extends AppCompatActivity {
             "    font-size: 25px;\n" +
             "}\n" +
             ".sentence_block{\n" +
-            "\tfont-size: 17px;\n" +
+            "font-size: 17px;\n" +
             "}\n" +
-            "\n" +
+            ".mode2_block{\n" +
+            "  font-size: 17px;\n" +
+            "  font-style: italic;\n" +
+            "  color: blue;\n" +
+            "}"+
             "\n" +
             "</style>"+
             "<body>"+
@@ -114,7 +122,7 @@ public class ReaderActivity2 extends AppCompatActivity {
             "<script>" +
             "$( document ).ready(function() {" +
             "cutoff=' ';\n" +
-            "    rem_sentece_id=' ';\n" +
+            "rem_sentece_id=' ';\n" +
             "var viewportHeight;\n" +
             "if (document.compatMode === 'BackCompat') {\n" +
             "    viewportHeight = document.body.clientHeight;\n" +
@@ -124,6 +132,7 @@ public class ReaderActivity2 extends AppCompatActivity {
             "viewportHeight=viewportHeight-10; \n"+
             "    var lastSpan;\n" +
             "    var removeSentences = true;\n" +
+            "    var isTranslation = false; \n" +
             "  if(document.getElementById('page_content').offsetHeight < viewportHeight){\n" +
             "    alert('need_more')\n" +
             "  }\n" +
@@ -136,27 +145,30 @@ public class ReaderActivity2 extends AppCompatActivity {
             "                $(item).remove(); // $(item).remove();\n" +
             "            }\n" +
             "        });\n" +
-            "        rem_sentece_id = lastSpan.attr(\"data-sentence_id\") + ' '+rem_sentece_id;\n" +
-            "        lastSpan.remove();\n" +
+            "        lastSpan.detach();\n" +
             "        if(document.getElementById('page_content').offsetHeight > viewportHeight){\n" +
             "            continue;\n" +
             "        }\n" +
             "        removeSentences=false;\n" +
-            "        $('#page_content').append(\"<span class='sentence_block' data-sentence_id=\" + lastSpan.attr('data-sentence_id') +\">\" + lastSpan.text()+\"</span>\");\n" +
+            "        if(lastSpan.is(\".mode2_block\")){\n" +
+            "            isTranslation=true;\n" +
+            "        }"+
+            "        rem_sentece_id = lastSpan.attr(\"data-sentence_id\");\n" +
+            "        lastSpan.appendTo($('p:last'));\n" +
             "        }\n" +
             "        //remove maximum number of sentences;\n" +
             "\n" +
             "        \n" +
             "        var s = $('#page_content span:last').text();\n" +
             "        var pos = s.lastIndexOf(' ');\n" +
-            "         cutoff = s.substr(pos+1, s.length) + ' ' +cutoff;\n" +
+            "        cutoff = s.substr(pos+1, s.length) + ' ' +cutoff;\n" +
             "        s = s.substr(0,pos);\n" +
             "         $('#page_content span:last').html(s);\n" +
             "    }\n" +
             "\n" +
-            "    alert('"+RENDER_EVENT+"' +'###' + cutoff +\"###\" + 'rem_sentece_id' + \"###\" + rem_sentece_id+\"###\"+'included_string'+\"### \"+ s); }" +
+            "    alert('"+RENDER_EVENT+"' +'###' + cutoff +\"###\" + 'rem_sentece_id' + \"###\" + rem_sentece_id+\"###\"+'included_string'+\"### \"+ s +\"###translation###\" + isTranslation ); }" +
             "});\n" +
-            "$(document).on('click', '.sentence_block', function() {\n" +
+            "$(document).on('click', '.mode2_block', function() {\n" +
             "  alert('"+CLICK_EVENT+":'+$(this).attr('data-sentence_id'));\n" +
             "});" +
             "</script>"+
@@ -176,7 +188,11 @@ public class ReaderActivity2 extends AppCompatActivity {
             ".sentence_block{\n" +
             "\tfont-size: 17px;\n" +
             "}\n" +
-            "\n" +
+            ".mode2_block{\n" +
+            "  font-size: 17px;\n" +
+            "  font-style: italic;\n" +
+            "  color: blue;\n" +
+            "}" +
             "\n" +
             "</style>"+
             "<body>"+
@@ -194,6 +210,7 @@ public class ReaderActivity2 extends AppCompatActivity {
             "  rem_sentece_id='';\n" +
             "  var firstSpan;\n" +
             "  var removeSentences = true;\n" +
+            "  var isTranslation = false; \n" +
             "  if(document.getElementById('page_content').offsetHeight < viewportHeight){\n" +
             "    alert('need_more')\n" +
             "  }\n" +
@@ -207,12 +224,15 @@ public class ReaderActivity2 extends AppCompatActivity {
             "            }\n" +
             "        });\n" +
             "\n" +
-            "        rem_sentece_id = rem_sentece_id + ' '+ firstSpan.attr(\"data-sentence_id\");\n" +
             "        firstSpan.detach();\n" +
             "        if(document.getElementById('page_content').offsetHeight > viewportHeight){\n" +
             "           continue;\n" +
             "        }\n" +
             "        removeSentences=false;\n" +
+            "        if(firstSpan.is(\".mode2_block\")){\n" +
+            "            isTranslation=true;\n" +
+            "        }"+
+            "        rem_sentece_id = firstSpan.attr(\"data-sentence_id\");\n" +
             "        firstSpan.prependTo($('p:first'));}      \n" +
             "      var s = $('#page_content span:first').text();\n" +
             "      var pos = s.indexOf(' ');\n" +
@@ -229,7 +249,10 @@ public class ReaderActivity2 extends AppCompatActivity {
             "    }\n" +
             "\n" +
             "\n" +
-            "    alert('"+RENDER_EVENT+"' +'###' + cutoff +\"###\" + 'rem_sentece_id' + \"###\" + rem_sentece_id +\"###\"+'included_string'+\"### \"+ s);}"+
+            "    alert('"+RENDER_EVENT+"' +'###' + cutoff +\"###\" + 'rem_sentece_id' + \"###\" + rem_sentece_id +\"###\"+'included_string'+\"### \"+ s +\"###translation###\" + isTranslation);}"+
+            "});" +
+            "$(document).on('click', '.mode2_block', function() {\n" +
+            "  alert('"+CLICK_EVENT+":'+$(this).attr('data-sentence_id'));\n" +
             "});" +
             "</script>"+
             "<p>";
@@ -310,7 +333,7 @@ public class ReaderActivity2 extends AppCompatActivity {
         final class MyWebChromeClient extends WebChromeClient {
             @Override
             public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
-                Log.d(TAG, message);
+
 
                 if(message.startsWith(LOW_BUFFER)){
                     // todo get more line in the buffer.
@@ -320,6 +343,7 @@ public class ReaderActivity2 extends AppCompatActivity {
                     else {
                         if(readForward){
                             nextPagePrefix="";
+
                         }
                         else{
                             chapterEnd=false;
@@ -344,9 +368,11 @@ public class ReaderActivity2 extends AppCompatActivity {
                         currentPageSuffix = splits[5];
                         nextPagePrefix = splits[1];
                         firstSentenceId = lastSentenceId;
+                        isFirstSentenceMode2 = isLastSentenceMode2;
                         int[] numbers = getNumFromString(splits[3]);
-                        lastSentenceId = numbers[0];
-                        rewindIterator(false, numbers[0]);
+                        lastSentenceId = numbers[numbers.length-1];
+                        rewindIterator(false,(int) lastSentenceId);
+                        isLastSentenceMode2 = Boolean.parseBoolean(splits[7]);
                         webView.loadUrl("javascript:$('#page_content').css('visibility', 'visible')");
 
                     }
@@ -360,22 +386,40 @@ public class ReaderActivity2 extends AppCompatActivity {
 
                         int[] numbers = getNumFromString(splits[3]);
                         lastSentenceId=firstSentenceId;
+                        isLastSentenceMode2=isFirstSentenceMode2;
                         firstSentenceId = numbers[0];
-                        rewindIterator(true, numbers[0]);
+                        isFirstSentenceMode2 = Boolean.parseBoolean(splits[7]);
+                        rewindIterator(true,(int) firstSentenceId);
                         webView.loadUrl("javascript:$('#page_content').css('visibility', 'visible')");
                     }
 
 
                 }
                 else if(message.startsWith(CLICK_EVENT)){
-                    int senID = Integer.parseInt(message.split(":")[1]);
+
+                    long[] sentenceIds = Utils.parseLongs(message.split(":")[1]);
+                    String sentence = "";
+                    try{
+                    for(long id:sentenceIds){
+                        sentence = sentence+" "+srcVersionSentences.get(id).getContent();
+                    }}
+                        catch(Exception e){
+                            Log.d(TAG,"message " + message);
+                            Log.d(TAG,"Clicked sentences: " + message.split(":")[1]);
+                            e.printStackTrace();
+                        }
+
+                    Log.d(TAG,sentence);
                 }
                 result.confirm();
-                Log.d(TAG,"start of Page: " + startOfPage+ "  End of page: " + endOfPage);
+                Log.d(TAG, "start of Page: " + startOfPage + "  End of page: " + endOfPage);
                 Log.d(TAG,"Previous Page Suffix : " + previousPageSuffix);
                 Log.d(TAG,"Current Page Prefix : " + currentPagePrefix );
                 Log.d(TAG,"Current Page Suffix: " + currentPageSuffix);
                 Log.d(TAG, "Next Page Prefix: " + nextPagePrefix);
+                Log.d(TAG,"Last Sentence Mode 2: " + isLastSentenceMode2);
+                Log.d(TAG,"isFirstSentenceMode 2: " + isFirstSentenceMode2);
+                Log.d(TAG, message);
                 return true;
             }
         }
@@ -567,7 +611,7 @@ public class ReaderActivity2 extends AppCompatActivity {
         // load destination version book into memory;
         destVersionSentences = new HashMap<>();
         List<Sentence> swychVersionSentenceList = libraryItem.getSwychVersion().getSentences();
-        for(Sentence sentence:swychVersionSentenceList){
+        for (Sentence sentence : swychVersionSentenceList){
             destVersionSentences.put(sentence.getSentence_id(),sentence);
         }
 
@@ -592,9 +636,9 @@ public class ReaderActivity2 extends AppCompatActivity {
         Log.d(TAG,"mappings loaded, num mappings = "+mappings.size());
 
         // testing book.
+        mode = Mode.Mode2;
 
-
-
+        //todo need to change this to last left position.
         startOfPage = 0;
         endOfPage = 0;
         Log.d(TAG, "completed loading sentences into memory");
@@ -663,10 +707,20 @@ public class ReaderActivity2 extends AppCompatActivity {
 
         if(newPage){
             if(readForward && nextPagePrefix.trim().length()>0){
-                buffer.append(String.format(SENTENCE_FORMAT,lastSentenceId,nextPagePrefix));
+                if(isLastSentenceMode2){
+                    buffer.append(String.format(MODE2_FORMAT, lastSentenceId, nextPagePrefix));
+                }
+                else {
+                    buffer.append(String.format(SENTENCE_FORMAT, lastSentenceId, nextPagePrefix));
+                }
             }
             else if(!readForward && previousPageSuffix.trim().length()>0){
-                buffer.append(String.format(SENTENCE_FORMAT,firstSentenceId,previousPageSuffix));
+                if(isFirstSentenceMode2) {
+                    buffer.append(String.format(MODE2_FORMAT, firstSentenceId, previousPageSuffix));
+                }
+                else{
+                    buffer.append(String.format(SENTENCE_FORMAT, firstSentenceId, previousPageSuffix));
+                }
             }
         }
 
@@ -680,8 +734,40 @@ public class ReaderActivity2 extends AppCompatActivity {
                     break;
                 }
                 if(struct.getType()==1){
-                    buffer.append(String.format(SENTENCE_FORMAT, sentenceId,srcVersionSentences.get(sentenceId).getContent()));
-                    numLines--;
+                    if(mode==Mode.Mode2){
+                        if(mappings.containsKey(sentenceId)){
+                            String mappingString = mappings.get(sentenceId);
+                            long[] mappingInfo = Utils.parseLongs(mappingString);
+                            String sentenceIds = sentenceId+"";
+
+                            for(int i=0;i<mappingInfo[0]-1;i++){
+                                Structure tmp = moveStructureIterator(false,readForward);
+                                if(tmp.getType()!=1){
+                                    Log.e(TAG,"error in mapping format. Please verify mappings for this book");
+                                }
+                                numLines--;
+                                sentenceIds = sentenceIds + "," +tmp.getSentenceId();
+                            }
+                            String sentence="";
+
+                            for(int i=1;i<mappingInfo.length ;i++){
+                                if(destVersionSentences.containsKey(mappingInfo[i])) {
+                                    sentence = sentence + destVersionSentences.get(mappingInfo[i]).getContent();
+                                }
+                                else{
+                                    Log.e(TAG,"couldnt not find sentence in destVersion " + mappingInfo[i]);
+                                }
+                            }
+
+                            buffer.append(String.format(MODE2_FORMAT, sentenceIds, sentence));
+
+                        }
+                    }
+                    else {
+                        buffer.append(String.format(SENTENCE_FORMAT, sentenceId, srcVersionSentences.get(sentenceId).getContent()));
+                        numLines--;
+                    }
+
                 }
                 else if(struct.getType()==2){
                     buffer.append(PARAGRAPH_FORMAT);
@@ -773,7 +859,7 @@ public class ReaderActivity2 extends AppCompatActivity {
 
 
     private static int[] getNumFromString(String s){
-        String[] splits = s.trim().split("\\s");
+        String[] splits = s.trim().split(",");
         int[] numbers = new int[splits.length];
 
         for(int i=0;i<splits.length;i++){
