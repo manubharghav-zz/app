@@ -49,7 +49,10 @@
         <activity
             android:name=".activity.LibraryActivity"
             android:label="@string/title_activity_library" >
-
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
             <!-- android:configChanges="orientation|keyboardHidden|screenSize" -->
             <!-- android:theme="@style/FullscreenTheme" > -->
 
@@ -86,11 +89,12 @@
         <activity
             android:name=".activity.ReaderActivity2"
             android:label="@string/title_activity_reader2"
-            android:theme="@style/Theme.AppCompat.Light" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+            android:theme="@style/Theme.AppCompat.Light"
+            android:parentActivityName=".activity.LibraryActivity"
+                >
+            <meta-data
+                    android:name="android.support.PARENT_ACTIVITY"
+                    android:value=".activity.LibraryActivity" />
 
         </activity>
         <activity

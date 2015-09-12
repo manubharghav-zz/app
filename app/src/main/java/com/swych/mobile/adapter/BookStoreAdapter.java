@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import com.swych.mobile.R;
 import com.swych.mobile.commons.utils.Language;
+import com.swych.mobile.commons.utils.Utils;
 import com.swych.mobile.networking.DisplayBookObject;
 import com.swych.mobile.networking.RequestManager;
 import com.swych.mobile.networking.URLs;
@@ -95,9 +96,7 @@ public class BookStoreAdapter extends BaseAdapter {
         bookAuthor.setText(book.getNativeVersion().getAuthor());
         availableLanguages.removeAllViews();
         for(Language language: book.getAvailableLanguages()){
-            ImageView languageImageView = new ImageView(mContext);
-            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(24, 24);
-            languageImageView.setLayoutParams(layoutParams);
+            ImageView languageImageView = Utils.createFlagImageView(mContext);
             languageImageView.setImageResource(language.getImageCode());
             availableLanguages.addView(languageImageView);
         }

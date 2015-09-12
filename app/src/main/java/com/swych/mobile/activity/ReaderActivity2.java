@@ -4,6 +4,7 @@ package com.swych.mobile.activity;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.NavUtils;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -58,6 +59,7 @@ public class ReaderActivity2 extends AppCompatActivity {
     private WebView webView;
     private Map<Long, Sentence> srcVersionSentences;
     private Map<Long,Sentence> destVersionSentences;
+//    private Map<Long, Long> sentenceToStructureMap;
     private Map<Long, String> mappings;
 
 //    private
@@ -73,6 +75,8 @@ public class ReaderActivity2 extends AppCompatActivity {
 
     private long firstSentenceId;
     private long lastSentenceId;
+    private String firstSentenceNumString;
+    private String lastSentenceNumString;
 
     private boolean isFirstSentenceMode2=false;
     private boolean isLastSentenceMode2=false;
@@ -342,16 +346,17 @@ public class ReaderActivity2 extends AppCompatActivity {
                     }
                     else {
                         if(readForward){
+                            previousPageSuffix = currentPageSuffix;
                             nextPagePrefix="";
+                            currentPageSuffix = "";
 
                         }
                         else{
                             chapterEnd=false;
-                            previousPageSuffix="";
-
                             nextPagePrefix = currentPagePrefix;
+                            currentPageSuffix=previousPageSuffix;
+                            previousPageSuffix="";
                             currentPagePrefix="";
-                            currentPageSuffix="";
                             lastSentenceId=firstSentenceId;
                         }
                         webView.loadUrl("javascript:$('#page_content').css('visibility', 'visible')");
@@ -369,6 +374,7 @@ public class ReaderActivity2 extends AppCompatActivity {
                         nextPagePrefix = splits[1];
                         firstSentenceId = lastSentenceId;
                         isFirstSentenceMode2 = isLastSentenceMode2;
+                        lastSentenceNumString = splits[3];
                         int[] numbers = getNumFromString(splits[3]);
                         lastSentenceId = numbers[numbers.length-1];
                         rewindIterator(false,(int) lastSentenceId);
@@ -384,11 +390,13 @@ public class ReaderActivity2 extends AppCompatActivity {
                         currentPagePrefix = splits[5];
                         previousPageSuffix = splits[1];
 
+                        firstSentenceNumString = splits[3];
                         int[] numbers = getNumFromString(splits[3]);
                         lastSentenceId=firstSentenceId;
                         isLastSentenceMode2=isFirstSentenceMode2;
                         firstSentenceId = numbers[0];
                         isFirstSentenceMode2 = Boolean.parseBoolean(splits[7]);
+                        System.out.println("first sentence ID:  sout : " + startOfPage);
                         rewindIterator(true,(int) firstSentenceId);
                         webView.loadUrl("javascript:$('#page_content').css('visibility', 'visible')");
                     }
@@ -462,6 +470,12 @@ public class ReaderActivity2 extends AppCompatActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
+        }
+        else if( id == R.id.action_bar_title){
+
+        }
+        else if(id == android.R.id.home){
+            NavUtils.navigateUpFromSameTask(this);
         }
 
         return super.onOptionsItemSelected(item);
@@ -539,7 +553,7 @@ public class ReaderActivity2 extends AppCompatActivity {
 
                 readForward=false;
                 endOfPage = startOfPage;
-                startOfPage = startOfPage-2;
+
                 // move start of page to the strucure element just before the firstSentenceId.
 
                 lastSentenceId = firstSentenceId;
@@ -636,11 +650,11 @@ public class ReaderActivity2 extends AppCompatActivity {
         Log.d(TAG,"mappings loaded, num mappings = "+mappings.size());
 
         // testing book.
-        mode = Mode.Mode2;
+        mode = Mode.Mode1;
 
         //todo need to change this to last left position.
         startOfPage = 0;
-        endOfPage = 0;
+        endOfPage = -1;
         Log.d(TAG, "completed loading sentences into memory");
     }
 
@@ -655,8 +669,6 @@ public class ReaderActivity2 extends AppCompatActivity {
                 continue;
             }
             else if(structure.getSentenceId()==sentenceNumber){
-                moveStructureIterator(start,readForward);
-                moveStructureIterator(start,readForward);
                 return;
             }
         }
@@ -675,22 +687,34 @@ public class ReaderActivity2 extends AppCompatActivity {
             return null;
         }
         if(start && direction){
-            structure = structureList.get(startOfPage);
             startOfPage++;
+            structure = structureList.get(startOfPage);
+
 
         }
         else if(start && !direction){
-            structure=structureList.get(startOfPage);
             startOfPage--;
+            if(startOfPage < 0){
+                startOfPage=0;
+                return null;
+            }
+            structure=structureList.get(startOfPage);
+
 
         }
         else if(!start && direction){
-            structure=structureList.get(endOfPage);
             endOfPage++;
+            if(endOfPage >= structureList.size()){
+                endOfPage = structureList.size()-1;
+                return null;
+            }
+            structure=structureList.get(endOfPage);
+
         }
         else{
-            structure = structureList.get(endOfPage);
             endOfPage--;
+            structure = structureList.get(endOfPage);
+
         }
 
 
@@ -708,7 +732,7 @@ public class ReaderActivity2 extends AppCompatActivity {
         if(newPage){
             if(readForward && nextPagePrefix.trim().length()>0){
                 if(isLastSentenceMode2){
-                    buffer.append(String.format(MODE2_FORMAT, lastSentenceId, nextPagePrefix));
+                    buffer.append(String.format(MODE2_FORMAT, lastSentenceNumString, nextPagePrefix));
                 }
                 else {
                     buffer.append(String.format(SENTENCE_FORMAT, lastSentenceId, nextPagePrefix));
@@ -716,7 +740,7 @@ public class ReaderActivity2 extends AppCompatActivity {
             }
             else if(!readForward && previousPageSuffix.trim().length()>0){
                 if(isFirstSentenceMode2) {
-                    buffer.append(String.format(MODE2_FORMAT, firstSentenceId, previousPageSuffix));
+                    buffer.append(String.format(MODE2_FORMAT, firstSentenceNumString, previousPageSuffix));
                 }
                 else{
                     buffer.append(String.format(SENTENCE_FORMAT, firstSentenceId, previousPageSuffix));
@@ -770,6 +794,7 @@ public class ReaderActivity2 extends AppCompatActivity {
 
                 }
                 else if(struct.getType()==2){
+
                     buffer.append(PARAGRAPH_FORMAT);
                 }
                 else if(struct.getType()>2){
@@ -798,8 +823,41 @@ public class ReaderActivity2 extends AppCompatActivity {
                 long sentenceId = struct.getSentenceId();
                 if(struct.getType()==1){
 //                    Log.d(TAG,"adding sentence Id:  " + sentenceId);
-                    buffer.insert(0, String.format(SENTENCE_FORMAT, sentenceId, srcVersionSentences.get(sentenceId).getContent()));
-                    numLines--;
+
+                    if(mode == Mode.Mode2){
+                        if(mappings.containsKey(sentenceId * -1)){
+                            String mappingString = mappings.get(sentenceId * -1);
+                            long[] mappingInfo = Utils.parseLongs(mappingString);
+                            String sentenceIds = ""+sentenceId;
+
+                            for(int i=0;i<mappingInfo[0]-1;i++){
+                                Structure tmp = moveStructureIterator(false,readForward);
+                                if(tmp.getType()!=1){
+                                    Log.e(TAG,"error in mapping format. Please verify mappings for this book");
+                                }
+                                numLines--;
+                                sentenceIds = tmp.getSentenceId()+ ","+sentenceIds;
+                            }
+                            String sentence="";
+
+                            for(int i=1;i<mappingInfo.length ;i++){
+                                if(destVersionSentences.containsKey(mappingInfo[i])) {
+                                    sentence = sentence + destVersionSentences.get(mappingInfo[i]).getContent();
+                                }
+                                else{
+                                    Log.e(TAG,"couldnt not find sentence in destVersion " + mappingInfo[i]);
+                                }
+                            }
+
+                            buffer.insert(0, String.format(MODE2_FORMAT, sentenceIds, sentence));
+
+                        }
+                    }
+                    else{
+                        buffer.insert(0, String.format(SENTENCE_FORMAT, sentenceId, srcVersionSentences.get(sentenceId).getContent()));
+                        numLines--;
+                    }
+
                 }
                 else if(struct.getType()==2){
                     buffer.insert(0, PARAGRAPH_FORMAT);
