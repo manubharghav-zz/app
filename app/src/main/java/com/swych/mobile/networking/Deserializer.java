@@ -34,11 +34,11 @@ public class Deserializer {
             String bookName = bookIterator.next();
 //            Log.d(TAG,"deserialising book: " + bookName);
             JSONObject bookJson = library.getJSONObject(bookName);
-            String imageUrl = bookJson.get("img").toString();
+            String imageUrl = bookJson.get("image").toString();
             DisplayBookObject book = new DisplayBookObject();
             book.setImageUrl(imageUrl);
             book.setTitle(bookName);
-            JSONArray versions = new JSONArray(bookJson.get("vers").toString());
+            JSONArray versions = new JSONArray(bookJson.get("versions").toString());
             for(int i=0;i<versions.length();i++){
                 JSONObject version = versions.getJSONObject(i);
                 boolean versionAdded = book.addVersion().setLanguage(version.getString("lang")).setTitle(version.getString("title")).setAuthor(version.getString("author")).addToBook();
@@ -91,6 +91,7 @@ public class Deserializer {
 
                 keySplits = key.split(",");
                 buffer.append(keySplits[0]).append(":").append(keySplits.length).append(",").append(value).append(";");
+                buffer.append("-").append(keySplits[keySplits.length-1]).append(":").append(keySplits.length).append(",").append(value).append(";");
             }
         }
         return buffer.toString();

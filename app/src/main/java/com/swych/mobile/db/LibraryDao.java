@@ -29,12 +29,16 @@ public class LibraryDao extends AbstractDao<Library, Long> {
     */
     public static class Properties {
         public final static Property Id = new Property(0, Long.class, "id", true, "_id");
-        public final static Property Title = new Property(1, String.class, "title", false, "TITLE");
-        public final static Property SrcLanguage = new Property(2, String.class, "srcLanguage", false, "SRC_LANGUAGE");
-        public final static Property SwychLanguage = new Property(3, String.class, "swychLanguage", false, "SWYCH_LANGUAGE");
-        public final static Property SrcVersionId = new Property(4, Long.class, "srcVersionId", false, "SRC_VERSION_ID");
-        public final static Property SwychVersionId = new Property(5, Long.class, "swychVersionId", false, "SWYCH_VERSION_ID");
-        public final static Property Last_modified_date = new Property(6, java.util.Date.class, "last_modified_date", false, "LAST_MODIFIED_DATE");
+        public final static Property Imageurl = new Property(1, String.class, "imageurl", false, "IMAGEURL");
+        public final static Property Mode1 = new Property(2, Boolean.class, "mode1", false, "MODE1");
+        public final static Property Mode2 = new Property(3, Boolean.class, "mode2", false, "MODE2");
+        public final static Property Title = new Property(4, String.class, "title", false, "TITLE");
+        public final static Property Author = new Property(5, String.class, "author", false, "AUTHOR");
+        public final static Property SrcLanguage = new Property(6, String.class, "srcLanguage", false, "SRC_LANGUAGE");
+        public final static Property SwychLanguage = new Property(7, String.class, "swychLanguage", false, "SWYCH_LANGUAGE");
+        public final static Property SrcVersionId = new Property(8, Long.class, "srcVersionId", false, "SRC_VERSION_ID");
+        public final static Property SwychVersionId = new Property(9, Long.class, "swychVersionId", false, "SWYCH_VERSION_ID");
+        public final static Property Last_modified_date = new Property(10, java.util.Date.class, "last_modified_date", false, "LAST_MODIFIED_DATE");
     };
 
     private DaoSession daoSession;
@@ -56,12 +60,16 @@ public class LibraryDao extends AbstractDao<Library, Long> {
         String constraint = ifNotExists? "IF NOT EXISTS ": "";
         db.execSQL("CREATE TABLE " + constraint + "'LIBRARY' (" + //
                 "'_id' INTEGER PRIMARY KEY ," + // 0: id
-                "'TITLE' TEXT," + // 1: title
-                "'SRC_LANGUAGE' TEXT," + // 2: srcLanguage
-                "'SWYCH_LANGUAGE' TEXT," + // 3: swychLanguage
-                "'SRC_VERSION_ID' INTEGER," + // 4: srcVersionId
-                "'SWYCH_VERSION_ID' INTEGER," + // 5: swychVersionId
-                "'LAST_MODIFIED_DATE' INTEGER);"); // 6: last_modified_date
+                "'IMAGEURL' TEXT," + // 1: imageurl
+                "'MODE1' INTEGER," + // 2: mode1
+                "'MODE2' INTEGER," + // 3: mode2
+                "'TITLE' TEXT," + // 4: title
+                "'AUTHOR' TEXT," + // 5: author
+                "'SRC_LANGUAGE' TEXT," + // 6: srcLanguage
+                "'SWYCH_LANGUAGE' TEXT," + // 7: swychLanguage
+                "'SRC_VERSION_ID' INTEGER," + // 8: srcVersionId
+                "'SWYCH_VERSION_ID' INTEGER," + // 9: swychVersionId
+                "'LAST_MODIFIED_DATE' INTEGER);"); // 10: last_modified_date
         // Add Indexes
         db.execSQL("CREATE UNIQUE INDEX " + constraint + "IDX_LIBRARY_TITLE_SRC_LANGUAGE_SWYCH_LANGUAGE ON LIBRARY" +
                 " (TITLE,SRC_LANGUAGE,SWYCH_LANGUAGE);");
@@ -83,34 +91,54 @@ public class LibraryDao extends AbstractDao<Library, Long> {
             stmt.bindLong(1, id);
         }
  
+        String imageurl = entity.getImageurl();
+        if (imageurl != null) {
+            stmt.bindString(2, imageurl);
+        }
+ 
+        Boolean mode1 = entity.getMode1();
+        if (mode1 != null) {
+            stmt.bindLong(3, mode1 ? 1l: 0l);
+        }
+ 
+        Boolean mode2 = entity.getMode2();
+        if (mode2 != null) {
+            stmt.bindLong(4, mode2 ? 1l: 0l);
+        }
+ 
         String title = entity.getTitle();
         if (title != null) {
-            stmt.bindString(2, title);
+            stmt.bindString(5, title);
+        }
+ 
+        String author = entity.getAuthor();
+        if (author != null) {
+            stmt.bindString(6, author);
         }
  
         String srcLanguage = entity.getSrcLanguage();
         if (srcLanguage != null) {
-            stmt.bindString(3, srcLanguage);
+            stmt.bindString(7, srcLanguage);
         }
  
         String swychLanguage = entity.getSwychLanguage();
         if (swychLanguage != null) {
-            stmt.bindString(4, swychLanguage);
+            stmt.bindString(8, swychLanguage);
         }
  
         Long srcVersionId = entity.getSrcVersionId();
         if (srcVersionId != null) {
-            stmt.bindLong(5, srcVersionId);
+            stmt.bindLong(9, srcVersionId);
         }
  
         Long swychVersionId = entity.getSwychVersionId();
         if (swychVersionId != null) {
-            stmt.bindLong(6, swychVersionId);
+            stmt.bindLong(10, swychVersionId);
         }
  
         java.util.Date last_modified_date = entity.getLast_modified_date();
         if (last_modified_date != null) {
-            stmt.bindLong(7, last_modified_date.getTime());
+            stmt.bindLong(11, last_modified_date.getTime());
         }
     }
 
@@ -131,12 +159,16 @@ public class LibraryDao extends AbstractDao<Library, Long> {
     public Library readEntity(Cursor cursor, int offset) {
         Library entity = new Library( //
             cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
-            cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1), // title
-            cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2), // srcLanguage
-            cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3), // swychLanguage
-            cursor.isNull(offset + 4) ? null : cursor.getLong(offset + 4), // srcVersionId
-            cursor.isNull(offset + 5) ? null : cursor.getLong(offset + 5), // swychVersionId
-            cursor.isNull(offset + 6) ? null : new java.util.Date(cursor.getLong(offset + 6)) // last_modified_date
+            cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1), // imageurl
+            cursor.isNull(offset + 2) ? null : cursor.getShort(offset + 2) != 0, // mode1
+            cursor.isNull(offset + 3) ? null : cursor.getShort(offset + 3) != 0, // mode2
+            cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4), // title
+            cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5), // author
+            cursor.isNull(offset + 6) ? null : cursor.getString(offset + 6), // srcLanguage
+            cursor.isNull(offset + 7) ? null : cursor.getString(offset + 7), // swychLanguage
+            cursor.isNull(offset + 8) ? null : cursor.getLong(offset + 8), // srcVersionId
+            cursor.isNull(offset + 9) ? null : cursor.getLong(offset + 9), // swychVersionId
+            cursor.isNull(offset + 10) ? null : new java.util.Date(cursor.getLong(offset + 10)) // last_modified_date
         );
         return entity;
     }
@@ -145,12 +177,16 @@ public class LibraryDao extends AbstractDao<Library, Long> {
     @Override
     public void readEntity(Cursor cursor, Library entity, int offset) {
         entity.setId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
-        entity.setTitle(cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1));
-        entity.setSrcLanguage(cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2));
-        entity.setSwychLanguage(cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3));
-        entity.setSrcVersionId(cursor.isNull(offset + 4) ? null : cursor.getLong(offset + 4));
-        entity.setSwychVersionId(cursor.isNull(offset + 5) ? null : cursor.getLong(offset + 5));
-        entity.setLast_modified_date(cursor.isNull(offset + 6) ? null : new java.util.Date(cursor.getLong(offset + 6)));
+        entity.setImageurl(cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1));
+        entity.setMode1(cursor.isNull(offset + 2) ? null : cursor.getShort(offset + 2) != 0);
+        entity.setMode2(cursor.isNull(offset + 3) ? null : cursor.getShort(offset + 3) != 0);
+        entity.setTitle(cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4));
+        entity.setAuthor(cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5));
+        entity.setSrcLanguage(cursor.isNull(offset + 6) ? null : cursor.getString(offset + 6));
+        entity.setSwychLanguage(cursor.isNull(offset + 7) ? null : cursor.getString(offset + 7));
+        entity.setSrcVersionId(cursor.isNull(offset + 8) ? null : cursor.getLong(offset + 8));
+        entity.setSwychVersionId(cursor.isNull(offset + 9) ? null : cursor.getLong(offset + 9));
+        entity.setLast_modified_date(cursor.isNull(offset + 10) ? null : new java.util.Date(cursor.getLong(offset + 10)));
      }
     
     /** @inheritdoc */

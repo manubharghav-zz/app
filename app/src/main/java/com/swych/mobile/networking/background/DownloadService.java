@@ -122,6 +122,7 @@ public class DownloadService extends IntentService {
                 mappings = downloadData(URLs.MAPPING + bookName + "/" + srcLanguage + "/" + swychLanguage);
             }
             if(isMode1Present){
+
                 phrases = downloadData(URLs.PHRASES + bookName + "/" + srcLanguage + "/" + swychLanguage);
             }
             //persist these objects to database;
@@ -224,7 +225,7 @@ public class DownloadService extends IntentService {
         long swychVersionId = session.insert(swychVersion);
 
 
-        Library item = new Library(null,title,srcLanguage,swychLanguage,srcVersionId,swychVersionId,new Date());
+        Library item = new Library(null, displayBook.getImageUrl(),displayBook.isMode1Present(),displayBook.isMode2Present(),srcDispVersion.getTitle(),srcDispVersion.getAuthor(),srcLanguage,swychLanguage,srcVersionId,swychVersionId,new Date());
         session.insert(item);
         long libraryId = item.getId();
 
@@ -245,13 +246,17 @@ public class DownloadService extends IntentService {
         Date mappingLastModifiedDate = df.parse(mappings.getString("date_modified"));
         String parsedMappingString = Deserializer.parseMappings(mappings.getString("mapping"));
 
+        Log.d(TAG,parsedMappingString);
 
         Mapping mapping = new Mapping(null, parsedMappingString,mappingLastModifiedDate, srcVersionId ,swychVersionId,libraryId);
         session.insert(mapping);
 
-        Date phrasesLastModifiedDate = df.parse(phrases.getString("date_modified"));
-        PhraseReplacement replacement = new PhraseReplacement(null,swychLanguage,phrases.get("phrase_replacements").toString(),srcVersionId,swychVersionId,libraryId);
-        session.insert(replacement);
+        System.out.println(phrases);
+        if(phrases!=null) {
+            Date phrasesLastModifiedDate = df.parse(phrases.getString("date_modified"));
+            PhraseReplacement replacement = new PhraseReplacement(null, swychLanguage, phrases.get("phrase_replacements").toString(), srcVersionId, swychVersionId, libraryId);
+            session.insert(replacement);
+        }
 
         Log.i(TAG, "took " + ((System.currentTimeMillis() - startTime) / 1000) + " seconds for book insert");
 

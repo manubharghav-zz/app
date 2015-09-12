@@ -1,5 +1,9 @@
 package com.swych.mobile.commons.utils;
 
+import android.content.Context;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+
 /**
  * Created by manu on 6/10/15.
  */
@@ -30,5 +34,16 @@ public class Utils {
         }
 
         return nums;
+    }
+
+
+    public static ImageView createFlagImageView(Context mContext){
+        ImageView imageView = new ImageView(mContext);
+        LinearLayout.LayoutParams srclayoutParams = new LinearLayout.LayoutParams(48, 48);
+        imageView.setLayoutParams(srclayoutParams);
+//        imageView.setPadding(15,15,15,15);
+
+        return imageView;
+
     }
 }

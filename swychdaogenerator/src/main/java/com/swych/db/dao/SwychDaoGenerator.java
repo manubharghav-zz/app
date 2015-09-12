@@ -54,7 +54,11 @@ public class SwychDaoGenerator {
         // user library table;
         Entity library = schema.addEntity(LIBRARY);
         library.addIdProperty();
+        library.addStringProperty("imageurl");
+        library.addBooleanProperty("mode1");
+        library.addBooleanProperty("mode2");
         Property libraryTitleProperty = library.addStringProperty("title").getProperty();
+        Property libraryAuthorProperty = library.addStringProperty("author").getProperty();
         Property librarysrcLangProperty  =library.addStringProperty("srcLanguage").getProperty();
         Property libraryswychLangProperty = library.addStringProperty("swychLanguage").getProperty();
 

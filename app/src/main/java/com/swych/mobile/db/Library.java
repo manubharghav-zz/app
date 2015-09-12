@@ -14,7 +14,11 @@ import de.greenrobot.dao.DaoException;
 public class Library {
 
     private Long id;
+    private String imageurl;
+    private Boolean mode1;
+    private Boolean mode2;
     private String title;
+    private String author;
     private String srcLanguage;
     private String swychLanguage;
     private Long srcVersionId;
@@ -46,9 +50,13 @@ public class Library {
         this.id = id;
     }
 
-    public Library(Long id, String title, String srcLanguage, String swychLanguage, Long srcVersionId, Long swychVersionId, java.util.Date last_modified_date) {
+    public Library(Long id, String imageurl, Boolean mode1, Boolean mode2, String title, String author, String srcLanguage, String swychLanguage, Long srcVersionId, Long swychVersionId, java.util.Date last_modified_date) {
         this.id = id;
+        this.imageurl = imageurl;
+        this.mode1 = mode1;
+        this.mode2 = mode2;
         this.title = title;
+        this.author = author;
         this.srcLanguage = srcLanguage;
         this.swychLanguage = swychLanguage;
         this.srcVersionId = srcVersionId;
@@ -70,12 +78,44 @@ public class Library {
         this.id = id;
     }
 
+    public String getImageurl() {
+        return imageurl;
+    }
+
+    public void setImageurl(String imageurl) {
+        this.imageurl = imageurl;
+    }
+
+    public Boolean getMode1() {
+        return mode1;
+    }
+
+    public void setMode1(Boolean mode1) {
+        this.mode1 = mode1;
+    }
+
+    public Boolean getMode2() {
+        return mode2;
+    }
+
+    public void setMode2(Boolean mode2) {
+        this.mode2 = mode2;
+    }
+
     public String getTitle() {
         return title;
     }
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
     }
 
     public String getSrcLanguage() {
