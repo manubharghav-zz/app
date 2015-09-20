@@ -226,7 +226,14 @@ public class DownloadService extends IntentService {
 
 
         Library item = new Library(null, displayBook.getImageUrl(),displayBook.isMode1Present(),displayBook.isMode2Present(),srcDispVersion.getTitle(),srcDispVersion.getAuthor(),srcLanguage,swychLanguage,srcVersionId,swychVersionId,new Date());
-        session.insert(item);
+        try {
+            session.insert(item);
+        }
+        catch(Exception e){
+            Log.e(TAG,"Book already present");
+            return true;
+        }
+
         long libraryId = item.getId();
 
         // add structure and sentence to db.

@@ -83,10 +83,7 @@ public class ReaderActivity2 extends AppCompatActivity {
     private int startOfPage;
     private int endOfPage;
 
-    private String bufferLineForward = null;
-    private long bufferLineForwardSentenceId;
-    private long bufferLinePreviousSentenceId;
-    private String bufferLineBackward = null;
+
 
     private StringBuffer webViewBuffer = new StringBuffer();
 
@@ -338,7 +335,7 @@ public class ReaderActivity2 extends AppCompatActivity {
             @Override
             public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
 
-
+                Log.d(TAG, message);
                 if(message.startsWith(LOW_BUFFER)){
                     // todo get more line in the buffer.
                     if(!chapterEnd) {
@@ -377,7 +374,12 @@ public class ReaderActivity2 extends AppCompatActivity {
                         lastSentenceNumString = splits[3];
                         int[] numbers = getNumFromString(splits[3]);
                         lastSentenceId = numbers[numbers.length-1];
-                        rewindIterator(false,(int) lastSentenceId);
+                        Log.d(TAG,"last sentence Id: " + lastSentenceId);
+
+                        if(lastSentenceId == 148){
+                            System.out.println("  ");
+                        }
+                        rewindIterator(false, (int) lastSentenceId);
                         isLastSentenceMode2 = Boolean.parseBoolean(splits[7]);
                         webView.loadUrl("javascript:$('#page_content').css('visibility', 'visible')");
 
@@ -662,9 +664,23 @@ public class ReaderActivity2 extends AppCompatActivity {
 
 
     private void rewindIterator(boolean start ,int sentenceNumber){
+
+        if(start){
+            Structure structure = structureList.get(startOfPage);
+            if(structure.getSentenceId()==sentenceNumber){
+                return;
+            }
+        }
+        else{
+            Structure structure = structureList.get(endOfPage);
+            if(structure.getSentenceId()==sentenceNumber){
+                return;
+            }
+        }
+
         while(true){
             Structure structure = moveStructureIterator(start,!readForward);
-            if(structure==null){
+            if(structure==null ){
                 //assuming it always moves backward.
                 continue;
             }
@@ -863,9 +879,9 @@ public class ReaderActivity2 extends AppCompatActivity {
                     buffer.insert(0, PARAGRAPH_FORMAT);
                 }
                 else if(struct.getType()>2){
-                        Log.d(TAG, struct.getType()+ "   " + struct.getSentenceId());
-                        buffer.insert(0,String.format(CHAPTER_FORMAT,sentenceId, srcVersionSentences.get(sentenceId).getContent()));
-                        moveStructureIterator(true,!readForward);
+                    Log.d(TAG, struct.getType() + "   " + struct.getSentenceId());
+                    buffer.insert(0, String.format(CHAPTER_FORMAT, sentenceId, srcVersionSentences.get(sentenceId).getContent()));
+                        //moveStructureIterator(true,!readForward);
                         chapterEnd=true;
                         numLines=0;
                 }
