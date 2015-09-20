@@ -36,6 +36,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+
+
 public class ReaderActivity2 extends AppCompatActivity {
 
     private static String TAG = "ReaderActivity2";
@@ -43,10 +45,6 @@ public class ReaderActivity2 extends AppCompatActivity {
     private boolean AUTO_HIDE=true;
     private static final int AUTO_HIDE_DELAY_MILLIS = 3000;
 
-
-    // reader fields and controls.
-    private static final String CHAPTER = "CHAPTER";
-    private static final String PARAGRAPH_TAG = "<P>";
 
     private String previousContent = null;
 
@@ -87,181 +85,8 @@ public class ReaderActivity2 extends AppCompatActivity {
 
     private StringBuffer webViewBuffer = new StringBuffer();
 
-    private static String CLICK_EVENT="onClick";
-    private static String RENDER_EVENT="render";
-    private static String LOW_BUFFER="need_more";
-
-
-    private static String SENTENCE_FORMAT= "<span class='sentence_block' data-sentence_id='%s'>%s</span>" ;
-    private static String MODE2_FORMAT = "<span class='sentence_block mode2_block' data-sentence_id='%s'>%s</span>";
-    private static String PARAGRAPH_FORMAT="</p>\n<p> ";
-    private static String CHAPTER_FORMAT = "<span class='sentence_block heading' data-sentence_id='%s'>%s</span> \n";
 
     // js script.
-
-    String templateFirstPartForward = "<html>"+
-            "<head> "+
-            "<script src='jquery-2.1.3.min.js' type='text/javascript'></script>"+
-            "</head>"+
-            "<style type=\"text/css\">\n" +
-            ".sentence_block.heading {\n" +
-            "    text-align: center;\n" +
-            "    font-size: 25px;\n" +
-            "}\n" +
-            ".sentence_block{\n" +
-            "font-size: 17px;\n" +
-            "}\n" +
-            ".sentence_block.mode2_block{\n" +
-            "  font-size: 17px;\n" +
-            "  font-style: italic;\n" +
-            "  color: blue;\n" +
-            "}"+
-            "\n" +
-            "</style>"+
-            "<body>"+
-            "<div id='page_content' align=\"justify\" style='visibility:hidden'>"+
-            "<script>" +
-            "$( document ).ready(function() {" +
-            "cutoff=' ';\n" +
-            "rem_sentece_id=' ';\n" +
-            "var viewportHeight;\n" +
-            "if (document.compatMode === 'BackCompat') {\n" +
-            "    viewportHeight = document.body.clientHeight;\n" +
-            "} else {\n" +
-            "    viewportHeight = document.documentElement.clientHeight;\n" +
-            "}" +
-            "viewportHeight=viewportHeight-10; \n"+
-            "    var lastSpan;\n" +
-            "    var removeSentences = true;\n" +
-            "    var isTranslation = false; \n" +
-            "  if(document.getElementById('page_content').offsetHeight < viewportHeight){\n" +
-            "    alert('need_more')\n" +
-            "  }\n" +
-            "  else{"+
-            "    while(document.getElementById('page_content').offsetHeight > viewportHeight){\n" +
-            "        lastSpan =  $('#page_content span.sentence_block:last');\n" +
-            "        if(removeSentences){\n" +
-            "        $('p').each(function(index, item) {\n" +
-            "            if($.trim($(item).text()) === \"\") {\n" +
-            "                $(item).remove(); // $(item).remove();\n" +
-            "            }\n" +
-            "        });\n" +
-            "        lastSpan.detach();\n" +
-            "        if(document.getElementById('page_content').offsetHeight > viewportHeight){\n" +
-            "            continue;\n" +
-            "        }\n" +
-            "        removeSentences=false;\n" +
-            "        if(lastSpan.hasClass(\"mode2_block\")){\n" +
-            "            isTranslation=true;\n" +
-            "        }"+
-            "        rem_sentece_id = lastSpan.attr(\"data-sentence_id\");\n" +
-            "        lastSpan.appendTo($('p:last'));\n" +
-            "        }\n" +
-            "        //remove maximum number of sentences;\n" +
-            "\n" +
-            "        \n" +
-            "        var s = $('#page_content span.sentence_block:last').text();\n" +
-            "        var pos = s.lastIndexOf(' ');\n" +
-            "        cutoff = s.substr(pos+1, s.length) + ' ' +cutoff;\n" +
-            "        s = s.substr(0,pos);\n" +
-            "         $('#page_content span.sentence_block:last').html(s);\n" +
-            "    }\n" +
-            "\n" +
-            "    alert('"+RENDER_EVENT+"' +'###' + cutoff +\"###\" + 'rem_sentece_id' + \"###\" + rem_sentece_id+\"###\"+'included_string'+\"### \"+ s +\"###translation###\" + isTranslation ); }" +
-            "});\n" +
-            "$(document).on('click', '.mode2_block', function() {\n" +
-            "  alert('"+CLICK_EVENT+":'+$(this).attr('data-sentence_id'));\n" +
-            "});" +
-            "</script>"+
-            "<p>";
-
-
-
-    String templateFirstPartBackward = "<html>"+
-            "<head> "+
-            "<script src='jquery-2.1.3.min.js' type='text/javascript'></script>"+
-            "</head>"+
-            "<style type=\"text/css\">\n" +
-            ".sentence_block.heading {\n" +
-            "    text-align: center;\n" +
-            "    font-size: 25px;\n" +
-            "}\n" +
-            ".sentence_block{\n" +
-            "\tfont-size: 17px;\n" +
-            "}\n" +
-            ".sentence_block.mode2_block{\n" +
-            "  font-size: 17px;\n" +
-            "  font-style: italic;\n" +
-            "  color: blue;\n" +
-            "}" +
-            "\n" +
-            "</style>"+
-            "<body>"+
-            "<div id='page_content' align=\"justify\" style='visibility:hidden'>"+
-            "<script>" +
-            "$( document ).ready(function() {" +
-            "var viewportHeight;\n" +
-            "  if (document.compatMode === 'BackCompat') {\n" +
-            "      viewportHeight = document.body.clientHeight;\n" +
-            "  } else {\n" +
-            "      viewportHeight = document.documentElement.clientHeight;\n" +
-            "  }\n" +
-            "viewportHeight=viewportHeight-10; \n"+
-            "  cutoff=' ';\n" +
-            "  rem_sentece_id='';\n" +
-            "  var firstSpan;\n" +
-            "  var removeSentences = true;\n" +
-            "  var isTranslation = false; \n" +
-            "  if(document.getElementById('page_content').offsetHeight < viewportHeight){\n" +
-            "    alert('need_more')\n" +
-            "  }\n" +
-            "  else{"+
-            "  while(document.getElementById('page_content').offsetHeight > viewportHeight){\n" +
-            "      firstSpan =  $('#page_content span.sentence_block:first');\n" +
-            "      if(removeSentences){\n" +
-            "        $('p').each(function(index, item) {\n" +
-            "            if($.trim($(item).text()) === \"\") {\n" +
-            "                $(item).remove(); // $(item).remove();\n" +
-            "            }\n" +
-            "        });\n" +
-            "\n" +
-            "        firstSpan.detach();\n" +
-            "        if(document.getElementById('page_content').offsetHeight > viewportHeight){\n" +
-            "           continue;\n" +
-            "        }\n" +
-            "        removeSentences=false;\n" +
-            "        if(firstSpan.hasClass(\"mode2_block\")){\n" +
-            "            isTranslation=true;\n" +
-            "        }"+
-            "        rem_sentece_id = firstSpan.attr(\"data-sentence_id\");\n" +
-            "        firstSpan.prependTo($('p:first'));}      \n" +
-            "      var s = $('#page_content span.sentence_block:first').text();\n" +
-            "      var pos = s.indexOf(' ');\n" +
-            "\n" +
-            "      if(pos>0){\n" +
-            "           cutoff = cutoff + ' '+s.substr(0, pos);\n" +
-            "           s = s.substr(pos+1,s.length);\n" +
-            "      }\n" +
-            "      else{\n" +
-            "           cutoff = cutoff + ' '+s;\n" +
-            "           s=\"\";\n" +
-            "      }"+
-            "      $('#page_content span.sentence_block:first').html(s);\n" +
-            "    }\n" +
-            "\n" +
-            "\n" +
-            "    alert('"+RENDER_EVENT+"' +'###' + cutoff +\"###\" + 'rem_sentece_id' + \"###\" + rem_sentece_id +\"###\"+'included_string'+\"### \"+ s +\"###translation###\" + isTranslation);}"+
-            "});" +
-            "$(document).on('click', '.mode2_block', function() {\n" +
-            "  alert('"+CLICK_EVENT+":'+$(this).attr('data-sentence_id'));\n" +
-            "});" +
-            "</script>"+
-            "<p>";
-
-    String templateSecondPart = "</p> " +
-            "</div></body></html>";
-
-
 
 
     @Override
@@ -336,7 +161,7 @@ public class ReaderActivity2 extends AppCompatActivity {
             public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
 
                 Log.d(TAG, message);
-                if(message.startsWith(LOW_BUFFER)){
+                if(message.startsWith(Scripts.LOW_BUFFER)){
                     // todo get more line in the buffer.
                     if(!chapterEnd) {
                         populateWebView(false);
@@ -359,7 +184,7 @@ public class ReaderActivity2 extends AppCompatActivity {
                         webView.loadUrl("javascript:$('#page_content').css('visibility', 'visible')");
                     }
                 }
-                else if( message.startsWith(RENDER_EVENT)){
+                else if( message.startsWith(Scripts.RENDER_EVENT)){
                     String splits[] = message.split("###");
 
                     // update state;
@@ -401,7 +226,7 @@ public class ReaderActivity2 extends AppCompatActivity {
 
 
                 }
-                else if(message.startsWith(CLICK_EVENT)){
+                else if(message.startsWith(Scripts.CLICK_EVENT)){
 
                     long[] sentenceIds = Utils.parseLongs(message.split(":")[1]);
                     String sentence = "";
@@ -744,18 +569,18 @@ public class ReaderActivity2 extends AppCompatActivity {
         if(newPage){
             if(readForward && nextPagePrefix.trim().length()>0){
                 if(isLastSentenceMode2){
-                    buffer.append(String.format(MODE2_FORMAT, lastSentenceNumString, nextPagePrefix));
+                    buffer.append(String.format(Scripts.MODE2_FORMAT, lastSentenceNumString, nextPagePrefix));
                 }
                 else {
-                    buffer.append(String.format(SENTENCE_FORMAT, lastSentenceId, nextPagePrefix));
+                    buffer.append(String.format(Scripts.SENTENCE_FORMAT, lastSentenceId, nextPagePrefix));
                 }
             }
             else if(!readForward && previousPageSuffix.trim().length()>0){
                 if(isFirstSentenceMode2) {
-                    buffer.append(String.format(MODE2_FORMAT, firstSentenceNumString, previousPageSuffix));
+                    buffer.append(String.format(Scripts.MODE2_FORMAT, firstSentenceNumString, previousPageSuffix));
                 }
                 else{
-                    buffer.append(String.format(SENTENCE_FORMAT, firstSentenceId, previousPageSuffix));
+                    buffer.append(String.format(Scripts.SENTENCE_FORMAT, firstSentenceId, previousPageSuffix));
                 }
             }
         }
@@ -797,19 +622,19 @@ public class ReaderActivity2 extends AppCompatActivity {
                                 }
                             }
 
-                            buffer.append(String.format(MODE2_FORMAT, sentenceIds, sentence));
+                            buffer.append(String.format(Scripts.MODE2_FORMAT, sentenceIds, sentence));
 
                         }
                     }
                     else {
-                        buffer.append(String.format(SENTENCE_FORMAT, sentenceId, srcVersionSentences.get(sentenceId).getContent()));
+                        buffer.append(String.format(Scripts.SENTENCE_FORMAT, sentenceId, srcVersionSentences.get(sentenceId).getContent()));
                         numLines--;
                     }
 
                 }
                 else if(struct.getType()==2){
 
-                    buffer.append(PARAGRAPH_FORMAT);
+                    buffer.append(Scripts.PARAGRAPH_FORMAT);
                 }
                 else if(struct.getType()>2){
                     if(buffer.length()>0) {
@@ -819,7 +644,7 @@ public class ReaderActivity2 extends AppCompatActivity {
                     }
                     else {
                         Log.d(TAG, struct.getSentenceId() + "   " + struct.getType());
-                        buffer.append(String.format(CHAPTER_FORMAT,sentenceId, srcVersionSentences.get(sentenceId).getContent()));
+                        buffer.append(String.format(Scripts.CHAPTER_FORMAT,sentenceId, srcVersionSentences.get(sentenceId).getContent()));
                         chapterEnd=false;
                     }
                 }
@@ -864,22 +689,22 @@ public class ReaderActivity2 extends AppCompatActivity {
                                 }
                             }
 
-                            buffer.insert(0, String.format(MODE2_FORMAT, sentenceIds, sentence));
+                            buffer.insert(0, String.format(Scripts.MODE2_FORMAT, sentenceIds, sentence));
 
                         }
                     }
                     else{
-                        buffer.insert(0, String.format(SENTENCE_FORMAT, sentenceId, srcVersionSentences.get(sentenceId).getContent()));
+                        buffer.insert(0, String.format(Scripts.SENTENCE_FORMAT, sentenceId, srcVersionSentences.get(sentenceId).getContent()));
                         numLines--;
                     }
 
                 }
                 else if(struct.getType()==2){
-                    buffer.insert(0, PARAGRAPH_FORMAT);
+                    buffer.insert(0, Scripts.PARAGRAPH_FORMAT);
                 }
                 else if(struct.getType()>2){
                     Log.d(TAG, struct.getType() + "   " + struct.getSentenceId());
-                    buffer.insert(0, String.format(CHAPTER_FORMAT, sentenceId, srcVersionSentences.get(sentenceId).getContent()));
+                    buffer.insert(0, String.format(Scripts.CHAPTER_FORMAT, sentenceId, srcVersionSentences.get(sentenceId).getContent()));
                         //moveStructureIterator(true,!readForward);
                         chapterEnd=true;
                         numLines=0;
@@ -891,23 +716,6 @@ public class ReaderActivity2 extends AppCompatActivity {
 
         return buffer.toString();
     }
-
-
-//    private String getLinesForNewPage(int numLines){
-//        boolean read = true;
-//        StringBuffer buffer=new StringBuffer();
-//        String lines = getLines(numLines);
-//        if(readForward){
-//            buffer.append(String.format(SENTENCE_FORMAT,lastSentenceId,nextPagePrefix));
-//            buffer.append(lines);
-//        }
-//        else{
-//            buffer.append(String.format(SENTENCE_FORMAT,firstSentenceId,previousPageSuffix));
-//            buffer.insert(0,lines+" ");
-//        }
-//
-//        return buffer.toString();
-//    }
 
     private void populateWebView(boolean newPage) {
         String nextLine = getLines(15, newPage);
@@ -921,10 +729,10 @@ public class ReaderActivity2 extends AppCompatActivity {
         Log.d(TAG,webViewBuffer.toString());
         String htmlContent;
         if(readForward) {
-            htmlContent = templateFirstPartForward + webViewBuffer.toString() + templateSecondPart;
+            htmlContent = Scripts.templateFirstPartForward + webViewBuffer.toString() + Scripts.templateSecondPart;
         }
         else{
-            htmlContent = templateFirstPartBackward+webViewBuffer.toString()+templateSecondPart;
+            htmlContent = Scripts.templateFirstPartBackward+webViewBuffer.toString()+ Scripts.templateSecondPart;
         }
 
         webView.loadDataWithBaseURL("file:///android_asset/", htmlContent, "text/html", "utf-8", null);
