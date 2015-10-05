@@ -59,7 +59,7 @@ public class DownloadService extends IntentService {
     public static final int STATUS_RUNNING = 0;
     public static final int STATUS_FINISHED = 1;
     public static final int STATUS_ERROR = 2;
-    public static final int STATUS_DUPLICATE=3;
+    public static final int STATUS_DUPLICATE = 3;
 
     private DownloadType downloadType;
 
@@ -96,46 +96,52 @@ public class DownloadService extends IntentService {
         boolean isMode1Present = intent.getBooleanExtra("isMode1Present", false);
         boolean isMode2Present = intent.getBooleanExtra("isMode2Present", false);
 
-        Log.i(TAG, "Downloading book: " + bookName + " srcLang: " + srcLanguage + " swychLang: " + swychLanguage + " M1:" + isMode1Present + " M2:" + isMode2Present);
+        Log.i(TAG, "Downloading book: " + bookName + " srcLang: " + srcLanguage + " swychLang: "
+                + swychLanguage + " M1:" + isMode1Present + " M2:" + isMode2Present);
 
         Bundle bundle = new Bundle();
         receiver.send(STATUS_RUNNING, Bundle.EMPTY);
 
         DaoSession session = MyApplication.getSession();
         LibraryDao libraryDao = session.getLibraryDao();
-        List<Library> list = libraryDao.queryBuilder().where(LibraryDao.Properties.Title.eq(bookName)).where(LibraryDao.Properties.SrcLanguage.eq(srcLanguage)).where(LibraryDao.Properties.SwychLanguage.eq(swychLanguage)).list();
+        List<Library> list = libraryDao.queryBuilder().where(LibraryDao.Properties.Title.eq
+                (bookName)).where(LibraryDao.Properties.SrcLanguage.eq(srcLanguage)).where
+                (LibraryDao.Properties.SwychLanguage.eq(swychLanguage)).list();
 
-        if(list.size()>0){
-            Log.d(TAG,"Book"+bookName+ "already present in the library.");
+        if (list.size() > 0) {
+            Log.d(TAG, "Book" + bookName + "already present in the library.");
             receiver.send(STATUS_DUPLICATE, bundle);
             return;
         }
 
 
-
         try {
             JSONObject srcLangBook = downloadData(URLs.VERSION + bookName + "/" + srcLanguage);
             JSONObject tarLangBook = downloadData(URLs.VERSION + bookName + "/" + swychLanguage);
-            JSONObject mappings=null;
+            JSONObject mappings = null;
             JSONObject phrases = null;
-            if(isMode2Present) {
-                mappings = downloadData(URLs.MAPPING + bookName + "/" + srcLanguage + "/" + swychLanguage);
+            if (isMode2Present) {
+                mappings = downloadData(URLs.MAPPING + bookName + "/" + srcLanguage + "/" +
+                        swychLanguage);
             }
-            if(isMode1Present){
+            if (isMode1Present) {
 
-                phrases = downloadData(URLs.PHRASES + bookName + "/" + srcLanguage + "/" + swychLanguage);
+                phrases = downloadData(URLs.PHRASES + bookName + "/" + srcLanguage + "/" +
+                        swychLanguage);
             }
             //persist these objects to database;
             if (srcLangBook.length() > 0) {
-                persistToDb(displayBook, srcLanguage, srcLangBook, swychLanguage, tarLangBook, mappings,phrases);
+                Log.d(TAG,"persisting the book to database");
+                persistToDb(displayBook, srcLanguage, srcLangBook, swychLanguage, tarLangBook,
+                        mappings, phrases);
 
-//                BookDao bookDao = daoSession.getBookDao();
-//                Book book = new Book();
+                //                BookDao bookDao = daoSession.getBookDao();
+                //                Book book = new Book();
 
 
                 receiver.send(STATUS_FINISHED, bundle);
             }
-        } catch (JSONException | IOException |ParseException e) {
+        } catch (JSONException | IOException | ParseException e) {
             Log.d(TAG, "Error downloading the book");
             Log.d(TAG, e.toString());
         }
@@ -143,7 +149,8 @@ public class DownloadService extends IntentService {
 
     private JSONObject downloadData(String requestUrl) throws IOException, JSONException {
         // utility method to download book.
-        //todo switch to volley if possible. Since its from a service we could do without volley for now.
+        //todo switch to volley if possible. Since its from a service we could do without volley
+        // for now.
         Log.d(TAG, "Downloading from " + requestUrl);
         InputStream inputStream = null;
         HttpURLConnection urlConnection = null;
@@ -161,7 +168,8 @@ public class DownloadService extends IntentService {
 
 
         if (statusCode == 200) {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(urlConnection
+                    .getInputStream()));
             StringBuffer responceBuffer = new StringBuffer();
             String line = "";
 
@@ -170,7 +178,7 @@ public class DownloadService extends IntentService {
             }
             reader.close();
             JSONObject response = new JSONObject(responceBuffer.toString());
-            Log.d(TAG,"Download successful, URL: "+url);
+            Log.d(TAG, "Download successful, URL: " + url);
             return response;
 
 
@@ -181,11 +189,13 @@ public class DownloadService extends IntentService {
     }
 
 
-    private boolean persistToDb(DisplayBookObject displayBook, String srcLanguage, JSONObject srcLanguageBook, String swychLanguage, JSONObject swychLanguageBook, JSONObject mappings, JSONObject phrases) throws JSONException,ParseException {
+    private boolean persistToDb(DisplayBookObject displayBook, String srcLanguage, JSONObject
+            srcLanguageBook, String swychLanguage, JSONObject swychLanguageBook, JSONObject
+            mappings, JSONObject phrases) throws JSONException, ParseException {
 
 
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss", Locale.ENGLISH);
-//        Initialize DAO' here
+        //        Initialize DAO' here
         DaoSession session = MyApplication.getNewSession();
         BookDao bookDao = session.getBookDao();
         StructureDao structureDao = session.getStructureDao();
@@ -202,35 +212,42 @@ public class DownloadService extends IntentService {
             Log.d(TAG, "Book persisted with bookId= " + bookId);
         } catch (Exception e) {
             //TODO change this
-            Log.e(TAG, "Error inserting book "+displayBook.getTitle());
+            Log.e(TAG, "Error inserting book " + displayBook.getTitle());
         } finally {
-            bookId = bookDao.queryBuilder().where(BookDao.Properties.Title.eq(displayBook.getTitle())).list().get(0).getId();
-            Log.d(TAG, "Book"+ displayBook.getTitle()+ " saved with ID: " + bookId);
+            bookId = bookDao.queryBuilder().where(BookDao.Properties.Title.eq(displayBook
+                    .getTitle())).list().get(0).getId();
+            Log.d(TAG, "Book" + displayBook.getTitle() + " saved with ID: " + bookId);
         }
 
 
         long startTime = System.currentTimeMillis();
         // create source version
 
-        DisplayBookObject.Version srcDispVersion = displayBook.getVersion(Language.getLongVersion(srcLanguage));
+        DisplayBookObject.Version srcDispVersion = displayBook.getVersion(Language.getLongVersion
+                (srcLanguage));
         String title = srcDispVersion.getTitle();
         Date SrclastModifiedDate = df.parse(srcLanguageBook.getString("date_modified"));
-        Version srcVersion = new Version(null, srcLanguage, SrclastModifiedDate, srcDispVersion.getDescription(), bookId, srcDispVersion.getTitle(), srcDispVersion.getAuthor());
+        Version srcVersion = new Version(null, srcLanguage, SrclastModifiedDate, srcDispVersion
+                .getDescription(), bookId, srcDispVersion.getTitle(), srcDispVersion.getAuthor());
         long srcVersionId = session.insert(srcVersion);
 
 
-        DisplayBookObject.Version swychDispVersion = displayBook.getVersion(Language.getLongVersion(swychLanguage));
+        DisplayBookObject.Version swychDispVersion = displayBook.getVersion(Language
+                .getLongVersion(swychLanguage));
         Date swychVerLastModifiedDate = df.parse(swychLanguageBook.getString("date_modified"));
-        Version swychVersion = new Version(null, swychLanguage,swychVerLastModifiedDate, swychDispVersion.getDescription(), bookId, swychDispVersion.getTitle(), swychDispVersion.getAuthor());
+        Version swychVersion = new Version(null, swychLanguage, swychVerLastModifiedDate,
+                swychDispVersion.getDescription(), bookId, swychDispVersion.getTitle(),
+                swychDispVersion.getAuthor());
         long swychVersionId = session.insert(swychVersion);
 
 
-        Library item = new Library(null, displayBook.getImageUrl(),displayBook.isMode1Present(),displayBook.isMode2Present(),srcDispVersion.getTitle(),srcDispVersion.getAuthor(),srcLanguage,swychLanguage,srcVersionId,swychVersionId,new Date());
+        Library item = new Library(null, displayBook.getImageUrl(), displayBook.isMode1Present(),
+                displayBook.isMode2Present(), srcDispVersion.getTitle(), srcDispVersion.getAuthor
+                (), srcLanguage, swychLanguage, srcVersionId, swychVersionId, new Date());
         try {
             session.insert(item);
-        }
-        catch(Exception e){
-            Log.e(TAG,"Book already present");
+        } catch (Exception e) {
+            Log.e(TAG, "Book already present");
             return true;
         }
 
@@ -238,40 +255,43 @@ public class DownloadService extends IntentService {
 
         // add structure and sentence to db.
         JSONArray srcVersionStructure = srcLanguageBook.getJSONArray("structure");
-        addStructureToDB(session, structureDao,sentenceDao, srcVersionId, srcVersionStructure);
-
-
-
+        addStructureToDB(session, structureDao, sentenceDao, srcVersionId, srcVersionStructure);
 
 
         JSONArray swychVersionStructureList = swychLanguageBook.getJSONArray("structure");
-        addStructureToDB(session, structureDao, sentenceDao, swychVersionId, swychVersionStructureList);
+        addStructureToDB(session, structureDao, sentenceDao, swychVersionId,
+                swychVersionStructureList);
 
 
         // handle mappings.
-//        MappingDao mappingDao = session.getMappingDao();
+        //        MappingDao mappingDao = session.getMappingDao();
         Date mappingLastModifiedDate = df.parse(mappings.getString("date_modified"));
         String parsedMappingString = Deserializer.parseMappings(mappings.getString("mapping"));
 
-        Log.d(TAG,parsedMappingString);
+        Log.d(TAG, parsedMappingString);
 
-        Mapping mapping = new Mapping(null, parsedMappingString,mappingLastModifiedDate, srcVersionId ,swychVersionId,libraryId);
+        Mapping mapping = new Mapping(null, parsedMappingString, mappingLastModifiedDate,
+                srcVersionId, swychVersionId, libraryId);
         session.insert(mapping);
 
         System.out.println(phrases);
-        if(phrases!=null) {
+        if (phrases != null) {
             Date phrasesLastModifiedDate = df.parse(phrases.getString("date_modified"));
-            PhraseReplacement replacement = new PhraseReplacement(null, swychLanguage, phrases.get("phrase_replacements").toString(), srcVersionId, swychVersionId, libraryId);
+            PhraseReplacement replacement = new PhraseReplacement(null, swychLanguage, phrases
+                    .get("phrase_replacements").toString(), srcVersionId, swychVersionId,
+                    libraryId);
             session.insert(replacement);
         }
 
-        Log.i(TAG, "took " + ((System.currentTimeMillis() - startTime) / 1000) + " seconds for book insert");
+        Log.i(TAG, "took " + ((System.currentTimeMillis() - startTime) / 1000) + " seconds for " +
+                "book insert");
 
 
         return true;
     }
 
-    private void addSentenceToDB(final DaoSession session, final SentenceDao sentenceDao, final JSONObject sentences, final long srcVersionId) {
+    private void addSentenceToDB(final DaoSession session, final SentenceDao sentenceDao, final
+    JSONObject sentences, final long srcVersionId) {
         session.runInTx(new Runnable() {
             @Override
             public void run() {
@@ -280,7 +300,8 @@ public class DownloadService extends IntentService {
                 try {
                     while (iterator.hasNext()) {
                         key = iterator.next();
-                        Sentence sentence = new Sentence(null, Integer.parseInt(key), sentences.getString(key), srcVersionId);
+                        Sentence sentence = new Sentence(null, Integer.parseInt(key), sentences
+                                .getString(key), srcVersionId);
                         sentenceDao.insert(sentence);
                     }
                 } catch (JSONException e) {
@@ -291,25 +312,30 @@ public class DownloadService extends IntentService {
 
     }
 
-    private void addStructureToDB(final DaoSession session, final StructureDao structureDao,final SentenceDao sentenceDao, final long srcVersionId, final JSONArray structureList) {
+    private void addStructureToDB(final DaoSession session, final StructureDao structureDao,
+                                  final SentenceDao sentenceDao, final long srcVersionId, final
+                                  JSONArray structureList) {
         session.runInTx(new Runnable() {
             public void run() {
                 // Everything in run will be executed in a single transaction.
                 try {
                     for (int i = 0; i < structureList.length(); i++) {
                         JSONObject structureJson = structureList.getJSONObject(i);
-                        int structureType = StructType.valueOf(structureJson.getString("type")).getCode();
+                        int structureType = StructType.valueOf(structureJson.getString("type"))
+                                .getCode();
 
-                        int sentenceId=-1;
+                        int sentenceId = -1;
 
-                        if(!structureJson.isNull("sentence")){
+                        if (!structureJson.isNull("sentence")) {
                             JSONObject sentenceJson = structureJson.getJSONObject("sentence");
                             sentenceId = sentenceJson.getInt("sentence_id");
                             String sentString = sentenceJson.getString("content");
-                            Sentence sentence = new Sentence(null,sentenceId,sentString,srcVersionId);
+                            Sentence sentence = new Sentence(null, sentenceId, sentString,
+                                    srcVersionId);
                             sentenceDao.insert(sentence);
                         }
-                        Structure structure = new Structure(null,(long)i,(long)sentenceId,structureType,srcVersionId);
+                        Structure structure = new Structure(null, (long) i, (long) sentenceId,
+                                structureType, srcVersionId);
                         structureDao.insert(structure);
                     }
                 } catch (JSONException e) {

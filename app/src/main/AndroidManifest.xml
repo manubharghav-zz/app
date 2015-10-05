@@ -49,6 +49,7 @@
         <activity
             android:name=".activity.LibraryActivity"
             android:label="@string/title_activity_library" >
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

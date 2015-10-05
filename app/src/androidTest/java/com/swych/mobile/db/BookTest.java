@@ -33,7 +33,7 @@ public class BookTest extends AbstractDaoSessionTest< DaoMaster, DaoSession> {
         bookVersion.setLanguage(language);
         bookVersion.setId(version1_id);
         bookVersion.setBook_id(book_id);
-        bookVersion.setDate(new Date(System.currentTimeMillis()));
+        //bookVersion.setDate(new Date(System.currentTimeMillis()));
         bookVersion.setDescription("This is the "+language+ " of the book with book_id:" +book_id);
         bookVersion.setTitle(book_id+"_"+language);
         return bookVersion;

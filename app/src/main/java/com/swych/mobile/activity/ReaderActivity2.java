@@ -27,11 +27,17 @@ import com.swych.mobile.db.DaoSession;
 import com.swych.mobile.db.Library;
 import com.swych.mobile.db.LibraryDao;
 import com.swych.mobile.db.Mapping;
+import com.swych.mobile.db.PhraseReplacement;
 import com.swych.mobile.db.Sentence;
 import com.swych.mobile.db.Structure;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -59,7 +65,7 @@ public class ReaderActivity2 extends AppCompatActivity {
     private Map<Long,Sentence> destVersionSentences;
 //    private Map<Long, Long> sentenceToStructureMap;
     private Map<Long, String> mappings;
-
+    private Map<Long, JSONArray> phraseMappings;
 //    private
     private ArrayList<Structure> structureList;
 
@@ -409,11 +415,9 @@ public class ReaderActivity2 extends AppCompatActivity {
         // Set the IMMERSIVE flag.
         // Set the content to appear under the system bars so that the content
         // doesn't resize when the system bars hide and show.
-        getWindow().getDecorView().setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View
+                .SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | 
+                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
                         | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
                         | View.SYSTEM_UI_FLAG_IMMERSIVE);
     }
@@ -472,8 +476,37 @@ public class ReaderActivity2 extends AppCompatActivity {
         }
         Log.d(TAG,"mappings loaded, num mappings = "+mappings.size());
 
+
+        // load phrases into memory;
+        List<PhraseReplacement> phraseMappingsFromDB = libraryItem.getPhraseMappings();
+        if(phraseMappingsFromDB.size()==0){
+            Log.i(TAG,"No mode 1 mappings for the book");
+        }
+        else{
+            try {
+                JSONObject phrasesPairs = new JSONObject(phraseMappingsFromDB.get(0).getPhrases());
+
+                Iterator<String> iter = phrasesPairs.keys();
+                phraseMappings = new HashMap<>();
+                while(iter.hasNext()){
+                    String key = iter.next();
+                    long sentenceID = Long.parseLong(key);
+                    JSONArray array = phrasesPairs.getJSONArray(key);
+
+                    phraseMappings.put(sentenceID, array);
+                }
+            }
+            catch (JSONException exception){
+                Log.e(TAG,"Error loading phrase mappings while reading book");
+            }
+        }
+
+
+        Log.d(TAG,"phrases loaded, num phrases = "+phraseMappings.size());
+
+
         // testing book.
-        mode = Mode.Mode2;
+        mode = Mode.Mode1;
 
         //todo need to change this to last left position.
         startOfPage = 0;
@@ -626,6 +659,14 @@ public class ReaderActivity2 extends AppCompatActivity {
 
                         }
                     }
+                    else if(mode ==Mode.Mode1 && phraseMappings.containsKey(sentenceId)){
+                        String sentence = srcVersionSentences.get(sentenceId).getContent();
+                        JSONArray phraseArr = phraseMappings.get(sentenceId);
+
+                        String swappedSentence = replacePhrases(sentence,phraseArr);
+                        buffer.append(String.format(Scripts.SENTENCE_FORMAT, sentenceId, swappedSentence));
+                        numLines--;
+                    }
                     else {
                         buffer.append(String.format(Scripts.SENTENCE_FORMAT, sentenceId, srcVersionSentences.get(sentenceId).getContent()));
                         numLines--;
@@ -689,9 +730,19 @@ public class ReaderActivity2 extends AppCompatActivity {
                                 }
                             }
 
-                            buffer.insert(0, String.format(Scripts.MODE2_FORMAT, sentenceIds, sentence));
+                            buffer.insert(0, String.format(Scripts.MODE2_FORMAT, sentenceIds,
+                                    sentence));
 
                         }
+                    }
+                    else if(mode ==Mode.Mode1 && phraseMappings.containsKey(sentenceId)){
+                        String sentence = srcVersionSentences.get(sentenceId).getContent();
+                        JSONArray phraseArr = phraseMappings.get(sentenceId);
+
+                        String swappedSentence = replacePhrases(sentence,phraseArr);
+                        buffer.insert(0,String.format(Scripts.SENTENCE_FORMAT, sentenceId,
+                                swappedSentence));
+                        numLines--;
                     }
                     else{
                         buffer.insert(0, String.format(Scripts.SENTENCE_FORMAT, sentenceId, srcVersionSentences.get(sentenceId).getContent()));
@@ -715,6 +766,25 @@ public class ReaderActivity2 extends AppCompatActivity {
         }
 
         return buffer.toString();
+    }
+
+    private String replacePhrases(String sentence, JSONArray phraseArr) {
+
+        StringBuilder builder = new StringBuilder(sentence);
+
+        for (int i = phraseArr.length() - 1; i >= 0; i--) {
+            try {
+                JSONObject phrase = phraseArr.getJSONObject(i);
+                builder.replace(phrase.getInt("from_char"), phrase.getInt("to_char"), String
+                        .format(Scripts.PhraseFormat, builder.substring(phrase.getInt
+                                ("from_char"), phrase.getInt("to_char")), phrase.getString
+                                ("content")));
+
+            } catch (Exception e) {
+                Log.d(TAG, "Error replacing phrases inside replace phrases");
+            }
+        }
+        return builder.toString();
     }
 
     private void populateWebView(boolean newPage) {

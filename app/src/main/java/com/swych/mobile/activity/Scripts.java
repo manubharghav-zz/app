@@ -26,6 +26,11 @@ public class Scripts {
             "  font-style: italic;\n" +
             "  color: blue;\n" +
             "}" +
+            ".phrase_block{\n" +
+            "font-size: 17px;\n" +
+            "font-style: bold;\n" +
+            "color: red;\n" +
+            "}"+
             "\n" +
             "</style>"+
             "<body>"+
@@ -67,9 +72,18 @@ public class Scripts {
             "        }"+
             "        rem_sentece_id = firstSpan.attr(\"data-sentence_id\");\n" +
             "        firstSpan.prependTo($('p:first'));}      \n" +
-            "      var s = $('#page_content span.sentence_block:first').text();\n" +
+            "      var s = $('#page_content span.sentence_block:first').html();\n" +
             "      var pos = s.indexOf(' ');\n" +
-            "\n" +
+            " if(s.startsWith(\"<span\")){\n" +
+            "          var spanPosition = s.indexOf(\"</span>\");\n" +
+            "          var new_cutoff = s.substr(0,spanPosition+7);\n" +
+            "          s = s.substr(spanPosition+8, s.length);\n" +
+            "          alert(new_cutoff);\n" +
+            "          cutoff =cutoff +' '+ new_cutoff;\n" +
+            "          alert(cutoff);\n" +
+            "      } " +
+            "else" +
+            "{" +
             "      if(pos>0){\n" +
             "           cutoff = cutoff + ' '+s.substr(0, pos);\n" +
             "           s = s.substr(pos+1,s.length);\n" +
@@ -78,6 +92,7 @@ public class Scripts {
             "           cutoff = cutoff + ' '+s;\n" +
             "           s=\"\";\n" +
             "      }"+
+            "}" +
             "      $('#page_content span.sentence_block:first').html(s);\n" +
             "    }\n" +
             "\n" +
@@ -105,6 +120,11 @@ public class Scripts {
             "  font-size: 17px;\n" +
             "  font-style: italic;\n" +
             "  color: blue;\n" +
+            "}"+
+            ".phrase_block{\n" +
+            "font-size: 17px;\n" +
+            "font-style: bold;\n" +
+            "color: red;\n" +
             "}"+
             "\n" +
             "</style>"+
@@ -150,10 +170,20 @@ public class Scripts {
             "        //remove maximum number of sentences;\n" +
             "\n" +
             "        \n" +
-            "        var s = $('#page_content span.sentence_block:last').text();\n" +
+            "        var s = $('#page_content span.sentence_block:last').html();\n" +
             "        var pos = s.lastIndexOf(' ');\n" +
+            "        if(s.endsWith(\"</span>\")){\n" +
+            "          var spanPosition = s.lastIndexOf(\"<span \");\n" +
+            "          var new_cutoff = s.substr(spanPosition,s.length);\n" +
+            "          s = s.substr(0, spanPosition-1);\n" +
+            "          alert(new_cutoff);\n" +
+            "          cutoff = new_cutoff +' '+cutoff;\n" +
+            "          alert(cutoff);\n" +
+            "        }\n" +
+            "else{\n"+
             "        cutoff = s.substr(pos+1, s.length) + ' ' +cutoff;\n" +
             "        s = s.substr(0,pos);\n" +
+            "} \n"+
             "         $('#page_content span.sentence_block:last').html(s);\n" +
             "    }\n" +
             "\n" +
@@ -168,6 +198,7 @@ public class Scripts {
     public static String SENTENCE_FORMAT= "<span class='sentence_block' data-sentence_id='%s'>%s</span>" ;
     public static String MODE2_FORMAT = "<span class='sentence_block mode2_block' data-sentence_id='%s'>%s</span>";
     public static String PARAGRAPH_FORMAT="</p>\n<p> ";
+    public static String PhraseFormat = "<span class='phrase_block' orig='%s'>%s</span>";
     public static String CHAPTER_FORMAT = "<span class='sentence_block heading' data-sentence_id='%s'>%s</span> \n";
     public static String templateSecondPart = "</p> " +
             "</div></body></html>";
