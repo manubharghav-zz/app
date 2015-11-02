@@ -62,7 +62,7 @@ public class LibraryActivity extends BaseActivity {
         libraryDao = session.getLibraryDao();
         cursor = db.query(libraryDao.getTablename(),libraryDao.getAllColumns(),null,null,null,null,null );
 
-        LibraryListAdapter listAdapter = new LibraryListAdapter(getApplicationContext(),cursor);
+        final LibraryListAdapter listAdapter = new LibraryListAdapter(getApplicationContext(),cursor);
 
         final ListView listview = (ListView) findViewById(R.id.library_list);
 
@@ -81,12 +81,17 @@ public class LibraryActivity extends BaseActivity {
 
 //        registerForContextMenu(listview);
         listview.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
-        listview.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
+        listview.setMultiChoiceModeListener(new ListView.MultiChoiceModeListener() {
             @Override
             public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean
                     checked) {
-                mode.setTitle(listview.getCheckedItemCount()+" selected books");
-                mode.invalidate();
+                mode.setTitle(listview.getCheckedItemCount() + " selected books");
+//                mode.invalidate();
+                final int checkedCount = listview.getCheckedItemCount();
+                if(checkedCount> 1){
+                    Log.d(TAG,"More than 2 items selected");
+                }
+
                 //todo if more than 2 disable the read now icon.
             }
 

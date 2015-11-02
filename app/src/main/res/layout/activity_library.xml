@@ -10,7 +10,6 @@
             android:id="@+id/library_list"
             android:layout_width="match_parent"
             android:background="#FFFFFF"
-            android:listSelector="@android:color/darker_gray"
             android:layout_height="match_parent" >
     </ListView>
 
