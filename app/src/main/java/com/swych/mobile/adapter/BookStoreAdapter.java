@@ -1,6 +1,7 @@
 package com.swych.mobile.adapter;
 
 import android.content.Context;
+import android.nfc.Tag;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -83,6 +84,7 @@ public class BookStoreAdapter extends BaseAdapter {
         bookName = (TextView) bookListViewItem.findViewById(R.id.book_title);
         imageView = (NetworkImageView)bookListViewItem.findViewById(R.id.image);
 
+
         imageView.setImageUrl(URLs.BASE + book.getImageUrl(), RequestManager.getInstance().getImageLoader());
         imageView.setDefaultImageResId(R.drawable.book);
 
@@ -92,7 +94,7 @@ public class BookStoreAdapter extends BaseAdapter {
         availableLanguages = (LinearLayout) bookListViewItem.findViewById(R.id.available_languages);
 
         bookName.setText(book.getNativeVersion().getTitle());
-
+        Log.d(TAG, "processing book " + book.getNativeVersion().getTitle());
         bookAuthor.setText(book.getNativeVersion().getAuthor());
         availableLanguages.removeAllViews();
         for(Language language: book.getAvailableLanguages()){

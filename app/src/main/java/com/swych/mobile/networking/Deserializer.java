@@ -32,7 +32,7 @@ public class Deserializer {
         Iterator<String> bookIterator = library.keys();
         while(bookIterator.hasNext()){
             String bookName = bookIterator.next();
-//            Log.d(TAG,"deserialising book: " + bookName);
+            Log.d(TAG,"deserialising book: " + bookName);
             JSONObject bookJson = library.getJSONObject(bookName);
             String imageUrl = bookJson.get("image").toString();
             DisplayBookObject book = new DisplayBookObject();

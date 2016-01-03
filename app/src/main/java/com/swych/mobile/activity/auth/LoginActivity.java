@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.Intent;
 
 import android.content.IntentSender;
+import android.nfc.Tag;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -66,8 +67,9 @@ public class LoginActivity extends Activity implements GoogleApiClient.Connectio
         GoogleApiClient.OnConnectionFailedListener {
 
     // Note: Your consumer key and secret should be obfuscated in your source code before shipping.
-    private static final String TWITTER_KEY = "Tta2lL1hofGSKgJxTIwpvkE0f";
-    private static final String TWITTER_SECRET = "5ebCEoYjBejcrwHlcVqVZBMmxGToHK9iokRmboRXDQJbdul1EY";
+    private static final String TAG = "Login Activity: ";
+    private static final String TWITTER_KEY = "dsN8rYGGiAywEizWVWlreF9Pt";
+    private static final String TWITTER_SECRET = "ZcI8tYasqb9dl5URzBJM9ix7D5t94Oc96MjhKg9jFsG0cRXOfx";
 
     private static final String SERVER_CLIENT_ID="404334429910-7tkt38hj6kbtb954kv2qsotq386innvf.apps.googleusercontent.com";
 
@@ -205,6 +207,7 @@ public class LoginActivity extends Activity implements GoogleApiClient.Connectio
                     @Override
                     public void onSuccess(LoginResult loginResult) {
                         AccessToken token = loginResult.getAccessToken();
+                        token.getToken();
                         Gson gson = new Gson();
                         String credentials  = gson.toJson(token);
                         Intent intent = new Intent(getApplicationContext(), LibraryActivity.class);
@@ -244,7 +247,9 @@ public class LoginActivity extends Activity implements GoogleApiClient.Connectio
                 TwitterSession session = Twitter.getSessionManager().getActiveSession();
                 TwitterAuthToken token = session.getAuthToken();
                 Gson gson = new Gson();
+
                 String credentials = gson.toJson(token);
+                Log.d(TAG, credentials);
                 Intent intent = new Intent(getApplicationContext(), LibraryActivity.class);
                 intent.putExtra("credentials", credentials);
                 startActivity(intent);
@@ -267,16 +272,14 @@ public class LoginActivity extends Activity implements GoogleApiClient.Connectio
         socialNetworkUsed = "google";
         googleLoginButton  = (SignInButton) findViewById(R.id.btnGoogle);
         mSignInClicked = true;
-        System.out.println(!mGoogleApiClient.isConnecting());
         mGoogleApiClient.disconnect();
-        System.out.println(mGoogleApiClient.isConnected());
-        System.out.println(mGoogleApiClient.isConnecting());
         if(!mGoogleApiClient.isConnecting()) {
             mGoogleApiClient.connect();
         }
         else{
             GetIdTokenTask task = new GetIdTokenTask();
             task.execute((Void) null);
+
         }
     }
 
@@ -316,6 +319,7 @@ public class LoginActivity extends Activity implements GoogleApiClient.Connectio
         if(socialNetworkUsed.equals("google")){
             GetIdTokenTask task = new GetIdTokenTask();
             task.execute((Void) null);
+//            task.
         }
 
     }

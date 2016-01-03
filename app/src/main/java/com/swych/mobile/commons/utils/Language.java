@@ -7,7 +7,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public enum Language {
-    English("en", R.drawable.english), Hindi("hi",R.drawable.hindi), Spanish("es",R.drawable.spanish), German("de",R.drawable.german), Italian("it",R.drawable.italian), Portuguese("pt",R.drawable.portuguese), Mandarin("zh",R.drawable.mandarin), French("fr",R.drawable.french)   ;
+    English("en", R.drawable.english), Hindi("hi",R.drawable.hindi), Spanish("es",R.drawable
+            .spanish), German("de",R.drawable.german), Italian("it",R.drawable.italian),
+    Portuguese("pt",R.drawable.portuguese), Mandarin("zh",R.drawable.mandarin), French("fr",R
+            .drawable.french),Latin("la",R.drawable.latin)   ;
     private String value;
     private int imageCode;
     private static final Map<String, Language> lookup = new HashMap<String, Language>();
