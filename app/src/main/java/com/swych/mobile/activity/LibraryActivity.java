@@ -1,40 +1,23 @@
 package com.swych.mobile.activity;
 
-import com.swych.mobile.MyApplication;
-import com.swych.mobile.activity.util.SystemUiHider;
-
-import android.annotation.TargetApi;
-import android.app.Activity;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.support.v4.app.NavUtils;
-import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
-import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
 
+import com.swych.mobile.MyApplication;
 import com.swych.mobile.R;
 import com.swych.mobile.adapter.LibraryListAdapter;
 import com.swych.mobile.db.DaoSession;
 import com.swych.mobile.db.LibraryDao;
-import com.swych.mobile.networking.background.DownloadResultReceiver;
-import com.swych.mobile.networking.background.DownloadService;
-
-import de.greenrobot.dao.query.QueryBuilder;
 
 
 public class LibraryActivity extends BaseActivity {

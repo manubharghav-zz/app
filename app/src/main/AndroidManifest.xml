@@ -35,8 +35,6 @@
         <activity
             android:name=".activity.auth.LoginActivity"
             android:label="@string/app_name" >
-
-
         </activity>
         <activity
             android:name="com.facebook.FacebookActivity"
@@ -53,6 +51,7 @@
             android:label="@string/title_activity_library" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
@@ -63,12 +62,9 @@
         <activity
             android:name=".activity.BookStoreActivity"
             android:label="@string/title_activity_book_store" >
-
             <meta-data
                 android:name="android.app.default_searchable"
                 android:value=".activity.SearchResultsActivity" />
-
-
         </activity>
         <activity
             android:name=".activity.SearchResultsActivity"
@@ -92,18 +88,20 @@
         <activity
             android:name=".activity.ReaderActivity2"
             android:label="@string/title_activity_reader2"
-            android:theme="@style/Theme.AppCompat.Light"
             android:parentActivityName=".activity.LibraryActivity"
-                >
+            android:theme="@style/Theme.AppCompat.Light" >
             <meta-data
-                    android:name="android.support.PARENT_ACTIVITY"
-                    android:value=".activity.LibraryActivity" />
-
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activity.LibraryActivity" />
         </activity>
         <activity
             android:name=".activity.TmpActivity"
             android:label="@string/title_activity_tmp" >
-
+        </activity>
+        <activity
+            android:name=".activity.AboutSwychActivity"
+            android:label="@string/title_activity_about_swych"
+        >
         </activity>
     </application>
 

@@ -15,7 +15,6 @@ import android.widget.GridView;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.Spinner;
-import android.widget.Switch;
 import android.widget.Toast;
 
 import com.swych.mobile.R;
@@ -29,9 +28,7 @@ import com.swych.mobile.networking.background.DownloadType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 public class BookStoreActivity extends BaseActivity implements DownloadResultReceiver.Receiver {
 

@@ -1,15 +1,13 @@
 package com.swych.mobile.activity;
 
-import android.app.Activity;
+
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -125,10 +123,11 @@ public abstract class BaseActivity extends AppCompatActivity {
         actionBarDrawerToggle.setDrawerIndicatorEnabled(true);
         mDrawerLayout.setDrawerListener(actionBarDrawerToggle);
 
+        ActionBar supportActionBar = getSupportActionBar();
         // enable ActionBar app icon to behave as action to toggle nav drawer
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeButtonEnabled(true);
-        getSupportActionBar().setTitle(getActivityName());
+        supportActionBar.setDisplayHomeAsUpEnabled(true);
+        supportActionBar.setHomeButtonEnabled(true);
+        supportActionBar.setTitle(getActivityName());
 
         /**
          * As we are calling BaseActivity from manifest file and this base activity is intended just to add navigation drawer in our app.
@@ -184,8 +183,8 @@ public abstract class BaseActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(),"Selected Item Position::"+position, Toast.LENGTH_SHORT).show();
                 break;
             case 4:
-                //About
-                Toast.makeText(getApplicationContext(),"Selected Item Position::"+position, Toast.LENGTH_SHORT).show();
+                intent = new Intent(getApplicationContext(),AboutSwychActivity.class);
+                startActivity(intent);
                 break;
 
             default:

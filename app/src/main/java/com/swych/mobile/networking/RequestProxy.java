@@ -6,7 +6,6 @@ import android.content.pm.PackageManager;
 import android.net.http.AndroidHttpClient;
 import android.os.Build;
 import android.util.Log;
-import android.widget.GridView;
 import android.widget.ListView;
 
 import com.android.volley.AuthFailureError;
@@ -34,13 +33,10 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Executors;
 
-import static com.google.android.gms.internal.zzhl.runOnUiThread;
+import static com.google.android.gms.internal.zzip.runOnUiThread;
 
 /**
  * Created by manu on 6/15/15.

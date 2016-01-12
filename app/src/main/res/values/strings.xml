@@ -55,11 +55,32 @@
         <item>Mandarin</item>
         <item>Deutch</item>
         <item>German</item>
+        <item>Latin</item>
     </string-array>
 
     <string name="Mode1short">M1</string>
     <string name="Mode2short">M2</string>
     <string name="Mode1">Mode1</string>
     <string name="Mode2">Mode2</string>
+
+    <string name="title_activity_about">About</string>
+    <string name="about_heading_title">Official Swych App for Android</string>
+    <string name="swych_description"> Swych is a Revolutionary
+        Language Learning Application.  Read your favorite book and master a new language at the same time. Swych will ensure you learn a new language just the way you learned your first!
+    </string>
+    <string name="about_heading_features">Features</string>
+    <string name="swych_features" >
+        - Multiple Languages: We support five languages with many more to come.
+        - Updated library: Our books are updated regularly so you can read more of your favourite
+        books.
+        - Precise Translations: Our state of the art AI and Machine Translations systems give you
+        the perfect learning experience.
+    </string>
+    <string name="about_heading_feedback">Feedback</string>
+    <string name="collect_feedback">
+        Send us your feedback about the app! Please email us at manubharghav@gmail.com.
+        Terms of Use: https://m.swych.it/Terms_of_Use</string>
+    <string name="title_activity_about_activity">About_activity</string>
+    <string name="title_activity_about_swych">AboutSwychActivity</string>
 
 </resources>
