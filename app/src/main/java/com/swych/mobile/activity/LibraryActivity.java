@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.SparseBooleanArray;
 import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -12,15 +13,18 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.swych.mobile.MyApplication;
 import com.swych.mobile.R;
 import com.swych.mobile.adapter.LibraryListAdapter;
 import com.swych.mobile.db.DaoSession;
 import com.swych.mobile.db.LibraryDao;
+import com.swych.mobile.networking.background.DownloadResultReceiver;
+import com.swych.mobile.networking.background.DownloadService;
 
 
-public class LibraryActivity extends BaseActivity {
+public class LibraryActivity extends BaseActivity implements DownloadResultReceiver.Receiver {
 
 
     private static String TAG="LibraryActivity";
@@ -69,10 +73,11 @@ public class LibraryActivity extends BaseActivity {
             public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean
                     checked) {
                 mode.setTitle(listview.getCheckedItemCount() + " selected books");
-//                mode.invalidate();
+                mode.invalidate();
                 final int checkedCount = listview.getCheckedItemCount();
                 if(checkedCount> 1){
-                    Log.d(TAG,"More than 2 items selected");
+                    Log.d(TAG, "More than 2 items selected");
+
                 }
 
                 //todo if more than 2 disable the read now icon.
@@ -94,7 +99,7 @@ public class LibraryActivity extends BaseActivity {
                     return true;
                 }
                 else{
-                    menu.findItem(R.id.readnow).setVisible(false);
+                    menu.findItem(R.id.readnow).setVisible(true);
                     return true;
                 }
 
@@ -103,6 +108,13 @@ public class LibraryActivity extends BaseActivity {
 
             @Override
             public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+                Log.d(TAG, "processing itemId: " + item.getItemId());
+                long[] checkdItemIds = listview.getCheckedItemIds();
+                SparseBooleanArray selectedItems = listview.getCheckedItemPositions();
+                for(int i=0;i<selectedItems.size();i++){
+                   Cursor cursor = (Cursor) listview.getItemAtPosition(selectedItems.keyAt(i));
+                    Log.d(TAG,"" + cursor.getLong(cursor.getColumnIndex("_id")));
+                }
                 switch (item.getItemId()){
                     case R.id.sync:
                         Log.d(TAG,"Sync button clicked");
@@ -114,7 +126,6 @@ public class LibraryActivity extends BaseActivity {
                         Log.d(TAG,"read now button clicked");
                         return true;
                 }
-
                 return false;
             }
 
@@ -154,25 +165,22 @@ public class LibraryActivity extends BaseActivity {
     }
 
 
-//    private void updateBooks() {
-//        /* Starting Download Service */
-//        mReceiver = new DownloadResultReceiver(new Handler());
-//        mReceiver.setReceiver(this);
-//        Intent intent = new Intent(Intent.ACTION_SYNC, null, this, DownloadService.class);
-//
-//        intent.putExtra("book", book);
-//        //        intent.putExtra("bookName", book.getTitle());
-//        intent.putExtra("nativeLanguage",srcLanguageSelected.getShortVersion());
-//        intent.putExtra("foreignLanguage", swychLanguageSelected.getShortVersion());
-//        intent.putExtra("receiver", mReceiver);
-//        intent.putExtra("DownloadType", DownloadType.BOOK);
-//        intent.putExtra("isMode1Present", book.isMode1Present());
-//        intent.putExtra("isMode2Present", book.isMode2Present());
-//        //        intent.putExtra("requestId", 101);
-//
-//        startService(intent);
-//    }
 
+    @Override
+    public void onReceiveResult(int resultCode, Bundle resultData) {
+        if(resultCode == DownloadService.STATUS_FINISHED){
+            Log.d(TAG, "Book delete completed");
+            Toast.makeText(getApplicationContext(), "Book is downloaded. Visit library", Toast
+                    .LENGTH_SHORT).show();
+        }
+        else if(resultCode==DownloadService.STATUS_DUPLICATE){
+            Log.d(TAG, "Book already present in your library");
+            Toast.makeText(getApplicationContext(), "This book exists in your library. Please visit library to read", Toast.LENGTH_SHORT).show();
+        }
+        else{
+            //TODO Download failed. decide later
+        }
+    }
 
-}
+ }
 

@@ -3,7 +3,7 @@ package com.swych.mobile.networking.background;
 /**
  * Created by manu on 6/21/15.
  */
-public enum DownloadType {
+public enum ActionType {
 
-    BOOK, USERDATA, BOOKMARKS, CORRECTIONS, FAVOURITES
+    BOOK_DOWNLOAD, USERDATA, BOOKMARKS, BOOK_DELETE, BOOK_REFRESH
 }

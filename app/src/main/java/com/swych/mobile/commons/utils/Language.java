@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public enum Language {
-    English("en", R.drawable.english), Hindi("hi",R.drawable.hindi), Spanish("es",R.drawable
+    English("en", R.drawable.english), Hindi("hi",R.drawable.hindi), Espaniol("es",R.drawable
             .spanish), German("de",R.drawable.german), Italian("it",R.drawable.italian),
     Portuguese("pt",R.drawable.portuguese), Mandarin("zh",R.drawable.mandarin), French("fr",R
             .drawable.french),Latin("la",R.drawable.latin)   ;

@@ -4,11 +4,9 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.ResultReceiver;
-import android.text.TextUtils;
 import android.util.Log;
 
 import com.swych.mobile.MyApplication;
-import com.swych.mobile.activity.util.SystemUiHider;
 import com.swych.mobile.commons.utils.Language;
 import com.swych.mobile.commons.utils.StructType;
 import com.swych.mobile.db.Book;
@@ -17,7 +15,6 @@ import com.swych.mobile.db.DaoSession;
 import com.swych.mobile.db.Library;
 import com.swych.mobile.db.LibraryDao;
 import com.swych.mobile.db.Mapping;
-import com.swych.mobile.db.MappingDao;
 import com.swych.mobile.db.PhraseReplacement;
 import com.swych.mobile.db.Sentence;
 import com.swych.mobile.db.SentenceDao;
@@ -33,23 +30,19 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.text.DateFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-
-import de.greenrobot.dao.AbstractDaoMaster;
-import de.greenrobot.dao.AbstractDaoSession;
 
 /**
  * Created by manu on 6/21/15.
@@ -60,8 +53,10 @@ public class DownloadService extends IntentService {
     public static final int STATUS_FINISHED = 1;
     public static final int STATUS_ERROR = 2;
     public static final int STATUS_DUPLICATE = 3;
+    public static final int STATUS_DELETED = 4;
+    public static final int STATUS_REFRESHED = 5;
 
-    private DownloadType downloadType;
+    private ActionType actionType;
 
 
     private static final String TAG = "DownloadService";
@@ -74,17 +69,22 @@ public class DownloadService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         Log.d(TAG, "Download started");
-        downloadType = (DownloadType) intent.getSerializableExtra("DownloadType");
+        actionType = (ActionType) intent.getSerializableExtra("ActionType");
 
-        switch (downloadType) {
-            case BOOK:
+        switch (actionType) {
+            case BOOK_DOWNLOAD:
                 downloadBook(intent);
                 break;
-
+//            case
+            case BOOK_DELETE:
+                deleteBook(intent);
 
         }
     }
 
+    private void deleteBook(Intent intent){
+
+    }
 
     private void downloadBook(Intent intent) {
         final ResultReceiver receiver = intent.getParcelableExtra("receiver");
@@ -141,9 +141,10 @@ public class DownloadService extends IntentService {
 
                 receiver.send(STATUS_FINISHED, bundle);
             }
-        } catch (JSONException | IOException | ParseException e) {
+        } catch (JSONException | IOException | ParseException   e) {
             Log.d(TAG, "Error downloading the book");
             Log.d(TAG, e.toString());
+            receiver.send(STATUS_ERROR, bundle);
         }
     }
 
@@ -200,6 +201,9 @@ public class DownloadService extends IntentService {
         BookDao bookDao = session.getBookDao();
         StructureDao structureDao = session.getStructureDao();
         SentenceDao sentenceDao = session.getSentenceDao();
+        LibraryDao libraryDao = session.getLibraryDao();
+
+        Long libraryItemId = null;
 
         Book book = new Book();
         book.setImageUrl(displayBook.getImageUrl());
@@ -216,13 +220,13 @@ public class DownloadService extends IntentService {
         } finally {
             bookId = bookDao.queryBuilder().where(BookDao.Properties.Title.eq(displayBook
                     .getTitle())).list().get(0).getId();
-            Log.d(TAG, "Book" + displayBook.getTitle() + " saved with ID: " + bookId);
+            Log.d(TAG, "Book " + displayBook.getTitle() + " saved with ID: " + bookId);
         }
 
 
         long startTime = System.currentTimeMillis();
-        // create source version
 
+        // create source version
         DisplayBookObject.Version srcDispVersion = displayBook.getVersion(Language.getLongVersion
                 (srcLanguage));
         String title = srcDispVersion.getTitle();
@@ -231,15 +235,30 @@ public class DownloadService extends IntentService {
                 .getDescription(), bookId, srcDispVersion.getTitle(), srcDispVersion.getAuthor());
         long srcVersionId = session.insert(srcVersion);
 
+        Long swychVersionId=null;
+        if(swychLanguageBook != null) {
+            DisplayBookObject.Version swychDispVersion = displayBook.getVersion(Language.getLongVersion(swychLanguage));
+            Date swychVerLastModifiedDate = df.parse(swychLanguageBook.getString("date_modified"));
+            Version swychVersion = new Version(null, swychLanguage, swychVerLastModifiedDate, swychDispVersion.getDescription(), bookId, swychDispVersion.getTitle(), swychDispVersion.getAuthor());
+            swychVersionId = session.insert(swychVersion);
+        }
+        // add structure and sentence to db.
+        JSONArray srcVersionStructure = srcLanguageBook.getJSONArray("structure");
+        addStructureToDB(session, structureDao, sentenceDao, srcVersionId, srcVersionStructure);
 
-        DisplayBookObject.Version swychDispVersion = displayBook.getVersion(Language
-                .getLongVersion(swychLanguage));
-        Date swychVerLastModifiedDate = df.parse(swychLanguageBook.getString("date_modified"));
-        Version swychVersion = new Version(null, swychLanguage, swychVerLastModifiedDate,
-                swychDispVersion.getDescription(), bookId, swychDispVersion.getTitle(),
-                swychDispVersion.getAuthor());
-        long swychVersionId = session.insert(swychVersion);
+        Date mappingLastModifiedDate = null;
+        String parsedMappingString = null;
+        if(swychLanguageBook!=null) {
+            JSONArray swychVersionStructureList = swychLanguageBook.getJSONArray("structure");
+            addStructureToDB(session, structureDao, sentenceDao, swychVersionId,
+                    swychVersionStructureList);
 
+
+            //doing the parsing here because Mode 2 only akes sense when swych language version
+            // is already present.
+            mappingLastModifiedDate = df.parse(mappings.getString("date_modified"));
+            parsedMappingString = Deserializer.parseMappings(mappings.getString("mapping"));
+        }
 
         Library item = new Library(null, displayBook.getImageUrl(), displayBook.isMode1Present(),
                 displayBook.isMode2Present(), srcDispVersion.getTitle(), srcDispVersion.getAuthor
@@ -251,35 +270,18 @@ public class DownloadService extends IntentService {
             return true;
         }
 
-        long libraryId = item.getId();
+        libraryItemId = item.getId();
 
-        // add structure and sentence to db.
-        JSONArray srcVersionStructure = srcLanguageBook.getJSONArray("structure");
-        addStructureToDB(session, structureDao, sentenceDao, srcVersionId, srcVersionStructure);
+        if(swychLanguageBook!=null && mappings!=null) {
+            Mapping mapping = new Mapping(null, parsedMappingString, mappingLastModifiedDate, srcVersionId, swychVersionId, libraryItemId);
+            session.insert(mapping);
+        }
 
-
-        JSONArray swychVersionStructureList = swychLanguageBook.getJSONArray("structure");
-        addStructureToDB(session, structureDao, sentenceDao, swychVersionId,
-                swychVersionStructureList);
-
-
-        // handle mappings.
-        //        MappingDao mappingDao = session.getMappingDao();
-        Date mappingLastModifiedDate = df.parse(mappings.getString("date_modified"));
-        String parsedMappingString = Deserializer.parseMappings(mappings.getString("mapping"));
-
-        Log.d(TAG, parsedMappingString);
-
-        Mapping mapping = new Mapping(null, parsedMappingString, mappingLastModifiedDate,
-                srcVersionId, swychVersionId, libraryId);
-        session.insert(mapping);
-
-        System.out.println(phrases);
         if (phrases != null) {
             Date phrasesLastModifiedDate = df.parse(phrases.getString("date_modified"));
             PhraseReplacement replacement = new PhraseReplacement(null, swychLanguage, phrases
                     .get("phrase_replacements").toString(), srcVersionId, swychVersionId,
-                    libraryId);
+                    libraryItemId);
             session.insert(replacement);
         }
 

@@ -6,7 +6,6 @@ import de.greenrobot.daogenerator.Index;
 import de.greenrobot.daogenerator.Property;
 import de.greenrobot.daogenerator.Schema;
 import de.greenrobot.daogenerator.ToMany;
-import de.greenrobot.daogenerator.ToOne;
 
 public class SwychDaoGenerator {
 
@@ -40,7 +39,7 @@ public class SwychDaoGenerator {
         // version table
         Entity version = schema.addEntity(VERSION);
         version.addIdProperty();
-        version.addStringProperty("language").notNull();
+        Property versionLanguage = version.addStringProperty("language").notNull().getProperty();
         version.addDateProperty("last_modified_date").notNull();
         version.addStringProperty("description");
         Property bookIdProperty = version.addLongProperty("book_id").notNull().getProperty();
@@ -50,6 +49,13 @@ public class SwychDaoGenerator {
         version.addToOne(book, bookIdProperty);
         ToMany bookVersions = book.addToMany(version, bookIdProperty);
         bookVersions.setName("bookVersions");
+
+        Index versionUniqueLanguageIndex = new Index();
+        versionUniqueLanguageIndex.addProperty(bookIdProperty);
+        versionUniqueLanguageIndex.addProperty(versionLanguage);
+        versionUniqueLanguageIndex.makeUnique();
+        version.addIndex(versionUniqueLanguageIndex);
+
 
         // user library table;
         Entity library = schema.addEntity(LIBRARY);

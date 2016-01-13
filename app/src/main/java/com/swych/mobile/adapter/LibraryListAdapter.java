@@ -5,25 +5,17 @@ import android.database.Cursor;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.CursorAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.android.volley.toolbox.NetworkImageView;
-import com.swych.mobile.MyApplication;
 import com.swych.mobile.R;
 import com.swych.mobile.commons.utils.Language;
 import com.swych.mobile.commons.utils.Utils;
-import com.swych.mobile.db.Library;
-import com.swych.mobile.db.LibraryDao;
-import com.swych.mobile.db.Version;
-import com.swych.mobile.db.VersionDao;
 import com.swych.mobile.networking.RequestManager;
 import com.swych.mobile.networking.URLs;
-
-import org.w3c.dom.Text;
 
 /**
  * Created by Manu on 7/14/2015.

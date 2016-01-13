@@ -61,6 +61,9 @@ public class VersionDao extends AbstractDao<Version, Long> {
                 "'BOOK_ID' INTEGER NOT NULL ," + // 4: book_id
                 "'TITLE' TEXT NOT NULL ," + // 5: title
                 "'AUTHOR' TEXT NOT NULL );"); // 6: author
+        // Add Indexes
+        db.execSQL("CREATE UNIQUE INDEX " + constraint + "IDX_VERSION_BOOK_ID_LANGUAGE ON VERSION" +
+                " (BOOK_ID,LANGUAGE);");
     }
 
     /** Drops the underlying database table. */

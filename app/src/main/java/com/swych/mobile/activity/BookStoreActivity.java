@@ -22,9 +22,9 @@ import com.swych.mobile.adapter.BookStoreAdapter;
 import com.swych.mobile.commons.utils.Language;
 import com.swych.mobile.networking.DisplayBookObject;
 import com.swych.mobile.networking.RequestManager;
+import com.swych.mobile.networking.background.ActionType;
 import com.swych.mobile.networking.background.DownloadResultReceiver;
 import com.swych.mobile.networking.background.DownloadService;
-import com.swych.mobile.networking.background.DownloadType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -255,7 +255,7 @@ public class BookStoreActivity extends BaseActivity implements DownloadResultRec
         intent.putExtra("nativeLanguage",srcLanguageSelected.getShortVersion());
         intent.putExtra("foreignLanguage", swychLanguageSelected.getShortVersion());
         intent.putExtra("receiver", mReceiver);
-        intent.putExtra("DownloadType", DownloadType.BOOK);
+        intent.putExtra("ActionType", ActionType.BOOK_DOWNLOAD);
         intent.putExtra("isMode1Present", book.isMode1Present());
         intent.putExtra("isMode2Present", book.isMode2Present());
 //        intent.putExtra("requestId", 101);

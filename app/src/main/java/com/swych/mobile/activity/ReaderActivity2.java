@@ -449,12 +449,7 @@ public class ReaderActivity2 extends AppCompatActivity {
         structureList.addAll(structure);
 
 
-        // load destination version book into memory;
-        destVersionSentences = new HashMap<>();
-        List<Sentence> swychVersionSentenceList = libraryItem.getSwychVersion().getSentences();
-        for (Sentence sentence : swychVersionSentenceList){
-            destVersionSentences.put(sentence.getSentence_id(),sentence);
-        }
+
 
 
         // load mappings into memory;
@@ -464,6 +459,16 @@ public class ReaderActivity2 extends AppCompatActivity {
             Log.i(TAG,"No mode 2 mappings for the book");
         }
         else{
+
+            // load destination version book into memory -- only when rendering mode 2 otherwise
+            // not needed;
+            destVersionSentences = new HashMap<>();
+            List<Sentence> swychVersionSentenceList = libraryItem.getSwychVersion().getSentences();
+            for (Sentence sentence : swychVersionSentenceList){
+                destVersionSentences.put(sentence.getSentence_id(),sentence);
+            }
+
+
             String mappingStr = sentMappingsFromDB.get(0).getStrMapping();
             StringTokenizer tokenizer = new StringTokenizer(mappingStr,";");
             String pair;
