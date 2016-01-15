@@ -68,7 +68,9 @@ public class Deserializer {
     }
 
 
-    public static String parseMappings(String mapping) {
+    public static String parseMappings(String mapping, String sourceLanguage, String
+            swychLanguage) {
+
         StringBuffer buffer = new StringBuffer();
         mapping = mapping.replaceAll(",\\[\\],", "");
         mapping = mapping.replaceAll(",\\[\\]", "");
@@ -76,17 +78,25 @@ public class Deserializer {
         String[] splits = mapping.split("\\]\\],\\[\\[");
         String key, value;
         String[] keySplits, subSplits;
+
         for (String split : splits) {
             subSplits = split.split("\\],\\[");
             if (subSplits.length == 2) {
-                key = subSplits[0].replaceAll("[\\[\\]]", "");
-                value = subSplits[1].replaceAll("[\\[\\]]", "");
+                if(sourceLanguage.compareTo(swychLanguage) < 0) {
+                    key = subSplits[0].replaceAll("[\\[\\]]", "");
+                    value = subSplits[1].replaceAll("[\\[\\]]", "");
+                }
+                else{
+                    value = subSplits[0].replaceAll("[\\[\\]]", "");
+                    key = subSplits[1].replaceAll("[\\[\\]]", "");
+                }
 
                 keySplits = key.split(",");
                 buffer.append(keySplits[0]).append(":").append(keySplits.length).append(",").append(value).append(";");
-                buffer.append("-").append(keySplits[keySplits.length-1]).append(":").append(keySplits.length).append(",").append(value).append(";");
+                buffer.append("-").append(keySplits[keySplits.length - 1]).append(":").append(keySplits.length).append(",").append(value).append(";");
             }
         }
+
         return buffer.toString();
     }
 }

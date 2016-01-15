@@ -59,6 +59,9 @@ public class MappingDao extends AbstractDao<Mapping, Long> {
                 "'VERSION1_ID' INTEGER," + // 3: version1_id
                 "'VERSION2_ID' INTEGER," + // 4: version2_id
                 "'LIBRARY_ITEM_MAPPING' INTEGER);"); // 5: library_item_mapping
+        // Add Indexes
+        db.execSQL("CREATE UNIQUE INDEX " + constraint + "IDX_MAPPING_LIBRARY_ITEM_MAPPING ON MAPPING" +
+                " (LIBRARY_ITEM_MAPPING);");
     }
 
     /** Drops the underlying database table. */
@@ -207,8 +210,8 @@ public class MappingDao extends AbstractDao<Mapping, Long> {
         entity.setForeignVersion(foreignVersion);
         offset += daoSession.getVersionDao().getAllColumns().length;
 
-        Library library = loadCurrentOther(daoSession.getLibraryDao(), cursor, offset);
-        entity.setLibrary(library);
+        Library libraryItem = loadCurrentOther(daoSession.getLibraryDao(), cursor, offset);
+        entity.setLibraryItem(libraryItem);
 
         return entity;    
     }

@@ -17,6 +17,7 @@ public class Library {
     private String imageurl;
     private Boolean mode1;
     private Boolean mode2;
+    private String book_title;
     private String title;
     private String author;
     private String srcLanguage;
@@ -50,11 +51,12 @@ public class Library {
         this.id = id;
     }
 
-    public Library(Long id, String imageurl, Boolean mode1, Boolean mode2, String title, String author, String srcLanguage, String swychLanguage, Long srcVersionId, Long swychVersionId, java.util.Date last_modified_date) {
+    public Library(Long id, String imageurl, Boolean mode1, Boolean mode2, String book_title, String title, String author, String srcLanguage, String swychLanguage, Long srcVersionId, Long swychVersionId, java.util.Date last_modified_date) {
         this.id = id;
         this.imageurl = imageurl;
         this.mode1 = mode1;
         this.mode2 = mode2;
+        this.book_title = book_title;
         this.title = title;
         this.author = author;
         this.srcLanguage = srcLanguage;
@@ -100,6 +102,14 @@ public class Library {
 
     public void setMode2(Boolean mode2) {
         this.mode2 = mode2;
+    }
+
+    public String getBook_title() {
+        return book_title;
+    }
+
+    public void setBook_title(String book_title) {
+        this.book_title = book_title;
     }
 
     public String getTitle() {

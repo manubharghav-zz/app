@@ -4,14 +4,10 @@ package com.swych.mobile.networking;
 
 import com.swych.mobile.commons.utils.Language;
 
-
 import java.io.Serializable;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**

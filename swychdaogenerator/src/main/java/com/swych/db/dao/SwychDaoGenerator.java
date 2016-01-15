@@ -63,6 +63,7 @@ public class SwychDaoGenerator {
         library.addStringProperty("imageurl");
         library.addBooleanProperty("mode1");
         library.addBooleanProperty("mode2");
+        library.addStringProperty("book_title");
         Property libraryTitleProperty = library.addStringProperty("title").getProperty();
         Property libraryAuthorProperty = library.addStringProperty("author").getProperty();
         Property librarysrcLangProperty  =library.addStringProperty("srcLanguage").getProperty();
@@ -143,18 +144,21 @@ public class SwychDaoGenerator {
         //phrase replacement table.
         Entity phraseReplacements = schema.addEntity(PHRASEREPLACEMENT);
         phraseReplacements.addIdProperty().autoincrement();
+        phraseReplacements.addDateProperty("last_modified_date").notNull();
         Property languageOfPhrase = phraseReplacements.addStringProperty("language").getProperty();
         phraseReplacements.addStringProperty("phrases");
         nativeLanguageVersionId = phraseReplacements.addLongProperty("version1_id").getProperty();
-        foreignLanguageVersionId = phraseReplacements.addLongProperty("version2_id").getProperty();
         Property libraryItemProperty = phraseReplacements.addLongProperty("library_id").getProperty();
 
 
-        phraseReplacements.addToOne(library,libraryItemProperty);
-        ToMany phraseMappings= library.addToMany(phraseReplacements,libraryItemProperty);
+        phraseReplacements.addToOne(library, libraryItemProperty);
+        ToMany phraseMappings= library.addToMany(phraseReplacements, libraryItemProperty);
         phraseMappings.setName("phraseMappings");
         phraseReplacements.addToOne(version, nativeLanguageVersionId, "nativeVersion");
-        phraseReplacements.addToOne(version, foreignLanguageVersionId, "foreignVersion");
+        Index uniqueMappingsForPhraseTranslations = new Index();
+        uniqueMappingsForPhraseTranslations.addProperty(libraryItemProperty);
+        uniqueMappingsForPhraseTranslations.makeUnique();
+        phraseReplacements.addIndex(uniqueMappingsForPhraseTranslations);
 
 
         // book_mapping table.
@@ -167,11 +171,13 @@ public class SwychDaoGenerator {
         sentenceMappings.addToOne(version, nativeLanguageVersionId, "nativeVersion");
         sentenceMappings.addToOne(version, foreignLanguageVersionId, "foreignVersion");
         libraryItemProperty = sentenceMappings.addLongProperty("library_item_mapping").getProperty();
-
-
-        sentenceMappings.addToOne(library,libraryItemProperty);
+        sentenceMappings.addToOne(library,libraryItemProperty,"libraryItem");
         ToMany sentenceMappingProperty = library.addToMany(sentenceMappings,libraryItemProperty);
         sentenceMappingProperty.setName("sentenceMappings");
+        Index uniqueMappingsForVersionPairs = new Index();
+        uniqueMappingsForVersionPairs.addProperty(libraryItemProperty);
+        uniqueMappingsForVersionPairs.makeUnique();
+        sentenceMappings.addIndex(uniqueMappingsForVersionPairs);
 
 //*/
 

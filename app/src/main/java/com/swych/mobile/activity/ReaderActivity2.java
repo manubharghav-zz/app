@@ -65,7 +65,7 @@ public class ReaderActivity2 extends AppCompatActivity {
     private Map<Long,Sentence> destVersionSentences;
 //    private Map<Long, Long> sentenceToStructureMap;
     private Map<Long, String> mappings;
-    private Map<Long, JSONArray> phraseMappings;
+    private Map<Long, List<JSONObject>> phraseMappings;
 //    private
     private ArrayList<Structure> structureList;
 
@@ -151,8 +151,8 @@ public class ReaderActivity2 extends AppCompatActivity {
 
         // configure reader from here.
 
-        libraryItemId = 1;
-        //        libraryItemId = getIntent().getLongExtra(LibraryActivity.libraryActivityId,-1);
+//        libraryItemId = 1;
+        libraryItemId = getIntent().getLongExtra(LibraryActivity.libraryActivityId,-1);
         Log.d(TAG,"started reading book: " + libraryItemId);
         if(libraryItemId<0){
             Log.d(TAG,"Error reading library item, id=" +libraryItemId);
@@ -416,10 +416,10 @@ public class ReaderActivity2 extends AppCompatActivity {
         // Set the content to appear under the system bars so that the content
         // doesn't resize when the system bars hide and show.
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View
-                .SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | 
+                .SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
                 View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
-                        | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
-                        | View.SYSTEM_UI_FLAG_IMMERSIVE);
+                | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                | View.SYSTEM_UI_FLAG_IMMERSIVE);
     }
 
     // This snippet shows the system bars. It does this by removing all the flags
@@ -497,8 +497,9 @@ public class ReaderActivity2 extends AppCompatActivity {
                     String key = iter.next();
                     long sentenceID = Long.parseLong(key);
                     JSONArray array = phrasesPairs.getJSONArray(key);
-
-                    phraseMappings.put(sentenceID, array);
+                    Log.d(TAG,sentenceID + "   " + array.toString());
+                    List<JSONObject> filteredObjects = filterPhrases(array);
+                    phraseMappings.put(sentenceID, filteredObjects);
                 }
             }
             catch (JSONException exception){
@@ -666,7 +667,7 @@ public class ReaderActivity2 extends AppCompatActivity {
                     }
                     else if(mode ==Mode.Mode1 && phraseMappings.containsKey(sentenceId)){
                         String sentence = srcVersionSentences.get(sentenceId).getContent();
-                        JSONArray phraseArr = phraseMappings.get(sentenceId);
+                        List<JSONObject> phraseArr = phraseMappings.get(sentenceId);
 
                         String swappedSentence = replacePhrases(sentence,phraseArr);
                         buffer.append(String.format(Scripts.SENTENCE_FORMAT, sentenceId, swappedSentence));
@@ -742,7 +743,7 @@ public class ReaderActivity2 extends AppCompatActivity {
                     }
                     else if(mode ==Mode.Mode1 && phraseMappings.containsKey(sentenceId)){
                         String sentence = srcVersionSentences.get(sentenceId).getContent();
-                        JSONArray phraseArr = phraseMappings.get(sentenceId);
+                        List<JSONObject> phraseArr = phraseMappings.get(sentenceId);
 
                         String swappedSentence = replacePhrases(sentence,phraseArr);
                         buffer.insert(0,String.format(Scripts.SENTENCE_FORMAT, sentenceId,
@@ -773,13 +774,43 @@ public class ReaderActivity2 extends AppCompatActivity {
         return buffer.toString();
     }
 
-    private String replacePhrases(String sentence, JSONArray phraseArr) {
+    private List<JSONObject> filterPhrases(JSONArray arr) {
+        List<JSONObject> sol = new ArrayList<>();
+        try {
+            String start = "from_char";
+            String end = "to_char";
+            Object tmp = null;
+            JSONObject curr = arr.getJSONObject(0);
+            JSONObject next;
+            int currTokenCount = curr.getString("content").split(" ").length;
+            for (int i = 1; i < arr.length(); i++) {
+                next = arr.getJSONObject(i);
+                if (next.getInt(start) < (curr.getInt(end))) {
+                    if (next.getString("content").split(" ").length > currTokenCount) {
+                        curr = next;
+                        currTokenCount = next.getString("content").split(" ").length;
+                    }
+                }
+                else{
+                    sol.add(curr);
+                    curr = next;
+                    currTokenCount = next.getString("content").split(" ").length;
+                }
+            }
+            sol.add(curr);
+        } catch (JSONException e) {
+            Log.d(TAG, "Error filtering phrases");
+        }
+
+        return sol;
+    }
+    private String replacePhrases(String sentence, List<JSONObject> phraseArr) {
 
         StringBuilder builder = new StringBuilder(sentence);
 
-        for (int i = phraseArr.length() - 1; i >= 0; i--) {
+        for (int i = phraseArr.size() - 1; i >= 0; i--) {
             try {
-                JSONObject phrase = phraseArr.getJSONObject(i);
+                JSONObject phrase = phraseArr.get(i);
                 builder.replace(phrase.getInt("from_char"), phrase.getInt("to_char"), String
                         .format(Scripts.PhraseFormat, builder.substring(phrase.getInt
                                 ("from_char"), phrase.getInt("to_char")), phrase.getString

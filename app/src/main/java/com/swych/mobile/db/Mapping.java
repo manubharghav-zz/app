@@ -32,8 +32,8 @@ public class Mapping {
     private Version foreignVersion;
     private Long foreignVersion__resolvedKey;
 
-    private Library library;
-    private Long library__resolvedKey;
+    private Library libraryItem;
+    private Long libraryItem__resolvedKey;
 
 
     // KEEP FIELDS - put your custom fields here
@@ -162,27 +162,27 @@ public class Mapping {
     }
 
     /** To-one relationship, resolved on first access. */
-    public Library getLibrary() {
+    public Library getLibraryItem() {
         Long __key = this.library_item_mapping;
-        if (library__resolvedKey == null || !library__resolvedKey.equals(__key)) {
+        if (libraryItem__resolvedKey == null || !libraryItem__resolvedKey.equals(__key)) {
             if (daoSession == null) {
                 throw new DaoException("Entity is detached from DAO context");
             }
             LibraryDao targetDao = daoSession.getLibraryDao();
-            Library libraryNew = targetDao.load(__key);
+            Library libraryItemNew = targetDao.load(__key);
             synchronized (this) {
-                library = libraryNew;
-            	library__resolvedKey = __key;
+                libraryItem = libraryItemNew;
+            	libraryItem__resolvedKey = __key;
             }
         }
-        return library;
+        return libraryItem;
     }
 
-    public void setLibrary(Library library) {
+    public void setLibraryItem(Library libraryItem) {
         synchronized (this) {
-            this.library = library;
-            library_item_mapping = library == null ? null : library.getId();
-            library__resolvedKey = library_item_mapping;
+            this.libraryItem = libraryItem;
+            library_item_mapping = libraryItem == null ? null : libraryItem.getId();
+            libraryItem__resolvedKey = library_item_mapping;
         }
     }
 

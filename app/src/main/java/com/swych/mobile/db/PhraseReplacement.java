@@ -13,10 +13,11 @@ import de.greenrobot.dao.DaoException;
 public class PhraseReplacement {
 
     private Long id;
+    /** Not-null value. */
+    private java.util.Date last_modified_date;
     private String language;
     private String phrases;
     private Long version1_id;
-    private Long version2_id;
     private Long library_id;
 
     /** Used to resolve relations */
@@ -31,9 +32,6 @@ public class PhraseReplacement {
     private Version nativeVersion;
     private Long nativeVersion__resolvedKey;
 
-    private Version foreignVersion;
-    private Long foreignVersion__resolvedKey;
-
 
     // KEEP FIELDS - put your custom fields here
     // KEEP FIELDS END
@@ -45,12 +43,12 @@ public class PhraseReplacement {
         this.id = id;
     }
 
-    public PhraseReplacement(Long id, String language, String phrases, Long version1_id, Long version2_id, Long library_id) {
+    public PhraseReplacement(Long id, java.util.Date last_modified_date, String language, String phrases, Long version1_id, Long library_id) {
         this.id = id;
+        this.last_modified_date = last_modified_date;
         this.language = language;
         this.phrases = phrases;
         this.version1_id = version1_id;
-        this.version2_id = version2_id;
         this.library_id = library_id;
     }
 
@@ -66,6 +64,16 @@ public class PhraseReplacement {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    /** Not-null value. */
+    public java.util.Date getLast_modified_date() {
+        return last_modified_date;
+    }
+
+    /** Not-null value; ensure this value is available before it is saved to the database. */
+    public void setLast_modified_date(java.util.Date last_modified_date) {
+        this.last_modified_date = last_modified_date;
     }
 
     public String getLanguage() {
@@ -90,14 +98,6 @@ public class PhraseReplacement {
 
     public void setVersion1_id(Long version1_id) {
         this.version1_id = version1_id;
-    }
-
-    public Long getVersion2_id() {
-        return version2_id;
-    }
-
-    public void setVersion2_id(Long version2_id) {
-        this.version2_id = version2_id;
     }
 
     public Long getLibrary_id() {
@@ -155,31 +155,6 @@ public class PhraseReplacement {
             this.nativeVersion = nativeVersion;
             version1_id = nativeVersion == null ? null : nativeVersion.getId();
             nativeVersion__resolvedKey = version1_id;
-        }
-    }
-
-    /** To-one relationship, resolved on first access. */
-    public Version getForeignVersion() {
-        Long __key = this.version2_id;
-        if (foreignVersion__resolvedKey == null || !foreignVersion__resolvedKey.equals(__key)) {
-            if (daoSession == null) {
-                throw new DaoException("Entity is detached from DAO context");
-            }
-            VersionDao targetDao = daoSession.getVersionDao();
-            Version foreignVersionNew = targetDao.load(__key);
-            synchronized (this) {
-                foreignVersion = foreignVersionNew;
-            	foreignVersion__resolvedKey = __key;
-            }
-        }
-        return foreignVersion;
-    }
-
-    public void setForeignVersion(Version foreignVersion) {
-        synchronized (this) {
-            this.foreignVersion = foreignVersion;
-            version2_id = foreignVersion == null ? null : foreignVersion.getId();
-            foreignVersion__resolvedKey = version2_id;
         }
     }
 

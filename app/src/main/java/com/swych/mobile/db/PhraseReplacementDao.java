@@ -29,10 +29,10 @@ public class PhraseReplacementDao extends AbstractDao<PhraseReplacement, Long> {
     */
     public static class Properties {
         public final static Property Id = new Property(0, Long.class, "id", true, "_id");
-        public final static Property Language = new Property(1, String.class, "language", false, "LANGUAGE");
-        public final static Property Phrases = new Property(2, String.class, "phrases", false, "PHRASES");
-        public final static Property Version1_id = new Property(3, Long.class, "version1_id", false, "VERSION1_ID");
-        public final static Property Version2_id = new Property(4, Long.class, "version2_id", false, "VERSION2_ID");
+        public final static Property Last_modified_date = new Property(1, java.util.Date.class, "last_modified_date", false, "LAST_MODIFIED_DATE");
+        public final static Property Language = new Property(2, String.class, "language", false, "LANGUAGE");
+        public final static Property Phrases = new Property(3, String.class, "phrases", false, "PHRASES");
+        public final static Property Version1_id = new Property(4, Long.class, "version1_id", false, "VERSION1_ID");
         public final static Property Library_id = new Property(5, Long.class, "library_id", false, "LIBRARY_ID");
     };
 
@@ -54,11 +54,14 @@ public class PhraseReplacementDao extends AbstractDao<PhraseReplacement, Long> {
         String constraint = ifNotExists? "IF NOT EXISTS ": "";
         db.execSQL("CREATE TABLE " + constraint + "'PHRASE_REPLACEMENT' (" + //
                 "'_id' INTEGER PRIMARY KEY AUTOINCREMENT ," + // 0: id
-                "'LANGUAGE' TEXT," + // 1: language
-                "'PHRASES' TEXT," + // 2: phrases
-                "'VERSION1_ID' INTEGER," + // 3: version1_id
-                "'VERSION2_ID' INTEGER," + // 4: version2_id
+                "'LAST_MODIFIED_DATE' INTEGER NOT NULL ," + // 1: last_modified_date
+                "'LANGUAGE' TEXT," + // 2: language
+                "'PHRASES' TEXT," + // 3: phrases
+                "'VERSION1_ID' INTEGER," + // 4: version1_id
                 "'LIBRARY_ID' INTEGER);"); // 5: library_id
+        // Add Indexes
+        db.execSQL("CREATE UNIQUE INDEX " + constraint + "IDX_PHRASE_REPLACEMENT_LIBRARY_ID ON PHRASE_REPLACEMENT" +
+                " (LIBRARY_ID);");
     }
 
     /** Drops the underlying database table. */
@@ -76,25 +79,21 @@ public class PhraseReplacementDao extends AbstractDao<PhraseReplacement, Long> {
         if (id != null) {
             stmt.bindLong(1, id);
         }
+        stmt.bindLong(2, entity.getLast_modified_date().getTime());
  
         String language = entity.getLanguage();
         if (language != null) {
-            stmt.bindString(2, language);
+            stmt.bindString(3, language);
         }
  
         String phrases = entity.getPhrases();
         if (phrases != null) {
-            stmt.bindString(3, phrases);
+            stmt.bindString(4, phrases);
         }
  
         Long version1_id = entity.getVersion1_id();
         if (version1_id != null) {
-            stmt.bindLong(4, version1_id);
-        }
- 
-        Long version2_id = entity.getVersion2_id();
-        if (version2_id != null) {
-            stmt.bindLong(5, version2_id);
+            stmt.bindLong(5, version1_id);
         }
  
         Long library_id = entity.getLibrary_id();
@@ -120,10 +119,10 @@ public class PhraseReplacementDao extends AbstractDao<PhraseReplacement, Long> {
     public PhraseReplacement readEntity(Cursor cursor, int offset) {
         PhraseReplacement entity = new PhraseReplacement( //
             cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
-            cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1), // language
-            cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2), // phrases
-            cursor.isNull(offset + 3) ? null : cursor.getLong(offset + 3), // version1_id
-            cursor.isNull(offset + 4) ? null : cursor.getLong(offset + 4), // version2_id
+            new java.util.Date(cursor.getLong(offset + 1)), // last_modified_date
+            cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2), // language
+            cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3), // phrases
+            cursor.isNull(offset + 4) ? null : cursor.getLong(offset + 4), // version1_id
             cursor.isNull(offset + 5) ? null : cursor.getLong(offset + 5) // library_id
         );
         return entity;
@@ -133,10 +132,10 @@ public class PhraseReplacementDao extends AbstractDao<PhraseReplacement, Long> {
     @Override
     public void readEntity(Cursor cursor, PhraseReplacement entity, int offset) {
         entity.setId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
-        entity.setLanguage(cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1));
-        entity.setPhrases(cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2));
-        entity.setVersion1_id(cursor.isNull(offset + 3) ? null : cursor.getLong(offset + 3));
-        entity.setVersion2_id(cursor.isNull(offset + 4) ? null : cursor.getLong(offset + 4));
+        entity.setLast_modified_date(new java.util.Date(cursor.getLong(offset + 1)));
+        entity.setLanguage(cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2));
+        entity.setPhrases(cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3));
+        entity.setVersion1_id(cursor.isNull(offset + 4) ? null : cursor.getLong(offset + 4));
         entity.setLibrary_id(cursor.isNull(offset + 5) ? null : cursor.getLong(offset + 5));
      }
     
@@ -187,12 +186,9 @@ public class PhraseReplacementDao extends AbstractDao<PhraseReplacement, Long> {
             SqlUtils.appendColumns(builder, "T0", daoSession.getLibraryDao().getAllColumns());
             builder.append(',');
             SqlUtils.appendColumns(builder, "T1", daoSession.getVersionDao().getAllColumns());
-            builder.append(',');
-            SqlUtils.appendColumns(builder, "T2", daoSession.getVersionDao().getAllColumns());
             builder.append(" FROM PHRASE_REPLACEMENT T");
             builder.append(" LEFT JOIN LIBRARY T0 ON T.'LIBRARY_ID'=T0.'_id'");
             builder.append(" LEFT JOIN VERSION T1 ON T.'VERSION1_ID'=T1.'_id'");
-            builder.append(" LEFT JOIN VERSION T2 ON T.'VERSION2_ID'=T2.'_id'");
             builder.append(' ');
             selectDeep = builder.toString();
         }
@@ -209,10 +205,6 @@ public class PhraseReplacementDao extends AbstractDao<PhraseReplacement, Long> {
 
         Version nativeVersion = loadCurrentOther(daoSession.getVersionDao(), cursor, offset);
         entity.setNativeVersion(nativeVersion);
-        offset += daoSession.getVersionDao().getAllColumns().length;
-
-        Version foreignVersion = loadCurrentOther(daoSession.getVersionDao(), cursor, offset);
-        entity.setForeignVersion(foreignVersion);
 
         return entity;    
     }

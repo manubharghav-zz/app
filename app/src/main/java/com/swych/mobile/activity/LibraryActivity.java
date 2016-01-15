@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.ActionMode;
@@ -20,6 +21,7 @@ import com.swych.mobile.R;
 import com.swych.mobile.adapter.LibraryListAdapter;
 import com.swych.mobile.db.DaoSession;
 import com.swych.mobile.db.LibraryDao;
+import com.swych.mobile.networking.background.ActionType;
 import com.swych.mobile.networking.background.DownloadResultReceiver;
 import com.swych.mobile.networking.background.DownloadService;
 
@@ -28,7 +30,8 @@ public class LibraryActivity extends BaseActivity implements DownloadResultRecei
 
 
     private static String TAG="LibraryActivity";
-    private Cursor cursor;
+    private Cursor listviewCursor;
+    private LibraryListAdapter libraryListAdapter;
     public static String libraryActivityId = "libraryItemId";
     private DaoSession session;
     private SQLiteDatabase db;
@@ -47,13 +50,15 @@ public class LibraryActivity extends BaseActivity implements DownloadResultRecei
         session = MyApplication.getSession();
         db = MyApplication.getDataBase();
         libraryDao = session.getLibraryDao();
-        cursor = db.query(libraryDao.getTablename(),libraryDao.getAllColumns(),null,null,null,null,null );
+        listviewCursor = db.query(libraryDao.getTablename(), libraryDao.getAllColumns(), null,
+                null, null, null, null);
 
-        final LibraryListAdapter listAdapter = new LibraryListAdapter(getApplicationContext(),cursor);
+        libraryListAdapter = new LibraryListAdapter(getApplicationContext(),
+                listviewCursor);
 
         final ListView listview = (ListView) findViewById(R.id.library_list);
 
-        listview.setAdapter(listAdapter);
+        listview.setAdapter(libraryListAdapter);
 
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -109,24 +114,31 @@ public class LibraryActivity extends BaseActivity implements DownloadResultRecei
             @Override
             public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
                 Log.d(TAG, "processing itemId: " + item.getItemId());
-                long[] checkdItemIds = listview.getCheckedItemIds();
                 SparseBooleanArray selectedItems = listview.getCheckedItemPositions();
+                long[] ids = new long[selectedItems.size()];
                 for(int i=0;i<selectedItems.size();i++){
-                   Cursor cursor = (Cursor) listview.getItemAtPosition(selectedItems.keyAt(i));
-                    Log.d(TAG,"" + cursor.getLong(cursor.getColumnIndex("_id")));
+                    Cursor cursor = (Cursor) listview.getItemAtPosition(selectedItems.keyAt(i));
+                    long libraryItemId = cursor.getLong(cursor.getColumnIndex("_id"));
+                    ids[i] = libraryItemId;
+                    Log.d(TAG,"processing library item Id: " + libraryItemId);
+
                 }
+
+
                 switch (item.getItemId()){
                     case R.id.sync:
-                        Log.d(TAG,"Sync button clicked");
-                        return true;
+                        Log.d(TAG,"Sync started");
+                        break;
                     case R.id.delete:
-                        Log.d(TAG,"Delete button clicked");
-                        return true;
+                        Log.d(TAG, "Delete started");
+                        deleteBook(ids);
+                        break;
                     case R.id.readnow:
-                        Log.d(TAG,"read now button clicked");
-                        return true;
+                        Log.d(TAG,"reading book");
+                        break;
                 }
-                return false;
+                mode.finish();
+                return true;
             }
 
             @Override
@@ -170,8 +182,19 @@ public class LibraryActivity extends BaseActivity implements DownloadResultRecei
     public void onReceiveResult(int resultCode, Bundle resultData) {
         if(resultCode == DownloadService.STATUS_FINISHED){
             Log.d(TAG, "Book delete completed");
-            Toast.makeText(getApplicationContext(), "Book is downloaded. Visit library", Toast
+            Toast.makeText(getApplicationContext(), "Book delete completed", Toast
                     .LENGTH_SHORT).show();
+
+            Log.d(TAG,"initial count " + listviewCursor.getCount());
+            Cursor newlistviewCursor = db.query(libraryDao.getTablename(),libraryDao
+                    .getAllColumns(),null,null,null,null,null );
+            Log.d(TAG, "final count " + newlistviewCursor.getCount());
+
+
+            libraryListAdapter.changeCursor(newlistviewCursor);
+            libraryListAdapter.notifyDataSetChanged();
+            listviewCursor = newlistviewCursor;
+
         }
         else if(resultCode==DownloadService.STATUS_DUPLICATE){
             Log.d(TAG, "Book already present in your library");
@@ -182,5 +205,17 @@ public class LibraryActivity extends BaseActivity implements DownloadResultRecei
         }
     }
 
+
+
+    private void deleteBook(long[] libraryItemIds) {
+        /* Started deleting book. */
+        DownloadResultReceiver mReceiver = new DownloadResultReceiver(new Handler());
+        mReceiver.setReceiver(this);
+        Intent intent = new Intent(Intent.ACTION_SYNC, null, this, DownloadService.class);
+        intent.putExtra("library_item_id",libraryItemIds);
+        intent.putExtra("receiver", mReceiver);
+        intent.putExtra("ActionType", ActionType.BOOK_DELETE);
+        startService(intent);
+    }
  }
 
