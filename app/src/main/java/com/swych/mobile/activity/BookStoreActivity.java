@@ -86,15 +86,12 @@ public class BookStoreActivity extends BaseActivity implements DownloadResultRec
             @Override
             public void onItemClick(AdapterView<?> arg0, View v, int position,
                                     long arg3) {
-                if (adapter == null) {
-                    adapter = (BookStoreAdapter) listView.getAdapter();
-                    Log.d(TAG, "adapter is null. attacing reference to the gridview's adapter");
-                }
-//                Toast.makeText(getApplicationContext(),"Downloading "+ adapter.getSluggifiedTitle(position), Toast.LENGTH_SHORT).show();
-
                 if (userSelectionDetected) {
+                    adapter = (BookStoreAdapter) listView.getAdapter();
                     DisplayBookObject object = adapter.getItem(position);
-                    startBookDownload(object,srcLanguageSelected,swychLanguageSelected);
+                    Log.d(TAG, object.getTitle() + "   " +srcLanguageSelected +
+                            swychLanguageSelected);
+//                    startBookDownload(object,srcLanguageSelected,swychLanguageSelected);
                 } else {
                     Toast.makeText(getApplicationContext(), "Please specify source and swych language to download a book", Toast.LENGTH_SHORT).show();
                 }
@@ -189,9 +186,6 @@ public class BookStoreActivity extends BaseActivity implements DownloadResultRec
         Log.d(TAG,"search String: "+ searchString+", mode pref =" +modePref);
         for(DisplayBookObject object:bookList){
             Integer availableModes= readingOptions.get(object.getTitle()+searchString);
-            if(object.getTitle().contains("harry")){
-                System.out.println(availableModes +" , " +object.getTitle());
-            }
             if(availableModes!=null ){
                 if(availableModes==3 || modePref==0 || (availableModes==modePref)) {
                     if(availableModes==3){
@@ -238,6 +232,7 @@ public class BookStoreActivity extends BaseActivity implements DownloadResultRec
 
         ArrayList<DisplayBookObject> filteredList = filterList(srcLanguageSelected.getShortVersion(),swychLanguageSelected.getShortVersion(),modePref);
         listView.setAdapter(new BookStoreAdapter(getApplicationContext(), filteredList));
+        listView.invalidateViews();
     }
 
 
