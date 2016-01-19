@@ -56,6 +56,8 @@ public class DownloadService extends IntentService {
     public static final int STATUS_FINISHED = 1;
     public static final int STATUS_ERROR = 2;
     public static final int STATUS_DUPLICATE = 3;
+    public static final int STATUS_DELETED = 4;
+    public static final int STATUS_REFRESHED = 5;
 
     public static DateFormat df = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss", Locale.ENGLISH);
 
@@ -78,9 +80,116 @@ public class DownloadService extends IntentService {
                 break;
             case BOOK_DELETE:
                 deleteLibraryItem(intent);
+                break;
+            case BOOK_REFRESH:
+                syncLibraryItems(intent);
 
         }
     }
+
+    private void syncLibraryItems(Intent intent){
+        long[] libraryItemIds = intent.getLongArrayExtra("library_item_id");
+        final ResultReceiver receiver = intent.getParcelableExtra("receiver");
+
+        if(libraryItemIds==null || libraryItemIds.length <1){
+            Bundle bundle = new Bundle();
+            bundle.putString("message", "Invalid library Item id, please select a book");
+            receiver.send(STATUS_ERROR,bundle);
+        }
+
+        final DaoSession session = MyApplication.getNewSession();
+        LibraryDao libraryDao = session.getLibraryDao();
+        StringBuffer messageBuffer = new StringBuffer();
+        for(long libraryItemId: libraryItemIds) {
+            Library libraryItem = libraryDao.load(libraryItemId);
+            Book book = libraryItem.getSrcVersion().getBook();
+            String bookTitle = book.getTitle();
+            String srcLanguage = libraryItem.getSrcLanguage();
+            String swychLanguage = libraryItem.getSwychLanguage();
+
+            try {
+                JSONObject srcLanguageBook = downloadData(URLs.VERSION + bookTitle + "/" +
+                        srcLanguage);
+                JSONObject swychLanguageBook = downloadData(URLs.VERSION + bookTitle + "/" +
+                        swychLanguage);
+                JSONObject mappings = null;
+                JSONObject phrases = null;
+                if (libraryItem.getMode2()) {
+                    if(srcLanguage.compareTo(swychLanguage)>0){
+                        mappings = downloadData(URLs.MAPPING + bookTitle + "/" + swychLanguage + "/" +
+                                srcLanguage);
+                    }
+                    else{
+                        mappings = downloadData(URLs.MAPPING + bookTitle + "/" + srcLanguage + "/" +
+                                swychLanguage);
+                    }
+                }
+                if (libraryItem.getMode1()) {
+
+                    phrases = downloadData(URLs.PHRASES + bookTitle + "/" + srcLanguage + "/" +
+                            swychLanguage);
+                }
+                //persist these objects to database;
+                if (srcLanguageBook!=null && srcLanguageBook.length() > 0) {
+                    Long srcVersionId = libraryItem.getSrcVersionId();
+                    Long swychVersionId = libraryItem.getSwychVersionId();
+                    Version srcVersion = libraryItem.getSrcVersion();
+                    Date lastModifiedDateOnServer = df.parse(srcLanguageBook.getString
+                            ("date_modified"));
+                    if(lastModifiedDateOnServer.compareTo(srcVersion.getLast_modified_date()) >0){
+                        srcVersion.setLast_modified_date(new Date());
+                        srcVersion.update();
+                        deleteVersionStructureandSentences(srcVersion,session);
+                        addStructureandSentencesToDB(session, srcVersionId, srcLanguageBook
+                                .getJSONArray("structure"));
+                    }
+
+
+                    if(swychVersionId != null) {
+                        Version swychVersion = libraryItem.getSwychVersion();
+                        lastModifiedDateOnServer = df.parse(swychLanguageBook.getString
+                                ("date_modified"));
+                        if(lastModifiedDateOnServer.compareTo(swychVersion.getLast_modified_date()) >0){
+                            swychVersion.setLast_modified_date(new Date());
+                            swychVersion.update();
+                            deleteVersionStructureandSentences(swychVersion,session);
+                            addStructureandSentencesToDB(session ,swychVersionId,
+                                    swychLanguageBook.getJSONArray("structure"));
+                        }
+                    }
+
+
+                    Log.d(TAG, bookTitle + " " + srcLanguage + "  " +
+                            swychLanguage + " Book sync complete");
+                    messageBuffer.append(bookTitle + " " + srcLanguage + "  " +
+                            swychLanguage +"  "+ "Book sync complete");
+                }
+                else{
+                    Log.d(TAG, bookTitle + " " + srcLanguage + "  " +
+                            swychLanguage + " Error syncing the book: Couldnt download src " +
+                            "Version");
+                }
+
+
+                if(swychLanguageBook!=null && mappings!=null) {
+                    addMappingsToDB(session,libraryItemId,libraryItem.getSrcVersionId(),
+                            libraryItem.getSwychVersionId(), srcLanguage, swychLanguage,mappings);
+                }
+
+                if (phrases != null) {
+                    addPhrasesToDB(session,libraryItemId,libraryItem.getSrcVersionId(),swychLanguage,phrases);
+                }
+            } catch (JSONException | IOException | ParseException e) {
+                Log.d(TAG, bookTitle + " " + srcLanguage + "  " +
+                        swychLanguage + " Error syncing the book");
+                messageBuffer.append(bookTitle + " " + srcLanguage + "  " +
+                        swychLanguage + "  " + "Book sync incomplete");
+
+            }
+        }
+
+    }
+
 
     private void deleteLibraryItem(Intent intent){
         long[] libraryItemIds = intent.getLongArrayExtra("library_item_id");
@@ -413,6 +522,7 @@ public class DownloadService extends IntentService {
         Date lastModifiedDateOnServer = df.parse(versionFromServer.getString("date_modified"));
         Version ExistingVersionOnPhone = checkIfVersionExists(session, bookId, language);
         if(ExistingVersionOnPhone!=null) {
+            versionId = ExistingVersionOnPhone.getId();
             if (lastModifiedDateOnServer.compareTo(ExistingVersionOnPhone.getLast_modified_date()) <= 0) {
 
                 return ExistingVersionOnPhone.getId();
@@ -428,14 +538,14 @@ public class DownloadService extends IntentService {
             versionId = session.insert(srcVersion);
         }
 
-        addStructureandSentencesToDB(session, session.getStructureDao(), session.getSentenceDao()
-                , versionId, versionFromServer.getJSONArray("structure"));
+        addStructureandSentencesToDB(session, versionId, versionFromServer.getJSONArray("structure"));
 
         return versionId;
     }
-    private void addStructureandSentencesToDB(final DaoSession session, final StructureDao
-            structureDao, final SentenceDao sentenceDao, final long srcVersionId, final JSONArray
+    private void addStructureandSentencesToDB(final DaoSession session, final long VersionId, final JSONArray
             structureList) {
+        final StructureDao structureDao = session.getStructureDao();
+        final SentenceDao sentenceDao = session.getSentenceDao();
         session.runInTx(new Runnable() {
             public void run() {
                 try {
@@ -451,11 +561,11 @@ public class DownloadService extends IntentService {
                             sentenceId = sentenceJson.getInt("sentence_id");
                             String sentString = sentenceJson.getString("content");
                             Sentence sentence = new Sentence(null, sentenceId, sentString,
-                                    srcVersionId);
+                                    VersionId);
                             sentenceDao.insert(sentence);
                         }
                         Structure structure = new Structure(null, (long) i, (long) sentenceId,
-                                structureType, srcVersionId);
+                                structureType, VersionId);
                         structureDao.insert(structure);
                     }
                 } catch (JSONException e) {

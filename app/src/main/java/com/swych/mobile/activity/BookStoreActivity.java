@@ -91,7 +91,7 @@ public class BookStoreActivity extends BaseActivity implements DownloadResultRec
                     DisplayBookObject object = adapter.getItem(position);
                     Log.d(TAG, object.getTitle() + "   " +srcLanguageSelected +
                             swychLanguageSelected);
-//                    startBookDownload(object,srcLanguageSelected,swychLanguageSelected);
+                    startBookDownload(object,srcLanguageSelected,swychLanguageSelected);
                 } else {
                     Toast.makeText(getApplicationContext(), "Please specify source and swych language to download a book", Toast.LENGTH_SHORT).show();
                 }

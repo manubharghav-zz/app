@@ -128,6 +128,7 @@ public class LibraryActivity extends BaseActivity implements DownloadResultRecei
                 switch (item.getItemId()){
                     case R.id.sync:
                         Log.d(TAG,"Sync started");
+                        sync(ids);
                         break;
                     case R.id.delete:
                         Log.d(TAG, "Delete started");
@@ -180,7 +181,7 @@ public class LibraryActivity extends BaseActivity implements DownloadResultRecei
 
     @Override
     public void onReceiveResult(int resultCode, Bundle resultData) {
-        if(resultCode == DownloadService.STATUS_FINISHED){
+        if(resultCode == DownloadService.STATUS_DELETED){
             Log.d(TAG, "Book delete completed");
             Toast.makeText(getApplicationContext(), "Book delete completed", Toast
                     .LENGTH_SHORT).show();
@@ -196,9 +197,10 @@ public class LibraryActivity extends BaseActivity implements DownloadResultRecei
             listviewCursor = newlistviewCursor;
 
         }
-        else if(resultCode==DownloadService.STATUS_DUPLICATE){
-            Log.d(TAG, "Book already present in your library");
-            Toast.makeText(getApplicationContext(), "This book exists in your library. Please visit library to read", Toast.LENGTH_SHORT).show();
+        else if(resultCode==DownloadService.STATUS_REFRESHED){
+            Log.d(TAG, "Book sync complete");
+            Toast.makeText(getApplicationContext(), "Your Books are in sync with our servers", Toast
+                    .LENGTH_SHORT).show();
         }
         else{
             //TODO Download failed. decide later
@@ -215,6 +217,17 @@ public class LibraryActivity extends BaseActivity implements DownloadResultRecei
         intent.putExtra("library_item_id",libraryItemIds);
         intent.putExtra("receiver", mReceiver);
         intent.putExtra("ActionType", ActionType.BOOK_DELETE);
+        startService(intent);
+    }
+
+
+    private void sync(long[] libraryItemIds){
+        DownloadResultReceiver mReceiver = new DownloadResultReceiver(new Handler());
+        mReceiver.setReceiver(this);
+        Intent intent = new Intent(Intent.ACTION_SYNC, null, this, DownloadService.class);
+        intent.putExtra("library_item_id",libraryItemIds);
+        intent.putExtra("receiver", mReceiver);
+        intent.putExtra("ActionType", ActionType.BOOK_REFRESH);
         startService(intent);
     }
  }
